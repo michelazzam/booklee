@@ -1,24 +1,33 @@
 import { forwardRef } from 'react';
-import { Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
+import { theme } from '~/theme/Main';
 
 type ButtonProps = {
   title: string;
 } & TouchableOpacityProps;
 
-export const Button = forwardRef<View, ButtonProps>(({ title, ...touchableProps }, ref) => {
+export const Button = forwardRef<View, ButtonProps>(({ title, style, ...touchableProps }, ref) => {
   return (
-    <TouchableOpacity
-      ref={ref}
-      {...touchableProps}
-      className={`${styles.button} ${touchableProps.className}`}>
-      <Text className={styles.buttonText}>{title}</Text>
+    <TouchableOpacity ref={ref} {...touchableProps} style={[styles.button, style]}>
+      <Text style={styles.buttonText}>{title}</Text>
     </TouchableOpacity>
   );
 });
 
 Button.displayName = 'Button';
 
-const styles = {
-  button: 'items-center bg-indigo-500 rounded-[28px] shadow-md p-4',
-  buttonText: 'text-white text-lg font-semibold text-center',
-};
+const styles = StyleSheet.create({
+  button: {
+    alignItems: 'center',
+    backgroundColor: theme.colors.primaryBlue[100],
+    borderRadius: 28,
+    padding: theme.spacing.xl,
+    ...(theme.shadows.soft as any),
+  },
+  buttonText: {
+    color: theme.colors.white.DEFAULT,
+    fontSize: theme.typography.fontSizes.lg,
+    fontWeight: theme.typography.fontWeights.semiBold,
+    textAlign: 'center',
+  },
+});

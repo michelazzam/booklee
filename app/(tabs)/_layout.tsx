@@ -1,12 +1,12 @@
 import { Tabs } from 'expo-router';
-import { BookingIcon, FavoritesIcon, HomeIcon, SearchIcon } from '~/assets/icons';
-import AccountIcon from '~/assets/icons/AccountIcon';
+import { BookingIcon, FavoritesIcon, HomeIcon, SearchIcon, AccountIcon } from '~/assets/icons';
+import { theme } from '~/theme/Main';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#476c80',
+        tabBarActiveTintColor: theme.colors.primaryBlue[100],
       }}>
       <Tabs.Screen
         name="index"

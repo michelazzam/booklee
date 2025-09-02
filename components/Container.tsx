@@ -1,9 +1,13 @@
-import { SafeAreaView } from 'react-native';
+import { SafeAreaView, StyleSheet } from 'react-native';
+import { theme } from '~/theme/Main';
 
 export const Container = ({ children }: { children: React.ReactNode }) => {
-  return <SafeAreaView className={styles.container}>{children}</SafeAreaView>;
+  return <SafeAreaView style={styles.container}>{children}</SafeAreaView>;
 };
 
-const styles = {
-  container: 'flex flex-1 m-6',
-};
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    margin: theme.spacing.xl,
+  },
+});

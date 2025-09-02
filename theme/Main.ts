@@ -1,0 +1,216 @@
+export const colors = {
+  // Neutrals
+  darkText: {
+    100: '#1f1f1f',
+    50: '#1f1f1f',
+    25: '#1f1f1f',
+  },
+  lightText: '#737373',
+  border: '#EBEAEA',
+  white: {
+    100: '#FFFFFF',
+    50: '#476c80',
+    DEFAULT: '#FFFFFF',
+  },
+
+  // Primary
+  primaryBlue: {
+    100: '#476c80',
+    50: '#476c80',
+    10: '#476c80',
+  },
+  primaryGreen: {
+    100: '#276231',
+    50: '#276231',
+    10: '#276231',
+  },
+
+  // Secondary
+  secondaryPurple: {
+    100: '#2927AE',
+    50: '#2927AE',
+    10: '#2927AE',
+  },
+  secondaryPink: {
+    100: '#ED818A',
+    50: '#2927AE',
+    10: '#2927AE',
+  },
+  secondaryBlue: {
+    100: '#54BEEF',
+    50: '#2927AE',
+    10: '#2927AE',
+  },
+
+  // Messaging
+  red: {
+    100: '#9A2626',
+    10: '#9A2626',
+  },
+  grey: {
+    100: '#737373',
+    10: '#737373',
+  },
+  orange: {
+    100: '#ab590d',
+    10: '#ab590d',
+  },
+  green: {
+    100: '#276231',
+    10: '#276231',
+  },
+} as const;
+
+export const shadows = {
+  soft: {
+    shadowColor: 'rgba(31, 31, 31, 0.1)',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    elevation: 2,
+  },
+} as const;
+
+export const radii = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  full: 9999,
+} as const;
+
+export const spacing = {
+  none: 0,
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  '2xl': 32,
+  '3xl': 40,
+} as const;
+
+export const typography = {
+  fontSizes: {
+    xs: 12,
+    sm: 14,
+    md: 16,
+    lg: 18,
+    xl: 20,
+    '2xl': 22,
+    '3xl': 24,
+  },
+  fontWeights: {
+    regular: '400' as const,
+    medium: '500' as const,
+    semiBold: '600' as const,
+    bold: '700' as const,
+  },
+  lineHeights: {
+    xs: 12,
+    sm: 16,
+    md: 20,
+    lg: 22,
+    xl: 28,
+  },
+  textVariants: {
+    // Headlines & Titles
+    headline: {
+      fontFamily: 'Montserrat-SemiBold',
+      fontSize: 22,
+      lineHeight: 28,
+    },
+    subheadline: {
+      fontFamily: 'Montserrat-Medium',
+      fontSize: 16,
+      lineHeight: 20,
+    },
+
+    // Body Primary
+    bodyPrimaryRegular: {
+      fontFamily: 'Montserrat-Regular',
+      fontSize: 14,
+      lineHeight: 22,
+    },
+    bodyPrimaryBold: {
+      fontFamily: 'Montserrat-SemiBold',
+      fontSize: 14,
+      lineHeight: 22,
+    },
+    bodyPrimaryHyperlink: {
+      fontFamily: 'Montserrat-SemiBold',
+      fontSize: 14,
+      lineHeight: 22,
+      textDecorationLine: 'underline',
+    },
+
+    // Body Secondary
+    bodySecondaryRegular: {
+      fontFamily: 'Montserrat-Regular',
+      fontSize: 11,
+      lineHeight: 16,
+    },
+    bodySecondaryBold: {
+      fontFamily: 'Montserrat-SemiBold',
+      fontSize: 11,
+      lineHeight: 16,
+    },
+    bodySecondaryHyperlink: {
+      fontFamily: 'Montserrat-SemiBold',
+      fontSize: 11,
+      lineHeight: 16,
+      textDecorationLine: 'underline',
+    },
+
+    // Body Tertiary
+    bodyTertiaryRegular: {
+      fontFamily: 'Montserrat-Medium',
+      fontSize: 8,
+      lineHeight: 12,
+    },
+    bodyTertiaryBold: {
+      fontFamily: 'Montserrat-Bold',
+      fontSize: 8,
+      lineHeight: 12,
+    },
+
+    // CTA Primary
+    ctaPrimaryRegular: {
+      fontFamily: 'Montserrat-Medium',
+      fontSize: 14,
+      lineHeight: 22,
+      textTransform: 'uppercase',
+    },
+    ctaPrimaryBold: {
+      fontFamily: 'Montserrat-Bold',
+      fontSize: 14,
+      lineHeight: 22,
+      textTransform: 'uppercase',
+    },
+
+    // CTA Secondary
+    ctaSecondaryRegular: {
+      fontFamily: 'Montserrat-Medium',
+      fontSize: 12,
+      lineHeight: 16,
+      textTransform: 'uppercase',
+    },
+    ctaSecondaryBold: {
+      fontFamily: 'Montserrat-Bold',
+      fontSize: 12,
+      lineHeight: 16,
+      textTransform: 'uppercase',
+    },
+  },
+} as const;
+
+export const theme = {
+  colors,
+  spacing,
+  radii,
+  shadows,
+  typography,
+} as const;
+
+export type Theme = typeof theme;

@@ -1,4 +1,6 @@
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { theme } from '~/theme/Main';
+import { CustomText } from './CustomText';
 
 export const EditScreenInfo = ({ path }: { path: string }) => {
   const title = 'Open up the code for this screen:';
@@ -7,23 +9,46 @@ export const EditScreenInfo = ({ path }: { path: string }) => {
 
   return (
     <View>
-      <View className={styles.getStartedContainer}>
-        <Text className={styles.getStartedText}>{title}</Text>
-        <View className={styles.codeHighlightContainer + styles.homeScreenFilename}>
+      <View style={styles.getStartedContainer}>
+        <Text style={styles.getStartedText}>{title}</Text>
+        <View style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
           <Text>{path}</Text>
         </View>
-        <Text className={styles.getStartedText}>{description}</Text>
+        <Text style={styles.getStartedText}>{description}</Text>
+        <Text style={theme.typography.textVariants.bodyTertiaryRegular}>TEst</Text>
+        <CustomText>TEStdashfsjdh</CustomText>
       </View>
     </View>
   );
 };
 
-const styles = {
-  codeHighlightContainer: `rounded-md px-1`,
-  getStartedContainer: `items-center mx-12`,
-  getStartedText: `text-lg leading-6 text-center`,
-  helpContainer: `items-center mx-5 mt-4`,
-  helpLink: `py-4`,
-  helpLinkText: `text-center`,
-  homeScreenFilename: `my-2`,
-};
+const styles = StyleSheet.create({
+  codeHighlightContainer: {
+    borderRadius: theme.radii.sm,
+    paddingHorizontal: theme.spacing.xs,
+  },
+  getStartedContainer: {
+    alignItems: 'center',
+    marginHorizontal: 48,
+  },
+  getStartedText: {
+    fontSize: theme.typography.fontSizes.lg,
+    lineHeight: 24,
+    textAlign: 'center',
+    fontFamily: theme.typography.textVariants.bodyPrimaryBold.fontFamily,
+  },
+  helpContainer: {
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 16,
+  },
+  helpLink: {
+    paddingVertical: 16,
+  },
+  helpLinkText: {
+    textAlign: 'center',
+  },
+  homeScreenFilename: {
+    marginVertical: 8,
+  },
+});
