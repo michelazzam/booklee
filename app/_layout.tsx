@@ -3,11 +3,6 @@ import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import { SplashScreen } from 'expo-router';
 
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
-
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../assets/fonts/Montserrat-Regular.ttf'),
@@ -27,9 +22,9 @@ export default function RootLayout() {
     return null;
   }
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="unauthenticated" options={{ headerShown: false }} />
+      <Stack.Screen name="authenticated" options={{ headerShown: false }} />
     </Stack>
   );
 }

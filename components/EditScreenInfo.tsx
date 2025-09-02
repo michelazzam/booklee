@@ -1,6 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '~/theme/Main';
-import { CustomText } from './CustomText';
 
 export const EditScreenInfo = ({ path }: { path: string }) => {
   const title = 'Open up the code for this screen:';
@@ -16,7 +15,6 @@ export const EditScreenInfo = ({ path }: { path: string }) => {
         </View>
         <Text style={styles.getStartedText}>{description}</Text>
         <Text style={theme.typography.textVariants.bodyTertiaryRegular}>TEst</Text>
-        <CustomText>TEStdashfsjdh</CustomText>
       </View>
     </View>
   );

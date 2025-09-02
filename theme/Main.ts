@@ -121,7 +121,7 @@ export const typography = {
       fontSize: 22,
       lineHeight: 28,
     },
-    subheadline: {
+    subHeadline: {
       fontFamily: 'Montserrat-Medium',
       fontSize: 16,
       lineHeight: 20,

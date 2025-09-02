@@ -9,7 +9,22 @@
     "prebuild": "expo prebuild",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" && prettier -c \"**/*.{js,jsx,ts,tsx,json}\"",
     "format": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix && prettier \"**/*.{js,jsx,ts,tsx,json}\" --write",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build:dev:android": "eas build --profile development --platform android",
+    "build:dev:ios": "eas build --profile development --platform ios",
+    "build:dev": "eas build --profile development --platform all",
+    "build:prod:android": "eas build --profile production --platform android",
+    "build:prod:ios": "eas build --profile production --platform ios",
+    "build:prod": "eas build --profile production --platform all",
+    "update:dev:android": "eas update --branch development --platform android",
+    "update:dev:ios": "eas update --branch development --platform ios",
+    "update:dev": "eas update --branch development --platform all",
+    "update:prod:android": "eas update --branch production --platform android",
+    "update:prod:ios": "eas update --branch production --platform ios",
+    "update:prod": "eas update --branch production --platform all",
+    "submit:prod:android": "eas submit --profile production --platform android",
+    "submit:prod:ios": "eas submit --profile production --platform ios",
+    "submit:prod": "eas submit --profile production --platform all"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.0",
@@ -17,11 +32,13 @@
     "expo": "53.0.22",
     "expo-constants": "~17.1.4",
     "expo-font": "^13.3.2",
+    "expo-linear-gradient": "~14.1.5",
     "expo-linking": "~7.1.4",
     "expo-router": "~5.1.5",
     "expo-status-bar": "~2.2.3",
     "expo-system-ui": "~5.0.11",
     "expo-web-browser": "~14.2.0",
+    "lucide-react-native": "^0.542.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
@@ -30,7 +47,8 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
-    "react-native-web": "^0.20.0"
+    "react-native-web": "^0.20.0",
+    "expo-dev-client": "~5.2.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
