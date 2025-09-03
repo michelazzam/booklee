@@ -50,7 +50,9 @@ export default function SignInPage() {
           {/* Next Button */}
           <TouchableOpacity
             style={styles.nextButton}
-            onPress={() => router.navigate('/(authenticated)/(tabs)')}>
+            onPress={() => {
+              router.navigate('/(authenticated)/(tabs)');
+            }}>
             <CustomText variant="bodyPrimaryBold" style={styles.nextButtonText}>
               Next
             </CustomText>

@@ -12,7 +12,7 @@ export const SignupPage = () => {
 
   const handleConfirm = () => {
     // Handle signup logic here
-    // router.navigate("");
+    router.navigate('/(authenticated)/onboarding');
   };
 
   return (

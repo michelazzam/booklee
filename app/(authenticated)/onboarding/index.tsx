@@ -56,13 +56,13 @@ export default function OnboardingScreen() {
       setCurrentStep(currentStep + 1);
     } else {
       // Navigate to main app after onboarding
-      // router.replace('/authenticated/(tabs)');
+      router.replace('/(authenticated)/(tabs)');
     }
   };
 
   const handleSkip = () => {
     // Navigate to main app
-    // router.replace('/authenticated/(tabs)');
+    router.replace('/(authenticated)/(tabs)');
   };
 
   const currentStepData = onboardingSteps[currentStep];
@@ -91,13 +91,7 @@ export default function OnboardingScreen() {
           <Text style={styles.primaryButtonText}>{currentStepData.buttonText}</Text>
         </TouchableOpacity>
 
-        {!currentStepData.isLastStep && (
-          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-            <Text style={styles.skipButtonText}>Skip</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Pagination Dots */}
+        {/* Pagination Dots - Fixed Position */}
         <View style={styles.paginationContainer}>
           {onboardingSteps.map((_, index) => (
             <View
@@ -109,6 +103,12 @@ export default function OnboardingScreen() {
             />
           ))}
         </View>
+
+        {!currentStepData.isLastStep && (
+          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+            <Text style={styles.skipButtonText}>Skip</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 24,
-    paddingBottom: 40,
+    paddingBottom: 100,
     minHeight: height * 0.35,
     position: 'absolute',
     bottom: 0,
@@ -185,6 +185,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'absolute',
+    bottom: 80,
+    left: 0,
+    right: 0,
   },
   paginationDot: {
     width: 8,

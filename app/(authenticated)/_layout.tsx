@@ -1,12 +1,12 @@
-import { Redirect, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 
 export default function AuthenticatedLayout() {
-  return <Redirect href="/(unauthenticated)/login" />;
+  // return <Redirect href="/(unauthenticated)/login" />;
 
-  // return (
-  //   <Stack>
-  //     <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-  //     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-  //   </Stack>
-  // );
+  return (
+    <Stack>
+      <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
+  );
 }
