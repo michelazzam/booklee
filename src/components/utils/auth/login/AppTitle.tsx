@@ -12,7 +12,6 @@ export default function AppTitle() {
 const styles = StyleSheet.create({
   titleContainer: {
     alignItems: 'center',
-    marginTop: theme.spacing['3xl'],
     marginBottom: theme.spacing.md,
   },
   appTitle: {

@@ -1,6 +1,5 @@
-import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import { CustomText } from '~/src/components/utils/CustomText';
+import CustomText from '~/src/components/base/text';
 import { theme } from '~/src/constants/theme';
 
 interface ConfirmButtonProps {
@@ -10,7 +9,7 @@ interface ConfirmButtonProps {
 export default function ConfirmButton({ onPress }: ConfirmButtonProps) {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress}>
-      <CustomText variant="bodyPrimaryBold" style={styles.buttonText}>
+      <CustomText size={14} weight="bold" style={styles.buttonText}>
         Confirm
       </CustomText>
     </TouchableOpacity>

@@ -1,8 +1,8 @@
-import { type TextProps as RNTextProps, TextStyle } from "react-native";
-import Animated, { type AnimatedProps } from "react-native-reanimated";
-import { forwardRef, ReactNode } from "react";
+import { type TextProps as RNTextProps, TextStyle } from 'react-native';
+import Animated, { type AnimatedProps } from 'react-native-reanimated';
+import { forwardRef, ReactNode } from 'react';
 
-import { TEXT_CONFIG, type WeightVariantType } from "./config";
+import { TEXT_CONFIG, type WeightVariantType } from './config';
 
 type TextProps = AnimatedProps<typeof Animated.Text> &
   RNTextProps & {
@@ -26,7 +26,7 @@ type TextProps = AnimatedProps<typeof Animated.Text> &
 
 const { fontFamily, fontWeight, defaults } = TEXT_CONFIG;
 
-const Text = forwardRef<Animated.Text, TextProps>(
+const CustomText = forwardRef<Animated.Text, TextProps>(
   (
     {
       style,
@@ -50,13 +50,12 @@ const Text = forwardRef<Animated.Text, TextProps>(
           },
           style,
         ]}
-        {...props}
-      >
+        {...props}>
         {children}
       </Animated.Text>
     );
   }
 );
 
-Text.displayName = "Text";
-export default Text;
+CustomText.displayName = 'CustomText';
+export default CustomText;

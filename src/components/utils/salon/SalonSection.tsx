@@ -45,7 +45,7 @@ export default function SalonSection({
       <View style={styles.header}>
         <Text style={styles.title}>{title}</Text>
         <TouchableOpacity onPress={onSeeAllPress} activeOpacity={0.7}>
-          <Text style={styles.seeAllText}>see all</Text>
+          <Text style={styles.seeAllText}>See All</Text>
         </TouchableOpacity>
       </View>
 

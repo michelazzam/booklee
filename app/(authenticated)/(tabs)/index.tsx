@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, ScrollView, SafeAreaView, StatusBar } from 'react-native';
+import { StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import { HomeHeader, SalonSection } from '../../../src/components/utils/salon';
 import { mockSalons, Salon } from '../../../src/data';
 
@@ -32,13 +32,12 @@ export default function HomePage() {
   const getSalonsWithFavorites = (salons: Salon[]) => {
     return salons.map((salon) => ({
       ...salon,
-      isFavorited: favorites.has(salon.id),
+      isFavorite: favorites.has(salon.id),
     }));
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#476c80" />
       <HomeHeader userName="Samir" />
 
       <ScrollView

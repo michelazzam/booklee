@@ -4,8 +4,6 @@ import { useState } from 'react';
 
 import { theme } from '~/src/constants/theme';
 
-import { CustomText } from '~/src/components/utils/CustomText';
-import { Wrapper } from '~/src/components/utils/UI';
 import {
   AuthBackground,
   LoginInputs,
@@ -13,18 +11,20 @@ import {
   LoginTabs,
   AppTitle,
 } from '~/src/components/utils/auth/login';
+import { AwareScrollView } from '~/src/components/base';
+import CustomText from '~/src/components/base/text';
+import { Button } from '~/src/components/buttons';
 
 export default function SignInPage() {
   /*** Constants ***/
   const router = useRouter();
 
   /*** States ***/
-  const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<'email' | 'phone'>('email');
 
   return (
     <AuthBackground>
-      <Wrapper style={styles.container}>
+      <AwareScrollView contentContainerStyle={styles.container}>
         {/* App Title */}
         <AppTitle />
 
@@ -32,7 +32,7 @@ export default function SignInPage() {
         <View style={styles.formCard}>
           {/* Form Header */}
           <View style={styles.formHeader}>
-            <CustomText variant="headline" style={styles.formTitle}>
+            <CustomText size={22} weight="semiBold" style={styles.formTitle}>
               Log In
             </CustomText>
 
@@ -41,49 +41,44 @@ export default function SignInPage() {
           </View>
 
           {/* Input Fields */}
-          <LoginInputs
-            activeTab={activeTab}
-            showPassword={showPassword}
-            onPasswordToggle={() => setShowPassword(!showPassword)}
-          />
+          <LoginInputs activeTab={activeTab} />
 
           {/* Next Button */}
-          <TouchableOpacity
-            style={styles.nextButton}
+          <Button
+            title="Next"
+            isLoading={false}
             onPress={() => {
               router.navigate('/(authenticated)/(tabs)');
-            }}>
-            <CustomText variant="bodyPrimaryBold" style={styles.nextButtonText}>
-              Next
-            </CustomText>
-          </TouchableOpacity>
+            }}
+            containerStyle={styles.nextButton}
+          />
 
           {/* Social Login */}
           <SocialLogin />
 
           {/* Sign Up Link */}
           <View style={styles.signUpContainer}>
-            <CustomText variant="bodyPrimaryRegular" style={styles.signUpText}>
+            <CustomText size={14} weight="regular" style={styles.signUpText}>
               Don&apos;t have an account?{' '}
             </CustomText>
 
             <TouchableOpacity onPress={() => router.navigate('/(unauthenticated)/signup')}>
-              <CustomText variant="bodyPrimaryHyperlink" style={styles.signUpLink}>
+              <CustomText size={14} weight="semiBold" style={styles.signUpLink}>
                 Sign Up
               </CustomText>
             </TouchableOpacity>
           </View>
         </View>
-      </Wrapper>
+      </AwareScrollView>
     </AuthBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     paddingHorizontal: theme.spacing.xl,
     justifyContent: 'center',
+    flexGrow: 1,
   },
 
   formCard: {
@@ -99,15 +94,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   nextButton: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.darkText[100],
-    borderRadius: theme.radii.sm,
-    padding: theme.spacing.md,
-    ...(theme.shadows.soft as any),
     marginBottom: theme.spacing.xl,
-  },
-  nextButtonText: {
-    color: theme.colors.white.DEFAULT,
   },
 
   signUpContainer: {
@@ -119,6 +106,7 @@ const styles = StyleSheet.create({
     color: theme.colors.lightText,
   },
   signUpLink: {
-    color: theme.colors.primaryBlue[100],
+    color: theme.colors.darkText[100],
+    textDecorationLine: 'underline',
   },
 });

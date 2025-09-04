@@ -1,5 +1,5 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { CustomText } from '~/src/components/utils/CustomText';
+import CustomText from '~/src/components/base/text';
 import { GoogleIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants/theme';
 
@@ -9,7 +9,7 @@ export default function SocialLogin() {
       {/* Separator */}
       <View style={styles.separator}>
         <View style={styles.separatorLine} />
-        <CustomText variant="bodySecondaryRegular" style={styles.separatorText}>
+        <CustomText size={14} weight="regular" style={styles.separatorText}>
           or sign in with
         </CustomText>
         <View style={styles.separatorLine} />
@@ -21,7 +21,7 @@ export default function SocialLogin() {
           <View style={styles.googleIcon}>
             <GoogleIcon />
           </View>
-          <CustomText variant="bodyPrimaryBold" style={styles.googleButtonText}>
+          <CustomText size={14} weight="bold" style={styles.googleButtonText}>
             Continue With Google
           </CustomText>
         </View>

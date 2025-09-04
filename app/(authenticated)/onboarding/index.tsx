@@ -6,7 +6,6 @@ import {
   ImageBackground,
   TouchableOpacity,
   Dimensions,
-  StatusBar,
 } from 'react-native';
 import { router } from 'expo-router';
 
@@ -69,8 +68,6 @@ export default function OnboardingScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
-
       {/* Background Image */}
       <ImageBackground
         source={currentStepData.backgroundImage}

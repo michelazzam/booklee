@@ -1,5 +1,5 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { CustomText } from '~/src/components/utils/CustomText';
+import CustomText from '~/src/components/base/text';
 import { theme } from '~/src/constants/theme';
 
 interface LoginTabsProps {
@@ -14,7 +14,8 @@ export default function LoginTabs({ activeTab, onTabChange }: LoginTabsProps) {
         style={[styles.tab, activeTab === 'email' && styles.activeTab]}
         onPress={() => onTabChange('email')}>
         <CustomText
-          variant="bodyPrimaryBold"
+          size={14}
+          weight="bold"
           style={[styles.tabText, activeTab === 'email' && styles.activeTabText]}>
           Email
         </CustomText>
@@ -24,7 +25,8 @@ export default function LoginTabs({ activeTab, onTabChange }: LoginTabsProps) {
         style={[styles.tab, activeTab === 'phone' && styles.activeTab]}
         onPress={() => onTabChange('phone')}>
         <CustomText
-          variant="bodyPrimaryBold"
+          size={14}
+          weight="bold"
           style={[styles.tabText, activeTab === 'phone' && styles.activeTabText]}>
           Phone Number
         </CustomText>

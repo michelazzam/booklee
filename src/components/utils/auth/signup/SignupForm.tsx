@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { CustomText } from '~/src/components/utils/CustomText';
-import { Eye, EyeOff, ChevronDown } from 'lucide-react-native';
+import CustomText from '~/src/components/base/text';
 import { theme } from '~/src/constants/theme';
+import ChevronDownIcon from '~/src/assets/icons/ChevronDownIcon';
+import { Icon } from '~/src/components/base';
 
 export default function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,7 +13,7 @@ export default function SignupForm() {
     <View style={styles.form}>
       {/* Full Name */}
       <View style={styles.inputField}>
-        <CustomText variant="bodyPrimaryBold" style={styles.label}>
+        <CustomText size={14} weight="bold" style={styles.label}>
           Full Name*
         </CustomText>
         <TextInput
@@ -24,7 +25,7 @@ export default function SignupForm() {
 
       {/* Email */}
       <View style={styles.inputField}>
-        <CustomText variant="bodyPrimaryBold" style={styles.label}>
+        <CustomText size={14} weight="bold" style={styles.label}>
           Email*
         </CustomText>
         <TextInput
@@ -38,14 +39,14 @@ export default function SignupForm() {
 
       {/* Phone Number */}
       <View style={styles.inputField}>
-        <CustomText variant="bodyPrimaryBold" style={styles.label}>
+        <CustomText size={14} weight="bold" style={styles.label}>
           Phone Number*
         </CustomText>
         <View style={styles.phoneContainer}>
           <View style={styles.countryCodeContainer}>
             <TextInput style={styles.countryCodeInput} value="+961" editable={false} />
             <TouchableOpacity style={styles.chevronButton}>
-              <ChevronDown size={16} color={theme.colors.darkText[100]} />
+              <ChevronDownIcon width={16} height={16} color={theme.colors.darkText[100]} />
             </TouchableOpacity>
           </View>
           <TextInput
@@ -55,15 +56,15 @@ export default function SignupForm() {
             keyboardType="phone-pad"
           />
         </View>
-        <CustomText variant="bodySecondaryRegular" style={styles.hint}>
+        <CustomText size={14} weight="regular" style={styles.hint}>
           Example: XX XXX XXX
         </CustomText>
       </View>
 
       {/* Password */}
       <View style={styles.inputField}>
-        <CustomText variant="bodyPrimaryBold" style={styles.label}>
-          Password
+        <CustomText size={14} weight="bold" style={styles.label}>
+          Password*
         </CustomText>
         <View style={styles.passwordContainer}>
           <TextInput
@@ -74,9 +75,9 @@ export default function SignupForm() {
           />
           <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
             {!showPassword ? (
-              <Eye color={theme.colors.darkText[100]} />
+              <Icon name="eye" color={theme.colors.darkText[100]} />
             ) : (
-              <EyeOff color={theme.colors.darkText[100]} />
+              <Icon color={theme.colors.darkText[100]} name="eye-off" />
             )}
           </TouchableOpacity>
         </View>
@@ -84,8 +85,8 @@ export default function SignupForm() {
 
       {/* Confirm Password */}
       <View style={styles.inputField}>
-        <CustomText variant="bodyPrimaryBold" style={styles.label}>
-          Confirm Password
+        <CustomText size={14} weight="bold" style={styles.label}>
+          Confirm Password*
         </CustomText>
         <View style={styles.passwordContainer}>
           <TextInput
@@ -98,9 +99,9 @@ export default function SignupForm() {
             style={styles.eyeIcon}
             onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
             {!showConfirmPassword ? (
-              <Eye color={theme.colors.darkText[100]} />
+              <Icon name="eye" color={theme.colors.darkText[100]} />
             ) : (
-              <EyeOff color={theme.colors.darkText[100]} />
+              <Icon name="eye-off" color={theme.colors.darkText[100]} />
             )}
           </TouchableOpacity>
         </View>

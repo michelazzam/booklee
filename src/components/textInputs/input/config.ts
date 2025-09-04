@@ -1,66 +1,66 @@
-import type { InputStyles } from "./type";
-
+import type { InputStyles } from './type';
+import { theme } from '~/src/constants/theme';
 
 export const INPUT_STYLES: InputStyles = {
   /*** Layout & Dimensions ***/
   layout: {
-    borderRadius: 25,
+    borderRadius: theme.radii.sm,
   },
 
   /*** Typography ***/
   inputText: {
-    fontSize: 16,
-    fontWeight: "400",
-    fontFamily: "Inter",
+    fontSize: theme.typography.fontSizes.md,
+    fontWeight: '400',
+    fontFamily: 'Montserrat-Regular',
   },
   label: {
-    fontSize: 16,
-    fontWeight: "400",
-    fontFamily: "Inter",
+    fontSize: theme.typography.fontSizes.sm,
+    fontWeight: '400',
+    fontFamily: 'Montserrat-Regular',
   },
   errorText: {
-    fontSize: 14,
-    fontWeight: "400",
+    fontSize: theme.typography.fontSizes.sm,
+    fontWeight: '400',
   },
 
   /*** Border Configuration ***/
   border: {
     width: {
-      default: 2,
-      focused: 2,
+      default: 1,
+      focused: 1,
     },
     color: {
-      error: "#E81717",
-      focused: "#000",
-      default: "#E5E5E5",
+      error: '#E81717',
+      focused: theme.colors.darkText[100],
+      default: theme.colors.border,
     },
   },
 
   /*** Color Scheme ***/
   colors: {
-    background: "#FFFFFF",
+    background: theme.colors.white.DEFAULT,
     text: {
-      input: "#545454",
-      error: "#E81717",
-      subText: "#00B894",
+      input: theme.colors.darkText[100],
+      error: '#E81717',
+      subText: theme.colors.primaryGreen[100],
       label: {
-        default: "#545454",
-        focused: "#000000",
+        default: theme.colors.lightText,
+        focused: theme.colors.darkText[100],
       },
     },
     icon: {
-      default: "#545454",
-      focused: "#000000",
+      default: theme.colors.lightText,
+      focused: theme.colors.darkText[100],
     },
   },
 
   /*** Dropdown Styling ***/
   dropdown: {
-    borderRadius: 25,
-    background: "#F5F5F5",
+    borderRadius: theme.radii.sm,
+    background: '#F5F5F5',
     itemBackground: {
-      default: "#F5F5F5",
-      focused: "#E0E0E0",
+      default: '#F5F5F5',
+      focused: '#E0E0E0',
     },
   },
 };

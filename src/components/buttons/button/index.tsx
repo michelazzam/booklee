@@ -1,5 +1,5 @@
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import React, { useMemo } from "react";
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { useMemo } from 'react';
 import {
   TouchableOpacity,
   type TextStyle,
@@ -8,12 +8,12 @@ import {
   StyleSheet,
   View,
   Text,
-} from "react-native";
+} from 'react-native';
 
-import { BUTTON_STYLES, type ButtonVariantType } from "./config";
+import { BUTTON_STYLES, type ButtonVariantType } from './config';
 
-import { Icon, type IconType } from "../../base";
-import LoadingDots from "./loadingDots";
+import { Icon, type IconType } from '../../base';
+import LoadingDots from './loadingDots';
 
 type ButtonProps = {
   title: string;
@@ -23,7 +23,7 @@ type ButtonProps = {
   isLoading?: boolean;
   leadingIcon?: IconType;
   trailingIcon?: IconType;
-  width?: ViewStyle["width"];
+  width?: ViewStyle['width'];
   containerStyle?: ViewStyle;
   variant?: ButtonVariantType;
 };
@@ -38,15 +38,10 @@ const Button = ({
   leadingIcon,
   trailingIcon,
   containerStyle,
-  variant = "default",
+  variant = 'default',
 }: ButtonProps) => {
   /*** Constants ***/
-  const {
-    variants,
-    labelStyle,
-    buttonLayout,
-    errorText: errorStyles,
-  } = BUTTON_STYLES;
+  const { variants, labelStyle, buttonLayout, errorText: errorStyles } = BUTTON_STYLES;
   const variantStyles = variants[variant];
 
   /*** Memoization ***/
@@ -54,7 +49,7 @@ const Button = ({
   const textStyles: StyleProp<TextStyle> = useMemo(
     () => [
       {
-        textAlign: "center" as const,
+        textAlign: 'center' as const,
         fontSize: labelStyle.fontSize,
         fontWeight: labelStyle.fontWeight,
         fontFamily: labelStyle.fontFamily,
@@ -68,17 +63,24 @@ const Button = ({
       styles.base,
       {
         gap: 12,
-        justifyContent: "center",
+        justifyContent: 'center',
         opacity: disabled ? 0.5 : 1,
         height: buttonLayout.height,
         borderRadius: buttonLayout.borderRadius,
         backgroundColor: variantStyles.backgroundColor,
+        ...(variant === 'default' && {
+          shadowColor: 'rgba(31, 31, 31, 0.1)',
+          shadowOffset: { width: 2, height: 2 },
+          shadowOpacity: 1,
+          shadowRadius: 20,
+          elevation: 2,
+        }),
       },
     ],
-    [variantStyles, buttonLayout, disabled]
+    [variantStyles, buttonLayout, disabled, variant]
   );
   const buttonBorderStyles: StyleProp<ViewStyle> = useMemo(() => {
-    if (variant === "outline") {
+    if (variant === 'outline') {
       return {
         borderWidth: 3,
         borderColor: variants.outline.borderColor,
@@ -101,41 +103,30 @@ const Button = ({
         onPress={onPress}
         activeOpacity={0.7}
         disabled={disabled || isLoading}
-        style={[buttonLayoutStyles, buttonBorderStyles]}
-      >
+        style={[buttonLayoutStyles, buttonBorderStyles]}>
         {isLoading ? (
           <LoadingDots
             size={8}
             numberOfDots={4}
             color={textColor}
-            style={{ alignSelf: "center" }}
+            style={{ alignSelf: 'center' }}
           />
         ) : (
           <>
-            <View>
-              {leadingIcon && (
-                <Icon size={20} color={textColor} name={leadingIcon} />
-              )}
-            </View>
+            <View>{leadingIcon && <Icon size={20} color={textColor} name={leadingIcon} />}</View>
 
             <Text
               style={[
                 textStyles,
                 {
                   color: textColor,
-                  textDecorationLine:
-                    variant === "ghost" ? "underline" : "none",
+                  textDecorationLine: variant === 'ghost' ? 'underline' : 'none',
                 },
-              ]}
-            >
+              ]}>
               {title}
             </Text>
 
-            <View>
-              {trailingIcon && (
-                <Icon size={20} color={textColor} name={trailingIcon} />
-              )}
-            </View>
+            <View>{trailingIcon && <Icon size={20} color={textColor} name={trailingIcon} />}</View>
           </>
         )}
       </TouchableOpacity>
@@ -149,8 +140,7 @@ const Button = ({
             {
               color: errorStyles.textColor,
             },
-          ]}
-        >
+          ]}>
           {error}
         </Animated.Text>
       )}
@@ -162,14 +152,14 @@ export default Button;
 
 const styles = StyleSheet.create({
   base: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
   },
   errorText: {
     fontSize: 12,
     marginTop: 8,
     marginLeft: 10,
-    fontWeight: "400",
+    fontWeight: '400',
   },
 });
