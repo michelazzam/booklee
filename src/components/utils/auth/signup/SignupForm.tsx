@@ -1,59 +1,90 @@
 import { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import CustomText from '~/src/components/base/text';
 import { theme } from '~/src/constants/theme';
-import ChevronDownIcon from '~/src/assets/icons/ChevronDownIcon';
-import { Icon } from '~/src/components/base';
+import { Input } from '~/src/components/textInputs';
+import PhoneInput, { ICountry } from 'react-native-international-phone-number';
 
 export default function SignupForm() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<null | ICountry>(null);
+  const [phoneNumberValue, setPhoneNumberValue] = useState<string>('');
+
+  function onChangeSelectedCountry(country: ICountry) {
+    setSelectedCountry(country);
+  }
+
+  function onChangePhoneNumber(phoneNumber: string) {
+    setPhoneNumberValue(phoneNumber);
+  }
 
   return (
     <View style={styles.form}>
       {/* Full Name */}
       <View style={styles.inputField}>
-        <CustomText size={14} weight="bold" style={styles.label}>
+        <CustomText size={14} weight="regular" style={styles.inputLabel}>
           Full Name*
         </CustomText>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Enter your full name"
-          placeholderTextColor={theme.colors.lightText}
-        />
+        <Input placeholder="Enter your full name" />
       </View>
 
       {/* Email */}
       <View style={styles.inputField}>
-        <CustomText size={14} weight="bold" style={styles.label}>
+        <CustomText size={14} weight="regular" style={styles.inputLabel}>
           Email*
         </CustomText>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Enter your email"
-          placeholderTextColor={theme.colors.lightText}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
+        <Input variant="email" placeholder="Enter your email" />
       </View>
 
       {/* Phone Number */}
       <View style={styles.inputField}>
-        <CustomText size={14} weight="bold" style={styles.label}>
+        <CustomText size={14} weight="regular" style={styles.inputLabel}>
           Phone Number*
         </CustomText>
-        <View style={styles.phoneContainer}>
-          <View style={styles.countryCodeContainer}>
-            <TextInput style={styles.countryCodeInput} value="+961" editable={false} />
-            <TouchableOpacity style={styles.chevronButton}>
-              <ChevronDownIcon width={16} height={16} color={theme.colors.darkText[100]} />
-            </TouchableOpacity>
-          </View>
-          <TextInput
-            style={styles.phoneInput}
-            placeholder="XX XXX XXX"
-            placeholderTextColor={theme.colors.lightText}
-            keyboardType="phone-pad"
+        <View style={styles.phoneInputContainer}>
+          <PhoneInput
+            value={phoneNumberValue}
+            onChangePhoneNumber={onChangePhoneNumber}
+            selectedCountry={selectedCountry}
+            defaultCountry="LB"
+            onChangeSelectedCountry={onChangeSelectedCountry}
+            phoneInputStyles={{
+              container: {
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'transparent',
+                borderWidth: 0,
+                padding: 0,
+              },
+              flagContainer: {
+                width: 90,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginRight: theme.spacing.sm,
+                paddingHorizontal: theme.spacing.xs,
+                backgroundColor: theme.colors.white.DEFAULT,
+              },
+              input: {
+                flex: 1,
+                fontSize: theme.typography.fontSizes.sm,
+                fontFamily: 'Montserrat-Regular',
+                color: theme.colors.darkText[100],
+                paddingVertical: 0,
+                paddingHorizontal: 0,
+                marginLeft: theme.spacing.xs,
+                backgroundColor: 'transparent',
+                borderWidth: 0,
+              },
+              flag: {
+                fontSize: 16,
+              },
+              callingCode: {
+                fontSize: theme.typography.fontSizes.md,
+                fontFamily: 'Montserrat-Regular',
+                color: theme.colors.darkText[100],
+                marginRight: theme.spacing.xs,
+              },
+            }}
           />
         </View>
         <CustomText size={14} weight="regular" style={styles.hint}>
@@ -63,48 +94,18 @@ export default function SignupForm() {
 
       {/* Password */}
       <View style={styles.inputField}>
-        <CustomText size={14} weight="bold" style={styles.label}>
+        <CustomText size={14} weight="regular" style={styles.inputLabel}>
           Password*
         </CustomText>
-        <View style={styles.passwordContainer}>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Enter your password"
-            placeholderTextColor={theme.colors.lightText}
-            secureTextEntry={!showPassword}
-          />
-          <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
-            {!showPassword ? (
-              <Icon name="eye" color={theme.colors.darkText[100]} />
-            ) : (
-              <Icon color={theme.colors.darkText[100]} name="eye-off" />
-            )}
-          </TouchableOpacity>
-        </View>
+        <Input variant="password" placeholder="Enter your password" />
       </View>
 
       {/* Confirm Password */}
       <View style={styles.inputField}>
-        <CustomText size={14} weight="bold" style={styles.label}>
+        <CustomText size={14} weight="regular" style={styles.inputLabel}>
           Confirm Password*
         </CustomText>
-        <View style={styles.passwordContainer}>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Confirm your password"
-            placeholderTextColor={theme.colors.lightText}
-            secureTextEntry={!showConfirmPassword}
-          />
-          <TouchableOpacity
-            style={styles.eyeIcon}
-            onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-            {!showConfirmPassword ? (
-              <Icon name="eye" color={theme.colors.darkText[100]} />
-            ) : (
-              <Icon name="eye-off" color={theme.colors.darkText[100]} />
-            )}
-          </TouchableOpacity>
-        </View>
+        <Input variant="password" placeholder="Confirm your password" />
       </View>
     </View>
   );
@@ -118,62 +119,23 @@ const styles = StyleSheet.create({
   inputField: {
     marginBottom: theme.spacing.lg,
   },
-  label: {
+  inputLabel: {
     color: theme.colors.darkText[100],
     marginBottom: theme.spacing.xs,
   },
-  textInput: {
+  phoneInputContainer: {
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.radii.sm,
-    padding: theme.spacing.md,
-    fontSize: theme.typography.fontSizes.md,
-    fontFamily: 'Montserrat-Regular',
     backgroundColor: theme.colors.white.DEFAULT,
-  },
-  phoneContainer: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-  },
-  countryCodeContainer: {
+    minHeight: 65,
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.sm,
-    backgroundColor: theme.colors.white.DEFAULT,
-  },
-  countryCodeInput: {
-    padding: theme.spacing.md,
-    fontSize: theme.typography.fontSizes.md,
-    fontFamily: 'Montserrat-Regular',
-    color: theme.colors.darkText[100],
-    minWidth: 60,
-  },
-  chevronButton: {
-    paddingHorizontal: theme.spacing.sm,
-  },
-  phoneInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.sm,
-    padding: theme.spacing.md,
-    fontSize: theme.typography.fontSizes.md,
-    fontFamily: 'Montserrat-Regular',
-    backgroundColor: theme.colors.white.DEFAULT,
+    paddingHorizontal: theme.spacing.lg,
   },
   hint: {
     color: theme.colors.lightText,
     marginTop: theme.spacing.xs,
     fontStyle: 'italic',
-  },
-  passwordContainer: {
-    position: 'relative',
-  },
-  eyeIcon: {
-    position: 'absolute',
-    right: theme.spacing.md,
-    top: theme.spacing.md,
   },
 });

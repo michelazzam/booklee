@@ -5,8 +5,9 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import * as NavigationBar from 'expo-navigation-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import ToastManager from 'toastify-react-native';
-import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo } from 'react';
+import { StatusBar } from 'expo-status-bar';
+
 import { Platform } from 'react-native';
 import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
@@ -95,7 +96,7 @@ const Navigation = () => {
         }}
       />
 
-      <StatusBar style="auto" />
+      <StatusBar style="auto" animated={true} translucent />
     </>
   );
 };

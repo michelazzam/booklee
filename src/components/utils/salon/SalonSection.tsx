@@ -9,7 +9,7 @@ interface Salon {
   city: string;
   rating: number;
   tag: string;
-  isFavorited?: boolean;
+  isFavorite?: boolean;
 }
 
 interface SalonSectionProps {
@@ -29,12 +29,13 @@ export default function SalonSection({
 }: SalonSectionProps) {
   const renderSalonCard = ({ item }: { item: Salon }) => (
     <SalonCard
+      id={item.id}
       image={item.image}
       name={item.name}
       city={item.city}
       rating={item.rating}
       tag={item.tag}
-      isFavorited={item.isFavorited}
+      isFavorite={item.isFavorite}
       onPress={() => onSalonPress?.(item)}
       onFavoritePress={() => onFavoritePress?.(item.id)}
     />
@@ -63,7 +64,7 @@ export default function SalonSection({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: theme.spacing.xl,
+    marginBottom: theme.spacing.md,
   },
   header: {
     flexDirection: 'row',

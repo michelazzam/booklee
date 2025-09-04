@@ -7,17 +7,18 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme.colors.primaryBlue[100],
+        headerShown: false,
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          headerShown: false,
+
           tabBarIcon: ({ color }) => <HomeIcon color={color} width={24} height={24} />,
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="search"
         options={{
           title: 'Search',
           tabBarIcon: ({ color }) => <SearchIcon color={color} width={24} height={24} />,

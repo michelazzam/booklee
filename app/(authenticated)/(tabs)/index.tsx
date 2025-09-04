@@ -1,14 +1,20 @@
 import { useState } from 'react';
-import { StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { StyleSheet, ScrollView, View } from 'react-native';
+import { router } from 'expo-router';
 import { HomeHeader, SalonSection } from '../../../src/components/utils/salon';
 import { mockSalons, Salon } from '../../../src/data';
+import { useAppSafeAreaInsets } from '~/src/hooks';
 
 export default function HomePage() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
+  const insets = useAppSafeAreaInsets();
+
   const handleSalonPress = (salon: Salon) => {
-    // TODO: Navigate to salon details
-    console.log('Salon pressed:', salon.name);
+    router.push({
+      pathname: '/(authenticated)/(tabs)/search/[id]/index',
+      params: { id: salon.id },
+    });
   };
 
   const handleFavoritePress = (salonId: string) => {
@@ -24,8 +30,11 @@ export default function HomePage() {
   };
 
   const handleSeeAllPress = (category: string) => {
-    // TODO: Navigate to category page
-    console.log('See all pressed for:', category);
+    // Navigate to search screen with the selected category
+    router.push({
+      pathname: '/(authenticated)/(tabs)/search',
+      params: { category },
+    });
   };
 
   // Update salon data with current favorite state
@@ -37,7 +46,7 @@ export default function HomePage() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <HomeHeader userName="Samir" />
 
       <ScrollView
@@ -49,7 +58,7 @@ export default function HomePage() {
           salons={getSalonsWithFavorites(mockSalons.hairAndStyling)}
           onSalonPress={handleSalonPress}
           onFavoritePress={handleFavoritePress}
-          onSeeAllPress={() => handleSeeAllPress('hair-and-styling')}
+          onSeeAllPress={() => handleSeeAllPress('hair-styling')}
         />
 
         <SalonSection
@@ -68,7 +77,7 @@ export default function HomePage() {
           onSeeAllPress={() => handleSeeAllPress('barber')}
         />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

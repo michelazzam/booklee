@@ -1,14 +1,16 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { theme } from '~/src/constants/theme';
 
 import { SignupHeader, SignupForm, ConfirmButton } from '~/src/components/utils/auth/signup';
+import { AwareScrollView } from '~/src/components/base';
+import { useAppSafeAreaInsets } from '~/src/hooks/useAppSafeAreaInsets';
 
 export const SignupPage = () => {
   /*** Constants ***/
   const router = useRouter();
+  const insets = useAppSafeAreaInsets();
 
   const handleConfirm = () => {
     // Handle signup logic here
@@ -16,13 +18,15 @@ export const SignupPage = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <SignupHeader />
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <AwareScrollView contentContainerStyle={styles.scrollContent}>
+        <SignupHeader />
 
-      <SignupForm />
+        <SignupForm />
 
-      <ConfirmButton onPress={handleConfirm} />
-    </SafeAreaView>
+        <ConfirmButton onPress={handleConfirm} />
+      </AwareScrollView>
+    </View>
   );
 };
 
@@ -32,5 +36,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.white.DEFAULT,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
 });
