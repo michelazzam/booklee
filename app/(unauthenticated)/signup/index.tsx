@@ -19,13 +19,12 @@ export const SignupPage = () => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <AwareScrollView contentContainerStyle={styles.scrollContent}>
-        <SignupHeader />
+      {/* Use the already available header component from base folder */}
+      <SignupHeader />
 
-        <SignupForm />
+      <SignupForm />
 
-        <ConfirmButton onPress={handleConfirm} />
-      </AwareScrollView>
+      <ConfirmButton onPress={handleConfirm} />
     </View>
   );
 };

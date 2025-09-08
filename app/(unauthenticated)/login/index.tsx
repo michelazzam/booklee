@@ -15,6 +15,11 @@ import { AwareScrollView } from '~/src/components/base';
 import CustomText from '~/src/components/base/text';
 import { Button } from '~/src/components/buttons';
 
+//Abbas TODO: Please clean the file from the comments it feels AI generated
+//Abbas TODO: Start using arrow functions to define your functions since it's a more modern approach of writing code
+//Abbas TODO: Fix the card placement to be centered in the middle of the screen
+//Abbas TODO: There are a lot of custom components created for the login even tho they are only used here. Always remember abstraction === re-usability. If the component is not complex or is gonna be re-usable keep it in the same file.
+//Abbas TODO: Forgot password button is not doing anything. It should navigate to the forgot password page.
 export default function SignInPage() {
   /*** Constants ***/
   const router = useRouter();
@@ -24,12 +29,12 @@ export default function SignInPage() {
 
   return (
     <AuthBackground>
-      <AwareScrollView contentContainerStyle={styles.container}>
+      <View style={styles.container}>
         {/* App Title */}
         <AppTitle />
 
         {/* Login Form Card */}
-        <View style={styles.formCard}>
+        <AwareScrollView contentContainerStyle={styles.formCard}>
           {/* Form Header */}
           <View style={styles.formHeader}>
             <CustomText size={22} weight="semiBold" style={styles.formTitle}>
@@ -68,8 +73,8 @@ export default function SignInPage() {
               </CustomText>
             </TouchableOpacity>
           </View>
-        </View>
-      </AwareScrollView>
+        </AwareScrollView>
+      </View>
     </AuthBackground>
   );
 }

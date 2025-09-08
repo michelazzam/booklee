@@ -4,7 +4,10 @@ import CustomText from '~/src/components/base/text';
 import { theme } from '~/src/constants/theme';
 import { Input } from '~/src/components/textInputs';
 import PhoneInput, { ICountry } from 'react-native-international-phone-number';
+import { AwareScrollView } from '~/src/components/base';
 
+//Abbas TODO: Please clean the file from the comments it feels AI generated
+//Abbas TODO: Since this is not going to be a re-usable component its enough to add this code in the login screen. this way data handling becomes easier
 export default function SignupForm() {
   const [selectedCountry, setSelectedCountry] = useState<null | ICountry>(null);
   const [phoneNumberValue, setPhoneNumberValue] = useState<string>('');
@@ -18,7 +21,8 @@ export default function SignupForm() {
   }
 
   return (
-    <View style={styles.form}>
+    // Add more spacing between the inputs
+    <AwareScrollView contentContainerStyle={styles.form}>
       {/* Full Name */}
       <View style={styles.inputField}>
         <CustomText size={14} weight="regular" style={styles.inputLabel}>
@@ -107,7 +111,7 @@ export default function SignupForm() {
         </CustomText>
         <Input variant="password" placeholder="Confirm your password" />
       </View>
-    </View>
+    </AwareScrollView>
   );
 }
 

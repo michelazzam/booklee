@@ -20,6 +20,7 @@ interface OnboardingStep {
   isLastStep: boolean;
 }
 
+//Abbas TODO: Please add all the images inside the images file in /src/constants/images.ts and then import them here
 const onboardingSteps: OnboardingStep[] = [
   {
     id: 1,
@@ -47,6 +48,9 @@ const onboardingSteps: OnboardingStep[] = [
   },
 ];
 
+//Abbas TODO: Please clean the file from the comments it feels AI generated
+//Abbas TODO: Create 3 separate files for each step and create a layout file for the onboarding screens with animation type fade. Ps ik its duplicate code but the UX benefit we get is worth it
+//Abbas TODO: Start using arrow functions to define your functions since it's a more modern approach of writing code
 export default function OnboardingScreen() {
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -110,6 +114,8 @@ export default function OnboardingScreen() {
     </View>
   );
 }
+
+// Export your functions as default here
 
 const styles = StyleSheet.create({
   container: {

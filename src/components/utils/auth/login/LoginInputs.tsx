@@ -9,6 +9,9 @@ interface LoginInputsProps {
   activeTab: 'email' | 'phone';
 }
 
+//Abbas TODO: Please clean the file from the comments it feels AI generated
+//Abbas TODO: Start using arrow functions to define your functions since it's a more modern approach of writing code
+
 export default function LoginInputs({ activeTab }: LoginInputsProps) {
   const [selectedCountry, setSelectedCountry] = useState<null | ICountry>(null);
   function onChangeSelectedCountry(country: ICountry) {
@@ -19,6 +22,7 @@ export default function LoginInputs({ activeTab }: LoginInputsProps) {
     setPhoneNumberValue(phoneNumber);
   }
   return (
+    // Use this <Animated.View style={styles.inputContainer} entering={FadeIn} exiting={FadeOut}> import it from reanimated package
     <View style={styles.inputContainer}>
       <View style={styles.inputField}>
         <CustomText size={14} weight="regular" style={styles.inputLabel}>

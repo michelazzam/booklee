@@ -14,6 +14,9 @@ interface LoginTabsProps {
   onTabChange: (tab: 'email' | 'phone') => void;
 }
 
+//Abbas TODO: Please clean the file from the comments it feels AI generated
+//Abbas TODO: Start using arrow functions to define your functions since it's a more modern approach of writing code
+//Abbas TODO: import useEffect from the top don't use React.useEffect
 export default function LoginTabs({ activeTab, onTabChange }: LoginTabsProps) {
   // Create animated values for each tab
   const emailTabProgress = useSharedValue(activeTab === 'email' ? 1 : 0);
