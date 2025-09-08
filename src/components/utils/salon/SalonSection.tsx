@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { theme } from '../../../constants/theme';
-import { SalonCard } from './index';
+import SalonCard from './SalonCard';
 
 interface Salon {
   id: string;

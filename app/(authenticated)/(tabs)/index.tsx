@@ -3,16 +3,13 @@ import { StyleSheet, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { HomeHeader, SalonSection } from '../../../src/components/utils/salon';
 import { mockSalons, Salon } from '../../../src/data';
-import { useAppSafeAreaInsets } from '~/src/hooks';
 
 export default function HomePage() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
-  const insets = useAppSafeAreaInsets();
-
   const handleSalonPress = (salon: Salon) => {
     router.push({
-      pathname: '/(authenticated)/(tabs)/search/[id]/index',
+      pathname: '/(authenticated)/(tabs)/search/[id]',
       params: { id: salon.id },
     });
   };
@@ -46,7 +43,7 @@ export default function HomePage() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container]}>
       <HomeHeader userName="Samir" />
 
       <ScrollView

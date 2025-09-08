@@ -26,7 +26,7 @@ export default function Search() {
   const [visible, setVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>(category || 'hair-styling');
-  const insets = useAppSafeAreaInsets();
+  const { top } = useAppSafeAreaInsets();
 
   const filteredSalons = useMemo(() => {
     let filtered = allSalons;
@@ -92,7 +92,7 @@ export default function Search() {
   );
 
   return (
-    <View style={[styles.container, { paddingBottom: theme.spacing.xl, paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: top }]}>
       <View style={styles.content}>
         <SearchBar
           value={searchQuery}
@@ -121,7 +121,7 @@ export default function Search() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: theme.colors.white.DEFAULT,
   },
   content: {

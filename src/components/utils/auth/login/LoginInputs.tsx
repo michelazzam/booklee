@@ -1,9 +1,9 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import CustomText from '~/src/components/base/text';
 import { theme } from '~/src/constants/theme';
-import { Input } from '~/src/components/textInputs';
+import { Input, PhoneInput } from '~/src/components/textInputs';
 import { useState } from 'react';
-import PhoneInput, { ICountry } from 'react-native-international-phone-number';
+import { ICountry } from 'react-native-international-phone-number';
 
 interface LoginInputsProps {
   activeTab: 'email' | 'phone';
@@ -27,53 +27,14 @@ export default function LoginInputs({ activeTab }: LoginInputsProps) {
         {activeTab === 'email' ? (
           <Input variant="email" placeholder="Enter your email" keyboardType="email-address" />
         ) : (
-          <View style={styles.phoneInputContainer}>
-            <PhoneInput
-              value={phoneNumberValue}
-              onChangePhoneNumber={onChangePhoneNumber}
-              selectedCountry={selectedCountry}
-              defaultCountry="LB"
-              onChangeSelectedCountry={onChangeSelectedCountry}
-              phoneInputStyles={{
-                container: {
-                  flex: 1,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: 'transparent',
-                  borderWidth: 0,
-                  padding: 0,
-                },
-                flagContainer: {
-                  width: 90,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginRight: theme.spacing.sm,
-                  paddingHorizontal: theme.spacing.xs,
-                  backgroundColor: theme.colors.white.DEFAULT,
-                },
-                input: {
-                  flex: 1,
-                  fontSize: theme.typography.fontSizes.sm,
-                  fontFamily: 'Montserrat-Regular',
-                  color: theme.colors.darkText[100],
-                  paddingVertical: 0,
-                  paddingHorizontal: 0,
-                  marginLeft: theme.spacing.xs,
-                  backgroundColor: 'transparent',
-                  borderWidth: 0,
-                },
-                flag: {
-                  fontSize: 16,
-                },
-                callingCode: {
-                  fontSize: theme.typography.fontSizes.md,
-                  fontFamily: 'Montserrat-Regular',
-                  color: theme.colors.darkText[100],
-                  marginRight: theme.spacing.xs,
-                },
-              }}
-            />
-          </View>
+          <PhoneInput
+            value={phoneNumberValue}
+            onChangePhoneNumber={onChangePhoneNumber}
+            selectedCountry={selectedCountry}
+            defaultCountry="LB"
+            onChangeSelectedCountry={onChangeSelectedCountry}
+            placeholder="Enter your phone number"
+          />
         )}
       </View>
 
@@ -116,16 +77,6 @@ const styles = StyleSheet.create({
   },
   passwordInputContainer: {
     position: 'relative',
-  },
-  phoneInputContainer: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.sm,
-    backgroundColor: theme.colors.white.DEFAULT,
-    minHeight: 65,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
   },
   textInput: {},
   eyeIcon: {},

@@ -14,7 +14,7 @@ export const SignupPage = () => {
 
   const handleConfirm = () => {
     // Handle signup logic here
-    router.navigate('/(authenticated)/onboarding');
+    router.navigate('/(authenticated)/(tabs)');
   };
 
   return (

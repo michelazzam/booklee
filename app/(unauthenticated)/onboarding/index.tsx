@@ -54,14 +54,14 @@ export default function OnboardingScreen() {
     if (currentStep < onboardingSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Navigate to main app after onboarding
-      router.replace('/(authenticated)/(tabs)');
+      // Navigate to login after onboarding
+      router.replace('/(unauthenticated)/login');
     }
   };
 
   const handleSkip = () => {
-    // Navigate to main app
-    router.replace('/(authenticated)/(tabs)');
+    // Navigate to login
+    router.replace('/(unauthenticated)/login');
   };
 
   const currentStepData = onboardingSteps[currentStep];

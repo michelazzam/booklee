@@ -7,7 +7,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import ToastManager from 'toastify-react-native';
 import { useEffect, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
-
 import { Platform } from 'react-native';
 import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
@@ -95,8 +94,7 @@ const Navigation = () => {
           contentStyle: { backgroundColor: '#ffffff' },
         }}
       />
-
-      <StatusBar style="auto" animated={true} translucent />
+      <StatusBar style="auto" />
     </>
   );
 };
