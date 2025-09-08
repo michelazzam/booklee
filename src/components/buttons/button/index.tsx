@@ -62,12 +62,11 @@ const Button = ({
     () => [
       styles.base,
       {
-        gap: 12,
-        justifyContent: 'center',
         opacity: disabled ? 0.5 : 1,
         height: buttonLayout.height,
         borderRadius: buttonLayout.borderRadius,
         backgroundColor: variantStyles.backgroundColor,
+        paddingHorizontal: variant === 'ghost' ? 0 : 16,
         ...(variant === 'default' && {
           shadowColor: 'rgba(31, 31, 31, 0.1)',
           shadowOffset: { width: 2, height: 2 },
@@ -104,7 +103,7 @@ const Button = ({
         activeOpacity={0.7}
         disabled={disabled || isLoading}
         style={[buttonLayoutStyles, buttonBorderStyles]}>
-        {isLoading ? (
+        {isLoading && variant !== 'ghost' ? (
           <LoadingDots
             size={8}
             numberOfDots={4}
@@ -113,7 +112,9 @@ const Button = ({
           />
         ) : (
           <>
-            <View>{leadingIcon && <Icon size={20} color={textColor} name={leadingIcon} />}</View>
+            {(leadingIcon || trailingIcon) && (
+              <View>{leadingIcon && <Icon size={20} color={textColor} name={leadingIcon} />}</View>
+            )}
 
             <Text
               style={[
@@ -126,7 +127,11 @@ const Button = ({
               {title}
             </Text>
 
-            <View>{trailingIcon && <Icon size={20} color={textColor} name={trailingIcon} />}</View>
+            {(leadingIcon || trailingIcon) && (
+              <View>
+                {trailingIcon && <Icon size={20} color={textColor} name={trailingIcon} />}
+              </View>
+            )}
           </>
         )}
       </TouchableOpacity>
@@ -152,9 +157,10 @@ export default Button;
 
 const styles = StyleSheet.create({
   base: {
+    gap: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    justifyContent: 'center',
   },
   errorText: {
     fontSize: 12,
