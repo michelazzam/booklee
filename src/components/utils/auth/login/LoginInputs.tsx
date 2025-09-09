@@ -1,4 +1,5 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import CustomText from '~/src/components/base/text';
 import { theme } from '~/src/constants/theme';
 import { Input, PhoneInput } from '~/src/components/textInputs';
@@ -9,10 +10,8 @@ interface LoginInputsProps {
   activeTab: 'email' | 'phone';
 }
 
-//Abbas TODO: Please clean the file from the comments it feels AI generated
-//Abbas TODO: Start using arrow functions to define your functions since it's a more modern approach of writing code
-
-export default function LoginInputs({ activeTab }: LoginInputsProps) {
+const LoginInputs = ({ activeTab }: LoginInputsProps) => {
+  const router = useRouter();
   const [selectedCountry, setSelectedCountry] = useState<null | ICountry>(null);
   function onChangeSelectedCountry(country: ICountry) {
     setSelectedCountry(country);
@@ -21,6 +20,10 @@ export default function LoginInputs({ activeTab }: LoginInputsProps) {
   function onChangePhoneNumber(phoneNumber: string) {
     setPhoneNumberValue(phoneNumber);
   }
+
+  const handleForgotPassword = () => {
+    router.push('/(unauthenticated)/forgot-password/method-selection');
+  };
   return (
     // Use this <Animated.View style={styles.inputContainer} entering={FadeIn} exiting={FadeOut}> import it from reanimated package
     <View style={styles.inputContainer}>
@@ -47,7 +50,7 @@ export default function LoginInputs({ activeTab }: LoginInputsProps) {
           <CustomText size={14} weight="regular" style={styles.inputLabel}>
             Password
           </CustomText>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleForgotPassword}>
             <CustomText size={14} weight="regular" style={styles.forgotPassword}>
               Forgot Password
             </CustomText>
@@ -57,7 +60,7 @@ export default function LoginInputs({ activeTab }: LoginInputsProps) {
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   inputContainer: {
@@ -85,3 +88,5 @@ const styles = StyleSheet.create({
   textInput: {},
   eyeIcon: {},
 });
+
+export default LoginInputs;

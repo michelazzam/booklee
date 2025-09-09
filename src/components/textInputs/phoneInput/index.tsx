@@ -4,7 +4,7 @@ import PhoneInput, { ICountry } from 'react-native-international-phone-number';
 import { theme } from '~/src/constants/theme';
 import { PhoneInputProps } from './types';
 
-export default function PhoneInputComponent({
+const PhoneInputComponent = ({
   value = '',
   onChangePhoneNumber,
   selectedCountry = null,
@@ -13,7 +13,7 @@ export default function PhoneInputComponent({
   placeholder = 'Enter phone number',
   containerStyle,
   phoneInputStyles,
-}: PhoneInputProps) {
+}: PhoneInputProps) => {
   const [internalSelectedCountry, setInternalSelectedCountry] = useState<ICountry | null>(
     selectedCountry
   );
@@ -81,7 +81,7 @@ export default function PhoneInputComponent({
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   phoneInputContainer: {
@@ -95,3 +95,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
 });
+
+export default PhoneInputComponent;
