@@ -1,10 +1,12 @@
+import { ICountry } from 'react-native-international-phone-number';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import CustomText from '~/src/components/base/text';
-import { theme } from '~/src/constants/theme';
-import { Input, PhoneInput } from '~/src/components/textInputs';
 import { useState } from 'react';
-import { ICountry } from 'react-native-international-phone-number';
+
+import { theme } from '~/src/constants/theme';
+
+import { Input, PhoneInput } from '~/src/components/textInputs';
+import { Text } from '~/src/components/base';
 
 interface LoginInputsProps {
   activeTab: 'email' | 'phone';
@@ -28,9 +30,10 @@ const LoginInputs = ({ activeTab }: LoginInputsProps) => {
     // Use this <Animated.View style={styles.inputContainer} entering={FadeIn} exiting={FadeOut}> import it from reanimated package
     <View style={styles.inputContainer}>
       <View style={styles.inputField}>
-        <CustomText size={14} weight="regular" style={styles.inputLabel}>
+        <Text size={14} weight="regular" style={styles.inputLabel}>
           {activeTab === 'email' ? 'Email' : 'Phone Number'}
-        </CustomText>
+        </Text>
+
         {activeTab === 'email' ? (
           <Input variant="email" placeholder="Enter your email" keyboardType="email-address" />
         ) : (
@@ -47,13 +50,14 @@ const LoginInputs = ({ activeTab }: LoginInputsProps) => {
 
       <View style={styles.inputField}>
         <View style={styles.passwordHeader}>
-          <CustomText size={14} weight="regular" style={styles.inputLabel}>
+          <Text size={14} weight="regular" style={styles.inputLabel}>
             Password
-          </CustomText>
+          </Text>
+
           <TouchableOpacity onPress={handleForgotPassword}>
-            <CustomText size={14} weight="regular" style={styles.forgotPassword}>
+            <Text size={14} weight="regular" style={styles.forgotPassword}>
               Forgot Password
-            </CustomText>
+            </Text>
           </TouchableOpacity>
         </View>
         <Input variant="password" placeholder="Enter your password" />

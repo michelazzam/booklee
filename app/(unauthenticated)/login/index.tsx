@@ -4,6 +4,8 @@ import { useState } from 'react';
 
 import { theme } from '~/src/constants/theme';
 
+import { AwareScrollView, Text } from '~/src/components/base';
+import { Button } from '~/src/components/buttons';
 import {
   AuthBackground,
   LoginInputs,
@@ -11,25 +13,24 @@ import {
   LoginTabs,
   AppTitle,
 } from '~/src/components/utils/auth/login';
-import { AwareScrollView } from '~/src/components/base';
-import CustomText from '~/src/components/base/text';
-import { Button } from '~/src/components/buttons';
 
 const SignInPage = () => {
+  /*** Constants ***/
   const router = useRouter();
 
+  /*** States ***/
   const [activeTab, setActiveTab] = useState<'email' | 'phone'>('email');
 
   return (
     <AuthBackground>
-      <AwareScrollView contentContainerStyle={styles.container}>
+      <View style={styles.container}>
         <AppTitle />
 
-        <View style={styles.formCard}>
+        <AwareScrollView contentContainerStyle={styles.formCard}>
           <View style={styles.formHeader}>
-            <CustomText size={22} weight="semiBold" style={styles.formTitle}>
+            <Text size={22} weight="semiBold" style={styles.formTitle}>
               Log In
-            </CustomText>
+            </Text>
 
             <LoginTabs activeTab={activeTab} onTabChange={setActiveTab} />
           </View>
@@ -48,33 +49,31 @@ const SignInPage = () => {
           <SocialLogin />
 
           <View style={styles.signUpContainer}>
-            <CustomText size={14} weight="regular" style={styles.signUpText}>
+            <Text size={14} weight="regular" style={styles.signUpText}>
               Don&apos;t have an account?{' '}
-            </CustomText>
+            </Text>
 
             <TouchableOpacity onPress={() => router.navigate('/(unauthenticated)/signup')}>
-              <CustomText size={14} weight="semiBold" style={styles.signUpLink}>
+              <Text size={14} weight="semiBold" style={styles.signUpLink}>
                 Sign Up
-              </CustomText>
+              </Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </AwareScrollView>
+        </AwareScrollView>
+      </View>
     </AuthBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: '30%',
     paddingHorizontal: theme.spacing.xl,
-    justifyContent: 'center',
-    flexGrow: 1,
   },
-
   formCard: {
-    backgroundColor: theme.colors.white.DEFAULT,
-    borderRadius: theme.radii.lg,
     padding: theme.spacing.xl,
+    borderRadius: theme.radii.lg,
+    backgroundColor: theme.colors.white.DEFAULT,
   },
   formHeader: {
     marginBottom: theme.spacing.xl,
