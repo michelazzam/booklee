@@ -4,4 +4,7 @@ export const IMAGES = {
     notifications: require('../assets/images/onboarding/notifications.png'),
     all_set: require('../assets/images/onboarding/all_set.png'),
   },
+  favorites: {
+    placeholder: require('../assets/images/appImages/FavoritesPlaceholder.png'),
+  },
 };

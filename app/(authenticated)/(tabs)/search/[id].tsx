@@ -2,7 +2,6 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-nati
 import { useLocalSearchParams, router } from 'expo-router';
 import { useState } from 'react';
 import { theme } from '~/src/constants/theme';
-import { mockSalons, Salon } from '~/src/data/mockSalons';
 import {
   SalonImageCarousel,
   SalonInfoSection,
@@ -12,6 +11,7 @@ import {
 } from '~/src/components/utils/salon/single-salon';
 import SingleSalonHeader from '~/src/components/utils/salon/single-salon/SingleSalonHeader';
 import { Wrapper } from '~/src/components/utils/UI';
+import { mockSalons, Salon } from '~/src/constants';
 
 export default function SalonDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>();

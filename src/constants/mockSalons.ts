@@ -153,7 +153,7 @@ export const mockSalons: SalonCategory = {
       rating: 4.6,
       tag: 'Discount for students',
       isFavorite: false,
-      about: 'Classic Cuts specializes in modern and traditional men’s grooming services.',
+      about: "Classic Cuts specializes in modern and traditional men's grooming services.",
       serviceCategories: [
         {
           id: 'barber',

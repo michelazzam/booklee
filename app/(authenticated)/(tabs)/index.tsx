@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { StyleSheet, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { HomeHeader, SalonSection } from '../../../src/components/utils/salon';
-import { mockSalons, Salon } from '../../../src/data';
+import { mockSalons, Salon } from '../../../src/constants';
 
-export default function HomePage() {
+const HomePage = () => {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   const handleSalonPress = (salon: Salon) => {
@@ -76,7 +76,9 @@ export default function HomePage() {
       </ScrollView>
     </View>
   );
-}
+};
+
+export default HomePage;
 
 const styles = StyleSheet.create({
   container: {

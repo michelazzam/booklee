@@ -3,9 +3,9 @@ import { View, FlatList, StyleSheet } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SearchBar, FilterTags, FilterCategory, FilterModal } from '~/src/components/search';
 import { ExploreSalonCard } from '~/src/components/utils/salon';
-import { mockSalons, Salon } from '~/src/data/mockSalons';
 import { theme } from '~/src/constants/theme';
 import { useAppSafeAreaInsets } from '~/src/hooks/useAppSafeAreaInsets';
+import { mockSalons, Salon } from '~/src/constants';
 
 const allSalons: Salon[] = [
   ...mockSalons.hairAndStyling,
