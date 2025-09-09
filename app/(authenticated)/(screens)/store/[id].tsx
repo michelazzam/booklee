@@ -2,7 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-nati
 import { useLocalSearchParams, router } from 'expo-router';
 import { useState } from 'react';
 import { theme } from '~/src/constants/theme';
-import { mockSalons, Salon } from '~/src/data/mockSalons';
+import { hairAndStyling, nails, barber, eyebrowsEyelashes, type Store } from '~/src/mock';
 import {
   SalonImageCarousel,
   SalonInfoSection,
@@ -20,8 +20,8 @@ export default function SalonDetailPage() {
   const insets = useAppSafeAreaInsets();
 
   // Find salon data from all categories
-  const allSalons = Object.values(mockSalons).flat();
-  const salon: Salon | undefined = allSalons.find((s) => s.id === id);
+  const allSalons = [...hairAndStyling, ...nails, ...barber, ...eyebrowsEyelashes];
+  const salon: Store | undefined = allSalons.find((s) => s.id === id);
 
   if (!salon) {
     return (

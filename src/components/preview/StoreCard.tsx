@@ -2,25 +2,22 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 
 import { theme } from '../../constants/theme';
+import { type Store } from '~/src/mock';
 
 import { Text, Icon } from '../base';
 
-type ServiceCardData = {
-  id: string;
-  tag: string;
-  name: string;
-  city: string;
-  image: string;
-  rating: number;
-};
-type ServiceCardProps = {
+type StoreCardProps = {
   onPress?: () => void;
-  data: ServiceCardData;
+  data: Store;
 };
 
-export default function ServiceCard({ data, onPress }: ServiceCardProps) {
+export default function StoreCard({ data, onPress }: StoreCardProps) {
   /*** Constants ***/
   const { tag = '', name = '', city = '', image = '', rating = 0 } = data;
+
+  const handleFavoritePress = () => {
+    console.log('favorite');
+  };
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.8}>
@@ -28,7 +25,7 @@ export default function ServiceCard({ data, onPress }: ServiceCardProps) {
         <Image source={{ uri: image }} style={styles.image} contentFit="cover" />
 
         <View style={styles.favoriteButton}>
-          <Icon name="heart" size={28} color="#FFFFFF" />
+          <Icon name="heart" size={28} color="#FFFFFF" onPress={handleFavoritePress} />
         </View>
       </View>
 
@@ -61,8 +58,8 @@ export default function ServiceCard({ data, onPress }: ServiceCardProps) {
 
 const styles = StyleSheet.create({
   container: {
-    width: 250,
     height: 300,
+    minWidth: 250,
     ...theme.shadows.soft,
     borderRadius: theme.radii.md,
     backgroundColor: theme.colors.white.DEFAULT,
