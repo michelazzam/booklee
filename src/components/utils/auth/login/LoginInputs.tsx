@@ -7,6 +7,7 @@ import { theme } from '~/src/constants/theme';
 
 import { Input, PhoneInput } from '~/src/components/textInputs';
 import { Text } from '~/src/components/base';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 interface LoginInputsProps {
   activeTab: 'email' | 'phone';
@@ -24,11 +25,11 @@ const LoginInputs = ({ activeTab }: LoginInputsProps) => {
   }
 
   const handleForgotPassword = () => {
-    router.push('/(unauthenticated)/forgot-password/method-selection');
+    router.push('/(unauthenticated)/login/forgot-password/method-selection');
   };
   return (
     // Use this <Animated.View style={styles.inputContainer} entering={FadeIn} exiting={FadeOut}> import it from reanimated package
-    <View style={styles.inputContainer}>
+    <Animated.View style={styles.inputContainer} entering={FadeIn} exiting={FadeOut}>
       <View style={styles.inputField}>
         <Text size={14} weight="regular" style={styles.inputLabel}>
           {activeTab === 'email' ? 'Email' : 'Phone Number'}
@@ -62,13 +63,14 @@ const LoginInputs = ({ activeTab }: LoginInputsProps) => {
         </View>
         <Input variant="password" placeholder="Enter your password" />
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   inputContainer: {
     marginBottom: theme.spacing.xl,
+    gap: theme.spacing.md,
   },
   inputField: {
     marginBottom: theme.spacing.lg,

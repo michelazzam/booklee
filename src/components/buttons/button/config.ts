@@ -28,12 +28,12 @@ export const BUTTON_STYLES: ButtonStylesConfigType = {
       backgroundColor: theme.colors.darkText[100],
     },
     ghost: {
-      textColor: theme.colors.primaryGreen[100],
+      textColor: theme.colors.darkText[100],
       backgroundColor: 'transparent',
     },
     outline: {
-      textColor: theme.colors.primaryGreen[100],
-      borderColor: theme.colors.primaryGreen[100],
+      textColor: theme.colors.darkText[100],
+      borderColor: theme.colors.darkText[100],
       backgroundColor: 'transparent',
     },
   },

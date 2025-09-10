@@ -1,13 +1,7 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  ImageBackground,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, ImageBackground, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { IMAGES } from '~/src/constants/images';
+import { Button } from '~/src/components/buttons';
 
 const { height } = Dimensions.get('window');
 
@@ -23,7 +17,7 @@ const OnboardingStep3 = () => {
         style={styles.backgroundImage}
         resizeMode="cover">
         <View style={styles.titleContainer}>
-          <Text style={styles.appTitle}>booklee</Text>
+          <Text style={styles.appTitle}>Booklee</Text>
         </View>
       </ImageBackground>
 
@@ -31,9 +25,7 @@ const OnboardingStep3 = () => {
         <Text style={styles.stepTitle}>You're All Set!</Text>
         <Text style={styles.stepDescription}>Ready to start booking your appointments.</Text>
 
-        <TouchableOpacity style={styles.primaryButton} onPress={handleFinish}>
-          <Text style={styles.primaryButtonText}>Start Booking</Text>
-        </TouchableOpacity>
+        <Button title="Start Booking" onPress={handleFinish} variant="default" />
 
         <View style={styles.paginationContainer}>
           <View style={[styles.paginationDot, styles.inactiveDot]} />

@@ -94,7 +94,7 @@ const Navigation = () => {
           contentStyle: { backgroundColor: '#ffffff' },
         }}
       />
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
     </>
   );
 };

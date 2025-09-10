@@ -1,13 +1,7 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  ImageBackground,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, ImageBackground, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { IMAGES } from '~/src/constants/images';
+import { Button } from '~/src/components/buttons';
 
 const { height } = Dimensions.get('window');
 
@@ -27,7 +21,7 @@ const OnboardingStep2 = () => {
         style={styles.backgroundImage}
         resizeMode="cover">
         <View style={styles.titleContainer}>
-          <Text style={styles.appTitle}>booklee</Text>
+          <Text style={styles.appTitle}>Booklee</Text>
         </View>
       </ImageBackground>
 
@@ -37,9 +31,7 @@ const OnboardingStep2 = () => {
           We'll send you gentle reminders so you never miss an appointment.
         </Text>
 
-        <TouchableOpacity style={styles.primaryButton} onPress={handleNext}>
-          <Text style={styles.primaryButtonText}>Enable Notifications</Text>
-        </TouchableOpacity>
+        <Button title="Enable Notifications" onPress={handleNext} />
 
         <View style={styles.paginationContainer}>
           <View style={[styles.paginationDot, styles.inactiveDot]} />
@@ -47,9 +39,12 @@ const OnboardingStep2 = () => {
           <View style={[styles.paginationDot, styles.inactiveDot]} />
         </View>
 
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipButtonText}>Skip</Text>
-        </TouchableOpacity>
+        <Button
+          title="Skip"
+          variant="ghost"
+          onPress={handleSkip}
+          containerStyle={styles.skipButton}
+        />
       </View>
     </View>
   );
