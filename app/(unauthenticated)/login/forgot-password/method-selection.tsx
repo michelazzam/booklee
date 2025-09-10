@@ -1,72 +1,79 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import CustomText from '~/src/components/base/text';
-import { theme } from '~/src/constants/theme';
+
 import { ArrowLeftIcon } from '~/src/assets/icons';
-import { AwareScrollView } from '~/src/components/base';
+import { theme } from '~/src/constants/theme';
+
+import { AwareScrollView, Text } from '~/src/components/base';
 import { Wrapper } from '~/src/components/utils/UI';
 
-export default function ForgotPasswordMethodSelection() {
+const ForgotPasswordMethodSelection = () => {
+  /*** Constants ***/
   const router = useRouter();
 
   const handleEmailMethod = () => {
-    router.push('/(unauthenticated)/forgot-password/email-input');
+    router.push('/(unauthenticated)/login/forgot-password/email-input');
   };
-
   const handlePhoneMethod = () => {
-    router.push('/(unauthenticated)/forgot-password/phone-input');
+    router.push('/(unauthenticated)/login/forgot-password/phone-input');
   };
 
   return (
     <Wrapper style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <ArrowLeftIcon color={theme.colors.darkText[100]} />
         </TouchableOpacity>
-        <CustomText size={16} weight="medium">
+
+        <Text size={16} weight="medium">
           FORGOT PASSWORD
-        </CustomText>
+        </Text>
+
         <View style={styles.spacer} />
       </View>
 
       <AwareScrollView contentContainerStyle={styles.content}>
         <View style={styles.titleContainer}>
-          <CustomText size={22} weight="semiBold" style={styles.title}>
+          <Text size={22} weight="semiBold" style={styles.title}>
             Reset Your Password
-          </CustomText>
-          <CustomText size={14} weight="regular" style={styles.subtitle}>
-            Choose how you'd like to receive your verification code
-          </CustomText>
+          </Text>
+
+          <Text size={14} weight="regular" style={styles.subtitle}>
+            Choose how you&apos;d like to receive your verification code
+          </Text>
         </View>
 
         <View style={styles.methodsContainer}>
           <TouchableOpacity style={styles.methodButton} onPress={handleEmailMethod}>
             <View style={styles.methodContent}>
-              <CustomText size={16} weight="medium" style={styles.methodTitle}>
+              <Text size={16} weight="medium" style={styles.methodTitle}>
                 Email
-              </CustomText>
-              <CustomText size={14} weight="regular" style={styles.methodDescription}>
+              </Text>
+
+              <Text size={14} weight="regular" style={styles.methodDescription}>
                 Send verification code to your email address
-              </CustomText>
+              </Text>
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.methodButton} onPress={handlePhoneMethod}>
             <View style={styles.methodContent}>
-              <CustomText size={16} weight="medium" style={styles.methodTitle}>
+              <Text size={16} weight="medium" style={styles.methodTitle}>
                 Phone Number
-              </CustomText>
-              <CustomText size={14} weight="regular" style={styles.methodDescription}>
+              </Text>
+
+              <Text size={14} weight="regular" style={styles.methodDescription}>
                 Send verification code to your phone number
-              </CustomText>
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
       </AwareScrollView>
     </Wrapper>
   );
-}
+};
+
+export default ForgotPasswordMethodSelection;
 
 const styles = StyleSheet.create({
   container: {

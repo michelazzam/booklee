@@ -40,10 +40,10 @@ const SignInPage = () => {
           <Button
             title="Next"
             isLoading={false}
+            containerStyle={styles.nextButton}
             onPress={() => {
               router.navigate('/(authenticated)/(tabs)');
             }}
-            containerStyle={styles.nextButton}
           />
 
           <SocialLogin />

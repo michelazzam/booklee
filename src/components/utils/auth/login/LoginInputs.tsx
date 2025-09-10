@@ -7,29 +7,31 @@ import { theme } from '~/src/constants/theme';
 
 import { Input, PhoneInput } from '~/src/components/textInputs';
 import { Text } from '~/src/components/base';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 interface LoginInputsProps {
   activeTab: 'email' | 'phone';
 }
 
 const LoginInputs = ({ activeTab }: LoginInputsProps) => {
+  /*** Constants ***/
   const router = useRouter();
-  const [selectedCountry, setSelectedCountry] = useState<null | ICountry>(null);
-  function onChangeSelectedCountry(country: ICountry) {
-    setSelectedCountry(country);
-  }
-  const [phoneNumberValue, setPhoneNumberValue] = useState<string>('');
-  function onChangePhoneNumber(phoneNumber: string) {
-    setPhoneNumberValue(phoneNumber);
-  }
 
+  /*** States ***/
+  const [phoneNumberValue, setPhoneNumberValue] = useState<string>('');
+  const [selectedCountry, setSelectedCountry] = useState<null | ICountry>(null);
+
+  const onChangeSelectedCountry = (country: ICountry) => {
+    setSelectedCountry(country);
+  };
+  const onChangePhoneNumber = (phoneNumber: string) => {
+    setPhoneNumberValue(phoneNumber);
+  };
   const handleForgotPassword = () => {
     router.push('/(unauthenticated)/login/forgot-password/method-selection');
   };
+
   return (
-    // Use this <Animated.View style={styles.inputContainer} entering={FadeIn} exiting={FadeOut}> import it from reanimated package
-    <Animated.View style={styles.inputContainer} entering={FadeIn} exiting={FadeOut}>
+    <View style={styles.inputContainer}>
       <View style={styles.inputField}>
         <Text size={14} weight="regular" style={styles.inputLabel}>
           {activeTab === 'email' ? 'Email' : 'Phone Number'}
@@ -39,12 +41,12 @@ const LoginInputs = ({ activeTab }: LoginInputsProps) => {
           <Input variant="email" placeholder="Enter your email" keyboardType="email-address" />
         ) : (
           <PhoneInput
-            value={phoneNumberValue}
-            onChangePhoneNumber={onChangePhoneNumber}
-            selectedCountry={selectedCountry}
             defaultCountry="LB"
-            onChangeSelectedCountry={onChangeSelectedCountry}
+            value={phoneNumberValue}
             placeholder="Enter your phone number"
+            selectedCountry={selectedCountry}
+            onChangePhoneNumber={onChangePhoneNumber}
+            onChangeSelectedCountry={onChangeSelectedCountry}
           />
         )}
       </View>
@@ -61,16 +63,17 @@ const LoginInputs = ({ activeTab }: LoginInputsProps) => {
             </Text>
           </TouchableOpacity>
         </View>
+
         <Input variant="password" placeholder="Enter your password" />
       </View>
-    </Animated.View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   inputContainer: {
-    marginBottom: theme.spacing.xl,
     gap: theme.spacing.md,
+    marginBottom: theme.spacing.xl,
   },
   inputField: {
     marginBottom: theme.spacing.lg,
