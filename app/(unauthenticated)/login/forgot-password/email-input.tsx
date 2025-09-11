@@ -16,7 +16,7 @@ export default function ForgotPasswordEmailInput() {
   const handleContinue = () => {
     if (email.trim()) {
       router.push({
-        pathname: '/(unauthenticated)/forgot-password/otp-verification',
+        pathname: '/(unauthenticated)/login/forgot-password/otp-verification',
         params: { method: 'email', contact: email },
       });
     }
@@ -41,7 +41,7 @@ export default function ForgotPasswordEmailInput() {
             Enter Your Email
           </CustomText>
           <CustomText size={14} weight="regular" style={styles.subtitle}>
-            We'll send a verification code to your email address
+            We&apos;ll send a verification code to your email address
           </CustomText>
         </View>
 

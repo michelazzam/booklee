@@ -26,7 +26,7 @@ export default function ForgotPasswordOTPVerification() {
       setTimeout(() => {
         setIsLoading(false);
         router.push({
-          pathname: '/(unauthenticated)/forgot-password/new-password',
+          pathname: '/(unauthenticated)/login/forgot-password/new-password',
           params: { method, contact, otp },
         });
       }, 1000);
@@ -66,7 +66,7 @@ export default function ForgotPasswordOTPVerification() {
             Enter Verification Code
           </CustomText>
           <CustomText size={14} weight="regular" style={styles.subtitle}>
-            We've sent a 6-digit code to {getContactDisplay()}
+            We&apos;ve sent a 6-digit code to {getContactDisplay()}
           </CustomText>
         </View>
 
@@ -80,7 +80,7 @@ export default function ForgotPasswordOTPVerification() {
 
         <View style={styles.resendContainer}>
           <CustomText size={14} weight="regular" style={styles.resendText}>
-            Didn't receive the code?
+            Didn&apos;t receive the code?
           </CustomText>
           <TouchableOpacity onPress={handleResend}>
             <CustomText size={14} weight="semiBold" style={styles.resendLink}>

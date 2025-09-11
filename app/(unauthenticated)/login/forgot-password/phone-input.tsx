@@ -19,7 +19,7 @@ export default function ForgotPasswordPhoneInput() {
     if (phoneNumber.trim() && selectedCountry) {
       const fullPhoneNumber = `${selectedCountry.idd.root}${phoneNumber}`;
       router.push({
-        pathname: '/(unauthenticated)/forgot-password/otp-verification',
+        pathname: '/(unauthenticated)/login/forgot-password/otp-verification',
         params: { method: 'phone', contact: fullPhoneNumber },
       });
     }
@@ -44,7 +44,7 @@ export default function ForgotPasswordPhoneInput() {
             Enter Your Phone Number
           </CustomText>
           <CustomText size={14} weight="regular" style={styles.subtitle}>
-            We'll send a verification code to your phone number
+            We&apos;ll send a verification code to your phone number
           </CustomText>
         </View>
 
