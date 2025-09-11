@@ -1,22 +1,22 @@
-import { AxiosError } from "axios";
+import { AxiosError } from 'axios';
 
-import { withErrorCatch } from "../axios/error";
-import { apiClient } from "../axios/interceptor";
+import { withErrorCatch } from '../axios/error';
+import { apiClient } from '../axios/interceptor';
+import { GetMeResType } from './types';
 
 /*** API for get me ***/
-// export const getMeApi = async () => {
-//   const [response, error] = await withErrorCatch(
-//     apiClient.get<GetMeResType>(`/users/authenticate`)
-//   );
+export const getMeApi = async () => {
+  const [response, error] = await withErrorCatch(apiClient.get<GetMeResType>(`user/me`));
 
-//   if (error instanceof AxiosError) {
-//     throw {
-//       ...error.response?.data,
-//       status: error.response?.status,
-//     };
-//   } else if (error) {
-//     throw error;
-//   }
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
 
-//   return response?.data;
-// };
+  console.log('response', response);
+  return response?.data;
+};

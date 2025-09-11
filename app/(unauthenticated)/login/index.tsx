@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { theme } from '~/src/constants/theme';
 
 import { AwareScrollView, Text } from '~/src/components/base';
-import { Button } from '~/src/components/buttons';
 import {
   AuthBackground,
   LoginInputs,
@@ -36,15 +35,6 @@ const SignInPage = () => {
           </View>
 
           <LoginInputs activeTab={activeTab} />
-
-          <Button
-            title="Next"
-            isLoading={false}
-            containerStyle={styles.nextButton}
-            onPress={() => {
-              router.navigate('/(authenticated)/(tabs)');
-            }}
-          />
 
           <SocialLogin />
 
@@ -81,9 +71,6 @@ const styles = StyleSheet.create({
   formTitle: {
     color: theme.colors.darkText[100],
     marginBottom: theme.spacing.lg,
-  },
-  nextButton: {
-    marginBottom: theme.spacing.xl,
   },
 
   signUpContainer: {

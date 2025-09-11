@@ -17,8 +17,13 @@ import {
   HomeIcon,
 } from '~/src/assets/icons';
 import { theme } from '~/src/constants/theme';
+import { useUserProvider } from '~/src/store';
+import { useRouter } from 'expo-router';
 
 const AccountPage = () => {
+  const { deleteTokenFromStorage } = useUserProvider();
+  const router = useRouter();
+
   const handleNotificationPress = () => {
     // Handle notification press
     console.log('Notification pressed');
@@ -57,7 +62,14 @@ const AccountPage = () => {
   const handleLogoutPress = () => {
     Alert.alert('Log Out', 'Are you sure you want to log out?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Log Out', style: 'destructive', onPress: () => console.log('Logout confirmed') },
+      {
+        text: 'Log Out',
+        style: 'destructive',
+        onPress: async () => {
+          await deleteTokenFromStorage();
+          router.navigate('/(unauthenticated)/login');
+        },
+      },
     ]);
   };
 

@@ -1,5 +1,5 @@
 import { ICountry } from 'react-native-international-phone-number';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 
@@ -7,6 +7,8 @@ import { theme } from '~/src/constants/theme';
 
 import { Input, PhoneInput } from '~/src/components/textInputs';
 import { Text } from '~/src/components/base';
+import { Button } from '~/src/components/buttons';
+import { authClient } from '~/src/services/auth/auth-client';
 
 interface LoginInputsProps {
   activeTab: 'email' | 'phone';
@@ -19,6 +21,9 @@ const LoginInputs = ({ activeTab }: LoginInputsProps) => {
   /*** States ***/
   const [phoneNumberValue, setPhoneNumberValue] = useState<string>('');
   const [selectedCountry, setSelectedCountry] = useState<null | ICountry>(null);
+  const [email, setEmail] = useState<string>('abbaskheiraldeen47@gmail.com');
+  const [password, setPassword] = useState<string>('Test12345@');
+  const [isLoading, setIsLoading] = useState(false);
 
   const onChangeSelectedCountry = (country: ICountry) => {
     setSelectedCountry(country);
@@ -30,6 +35,55 @@ const LoginInputs = ({ activeTab }: LoginInputsProps) => {
     router.push('/(unauthenticated)/login/forgot-password/method-selection');
   };
 
+  const handleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const res = await authClient.signIn.email({
+        email,
+        password,
+      });
+
+      if (res.data && !res.error) {
+        // Check if email is verified
+        if (res.data.user.emailVerified) {
+          // Better Auth handles session management automatically
+          router.replace('/(authenticated)/(tabs)');
+        } else {
+          // Email not verified - show alert and navigate to verification screen
+          Alert.alert(
+            'Email Not Verified',
+            'Please check your email and verify your account before logging in.',
+            [
+              {
+                text: 'OK',
+              },
+            ]
+          );
+        }
+      } else if (res.error) {
+        // Handle specific error cases
+        if (res.error.code === 'EMAIL_NOT_VERIFIED') {
+          Alert.alert(
+            'Email Not Verified',
+            'Please check your email and verify your account before logging in.',
+            [
+              {
+                text: 'OK',
+              },
+            ]
+          );
+        } else {
+          Alert.alert('Login Failed', res.error.message || 'An error occurred during login');
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Login Failed', 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <View style={styles.inputContainer}>
       <View style={styles.inputField}>
@@ -38,7 +92,13 @@ const LoginInputs = ({ activeTab }: LoginInputsProps) => {
         </Text>
 
         {activeTab === 'email' ? (
-          <Input variant="email" placeholder="Enter your email" keyboardType="email-address" />
+          <Input
+            variant="email"
+            placeholder="Enter your email"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
         ) : (
           <PhoneInput
             defaultCountry="LB"
@@ -64,8 +124,20 @@ const LoginInputs = ({ activeTab }: LoginInputsProps) => {
           </TouchableOpacity>
         </View>
 
-        <Input variant="password" placeholder="Enter your password" />
+        <Input
+          variant="password"
+          placeholder="Enter your password"
+          value={password}
+          onChangeText={setPassword}
+        />
       </View>
+
+      <Button
+        title="Next"
+        isLoading={isLoading}
+        containerStyle={styles.nextButton}
+        onPress={() => handleLogin()}
+      />
     </View>
   );
 };
@@ -94,8 +166,10 @@ const styles = StyleSheet.create({
   passwordInputContainer: {
     position: 'relative',
   },
-  textInput: {},
-  eyeIcon: {},
+
+  nextButton: {
+    marginBottom: theme.spacing.xl,
+  },
 });
 
 export default LoginInputs;

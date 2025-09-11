@@ -20,10 +20,10 @@ const SectionCategory = ({ title, data, index = 0 }: SectionProps) => {
   const router = useRouter();
 
   const handleSeeAllPress = () => {
-    // router.navigate({
-    //   params: { id: title },
-    //   pathname: '/(authenticated)/(tabs)/search/[id]',
-    // });
+    router.navigate({
+      params: { id: title },
+      pathname: '/(authenticated)/(screens)/store/[id]',
+    });
   };
 
   return (

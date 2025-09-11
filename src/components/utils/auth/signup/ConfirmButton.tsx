@@ -4,10 +4,18 @@ import { Button } from '~/src/components/buttons';
 
 interface ConfirmButtonProps {
   onPress: () => void;
+  isLoading?: boolean;
 }
 
-export default function ConfirmButton({ onPress }: ConfirmButtonProps) {
-  return <Button title="Confirm" onPress={onPress} containerStyle={styles.buttonContainer} />;
+export default function ConfirmButton({ onPress, isLoading = false }: ConfirmButtonProps) {
+  return (
+    <Button
+      title="Confirm"
+      onPress={onPress}
+      isLoading={isLoading}
+      containerStyle={styles.buttonContainer}
+    />
+  );
 }
 
 const styles = StyleSheet.create({

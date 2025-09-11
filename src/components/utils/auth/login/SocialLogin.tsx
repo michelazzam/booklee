@@ -1,9 +1,20 @@
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import CustomText from '~/src/components/base/text';
-import { GoogleIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants/theme';
+import { authClient } from '~/src/services/auth/auth-client';
+import { Button } from '~/src/components/buttons';
 
 export default function SocialLogin() {
+  const handleLogin = async () => {
+    await authClient.signIn
+      .social({
+        provider: 'google',
+        callbackURL: '/(authenticated)/(tabs)', // this will be converted to a deep link (eg. `myapp://dashboard`) on native
+      })
+      .then((res) => {
+        console.log(res);
+      });
+  };
   return (
     <>
       {/* Separator */}
@@ -16,16 +27,13 @@ export default function SocialLogin() {
       </View>
 
       {/* Google Button */}
-      <TouchableOpacity style={styles.googleButton}>
-        <View style={styles.googleButtonContent}>
-          <View style={styles.googleIcon}>
-            <GoogleIcon />
-          </View>
-          <CustomText size={14} weight="bold" style={styles.googleButtonText}>
-            Continue With Google
-          </CustomText>
-        </View>
-      </TouchableOpacity>
+      <Button
+        title="Continue With Google"
+        onPress={handleLogin}
+        leadingIcon="google"
+        containerStyle={styles.googleButton}
+        variant="outline"
+      />
     </>
   );
 }
@@ -46,11 +54,6 @@ const styles = StyleSheet.create({
     marginHorizontal: theme.spacing.md,
   },
   googleButton: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.sm,
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.white.DEFAULT,
     marginBottom: theme.spacing.xl,
   },
   googleButtonContent: {

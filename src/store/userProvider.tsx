@@ -1,14 +1,8 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  createContext,
-  useContext,
-  ReactNode,
-  useEffect,
-  useState,
-} from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQueryClient } from '@tanstack/react-query';
+import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 
-import { apiClient } from "~/src/services/axios/interceptor";
+import { apiClient } from '~/src/services/axios/interceptor';
 
 type UserProviderType = {
   token: string | null;
@@ -25,7 +19,7 @@ const UserProviderContext = createContext<UserProviderType>({
 });
 
 const STORAGE_KEYS = {
-  TOKEN: "user_token",
+  TOKEN: 'user_token',
 } as const;
 
 export const useUserProvider = () => useContext(UserProviderContext);
@@ -41,19 +35,27 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const loadPersistedState = async () => {
       try {
-        const [savedToken] = await Promise.all([
-          AsyncStorage.getItem(STORAGE_KEYS.TOKEN),
-        ]);
+        const [savedToken] = await Promise.all([AsyncStorage.getItem(STORAGE_KEYS.TOKEN)]);
 
         if (savedToken) {
-        
-          setToken(savedToken);
-          apiClient.defaults.headers.Authorization = `Bearer ${savedToken}`;
-        }
+          // Handle both plain string and JSON stringified tokens
+          let token = savedToken;
+          try {
+            // Try to parse as JSON in case it was stringified
+            const parsed = JSON.parse(savedToken);
+            if (typeof parsed === 'string') {
+              token = parsed;
+            }
+          } catch {
+            // If parsing fails, use the original string
+            token = savedToken;
+          }
 
-       
+          setToken(token);
+          apiClient.defaults.headers.Authorization = `Bearer ${token}`;
+        }
       } catch (error) {
-        console.error("Error loading persisted state:", error);
+        console.error('Error loading persisted state:', error);
       } finally {
         setIsInitialized(true);
       }
@@ -63,13 +65,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const saveTokenToStorage = async (newTokens: string) => {
-    const parsedTokens = JSON.stringify(newTokens);
     try {
-      await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, parsedTokens);
+      await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, newTokens);
       setToken(newTokens);
       apiClient.defaults.headers.Authorization = `Bearer ${newTokens}`;
     } catch (error) {
-      console.error("Error saving token:", error);
+      console.error('Error saving token:', error);
       throw error;
     }
   };
@@ -83,7 +84,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     await queryClient.cancelQueries();
     queryClient.clear();
   };
-  
+
   return (
     <UserProviderContext.Provider
       value={{
@@ -91,8 +92,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         isInitialized,
         saveTokenToStorage,
         deleteTokenFromStorage,
-      }}
-    >
+      }}>
       {children}
     </UserProviderContext.Provider>
   );
