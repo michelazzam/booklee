@@ -13,8 +13,9 @@ import { Text } from '~/src/components/base';
 type SectionProps = {
   title: string;
   data: Store[];
+  index?: number;
 };
-const SectionCategory = ({ title, data }: SectionProps) => {
+const SectionCategory = ({ title, data, index = 0 }: SectionProps) => {
   /*** Constants ***/
   const router = useRouter();
 
@@ -45,10 +46,12 @@ const SectionCategory = ({ title, data }: SectionProps) => {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.sectionContainer}>
-          {data.map((store) => (
+          {data.map((store, dataIndex) => (
             <StoreCard
               data={store}
               key={store.id}
+              delay={dataIndex * 150 + index * 150}
+              animatedStyle="slideLeft"
               onPress={() =>
                 router.navigate(
                   `/(authenticated)/(screens)/store/${store.id}` as RelativePathString
@@ -62,6 +65,24 @@ const SectionCategory = ({ title, data }: SectionProps) => {
   );
 };
 
+const CATEGORIES = [
+  {
+    title: 'Hair & Styling',
+    data: hairAndStyling,
+  },
+  {
+    title: 'Nails',
+    data: nails,
+  },
+  {
+    title: 'Barber',
+    data: barber,
+  },
+  {
+    title: 'Eyebrows & Eyelashes',
+    data: eyebrowsEyelashes,
+  },
+];
 const HomePage = () => {
   /*** Constants ***/
   const { top, bottom } = useAppSafeAreaInsets();
@@ -88,10 +109,14 @@ const HomePage = () => {
           </Text>
         </View>
 
-        <SectionCategory title="Hair & Styling" data={hairAndStyling} />
-        <SectionCategory title="Nails" data={nails} />
-        <SectionCategory title="Barber" data={barber} />
-        <SectionCategory title="Eyebrows & Eyelashes" data={eyebrowsEyelashes} />
+        {CATEGORIES.map((category, index) => (
+          <SectionCategory
+            index={index}
+            key={category.title}
+            data={category.data}
+            title={category.title}
+          />
+        ))}
       </ScrollView>
     </View>
   );

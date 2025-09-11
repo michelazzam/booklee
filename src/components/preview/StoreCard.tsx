@@ -1,5 +1,14 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { useMemo } from 'react';
+import Animated, {
+  SlideOutDown,
+  SlideOutRight,
+  FadeInLeft,
+  FadeInUp,
+  FadeOut,
+  FadeIn,
+} from 'react-native-reanimated';
 
 import { theme } from '../../constants/theme';
 import { type Store } from '~/src/mock';
@@ -8,19 +17,72 @@ import { Text, Icon } from '../base';
 
 type StoreCardProps = {
   data: Store;
+  delay?: number;
+  duration?: number;
   onPress?: () => void;
+  animatedStyle?: 'slideUp' | 'slideLeft' | 'none';
 };
 
-const StoreCard = ({ data, onPress }: StoreCardProps) => {
-  /*** Constants ***/
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const StoreCard = ({
+  data,
+  onPress,
+  delay = 0,
+  duration = 300,
+  animatedStyle = 'none',
+}: StoreCardProps) => {
+  /***** Constants *****/
   const { tag = '', name = '', city = '', image = '', rating = 0 } = data;
+
+  /***** Memoization *****/
+  const getEnteringAnimation = useMemo(() => {
+    switch (animatedStyle) {
+      case 'slideUp':
+        return FadeInUp.delay(delay)
+          .duration(duration)
+          .springify()
+          .damping(15)
+          .stiffness(100)
+          .mass(1);
+      case 'slideLeft':
+        return FadeInLeft.duration(duration)
+          .delay(delay)
+          .springify()
+          .damping(15)
+          .stiffness(100)
+          .mass(1);
+      default:
+        return FadeIn.duration(duration)
+          .delay(delay)
+          .springify()
+          .damping(15)
+          .stiffness(100)
+          .mass(1);
+    }
+  }, [animatedStyle, delay, duration]);
+  const getExitingAnimation = useMemo(() => {
+    switch (animatedStyle) {
+      case 'slideUp':
+        return SlideOutDown.duration(duration).delay(delay);
+      case 'slideLeft':
+        return SlideOutRight.duration(duration).delay(delay);
+      case 'none':
+      default:
+        return FadeOut.duration(duration).delay(delay);
+    }
+  }, [animatedStyle, delay, duration]);
 
   const handleFavoritePress = () => {
     console.log('favorite');
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.8}>
+    <AnimatedTouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
+      style={styles.container}
+      entering={getEnteringAnimation}
+      exiting={getExitingAnimation}>
       <View style={styles.imageContainer}>
         <Image source={{ uri: image }} style={styles.image} contentFit="cover" />
 
@@ -52,7 +114,7 @@ const StoreCard = ({ data, onPress }: StoreCardProps) => {
           <Text size={theme.typography.fontSizes.xs}>{tag}</Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </AnimatedTouchableOpacity>
   );
 };
 

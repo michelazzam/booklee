@@ -69,10 +69,12 @@ const Search = () => {
   }, [selectedFilter, searchQuery]);
 
   const RenderItem = useCallback(
-    ({ item }: { item: Store }) => (
+    ({ item, index }: { item: Store; index: number }) => (
       <View style={{ paddingHorizontal: theme.spacing.lg }}>
         <StoreCard
           data={item}
+          delay={index * 150}
+          animatedStyle="slideUp"
           onPress={() =>
             router.navigate(`/(authenticated)/(screens)/store/${item.id}` as RelativePathString)
           }
