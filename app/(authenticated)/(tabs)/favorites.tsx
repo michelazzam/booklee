@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { View, StyleSheet, FlatList, Image } from 'react-native';
-import { theme, IMAGES, mockSalons, Salon } from '../../../../src/constants';
-import Button from '../../../../src/components/buttons/button';
-import CustomText from '../../../../src/components/base/text';
-import SalonCard from '../../../../src/components/utils/salon/SalonCard';
+import { theme, IMAGES, mockSalons, Salon } from '../../../src/constants';
+import Button from '../../../src/components/buttons/button';
+import CustomText from '../../../src/components/base/text';
+import SalonCard from '../../../src/components/utils/salon/SalonCard';
 import { Wrapper } from '~/src/components/utils/UI';
 
 // Get all salons and filter for favorites (demo purposes)

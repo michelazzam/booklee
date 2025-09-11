@@ -1,5 +1,6 @@
 import { type RelativePathString, useRouter } from 'expo-router';
 import { StyleSheet, ScrollView, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 
 import { hairAndStyling, nails, barber, eyebrowsEyelashes, type Store } from '~/src/mock';
 import { useAppSafeAreaInsets } from '~/src/hooks';
@@ -25,33 +26,39 @@ const SectionCategory = ({ title, data }: SectionProps) => {
   };
 
   return (
-    <View style={{ gap: theme.spacing.xs }}>
-      <View style={styles.sectionTitle}>
-        <Text
-          weight="medium"
-          color={theme.colors.darkText[100]}
-          size={theme.typography.fontSizes.md}>
-          {title}
-        </Text>
+    <>
+      <StatusBar style="light" />
 
-        <Button title="See All" variant="ghost" onPress={handleSeeAllPress} />
+      <View style={{ gap: theme.spacing.xs }}>
+        <View style={styles.sectionTitle}>
+          <Text
+            weight="medium"
+            color={theme.colors.darkText[100]}
+            size={theme.typography.fontSizes.md}>
+            {title}
+          </Text>
+
+          <Button title="See All" variant="ghost" onPress={handleSeeAllPress} />
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.sectionContainer}>
+          {data.map((store) => (
+            <StoreCard
+              data={store}
+              key={store.id}
+              onPress={() =>
+                router.navigate(
+                  `/(authenticated)/(screens)/store/${store.id}` as RelativePathString
+                )
+              }
+            />
+          ))}
+        </ScrollView>
       </View>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.sectionContainer}>
-        {data.map((store) => (
-          <StoreCard
-            data={store}
-            key={store.id}
-            onPress={() =>
-              router.navigate(`/(authenticated)/(screens)/store/${store.id}` as RelativePathString)
-            }
-          />
-        ))}
-      </ScrollView>
-    </View>
+    </>
   );
 };
 

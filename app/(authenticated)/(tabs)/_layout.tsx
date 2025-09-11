@@ -1,6 +1,36 @@
 import { Tabs } from 'expo-router';
-import { BookingIcon, FavoritesIcon, HomeIcon, SearchIcon, AccountIcon } from '~/src/assets/icons';
+
 import { theme } from '~/src/constants/theme';
+
+import { type IconType } from '~/src/components/base';
+import { TabBarIcon } from '~/src/components/tabBar';
+
+type TabType = {
+  name: string;
+  icon: IconType;
+};
+const TABS: TabType[] = [
+  {
+    icon: 'home',
+    name: 'index',
+  },
+  {
+    name: 'search',
+    icon: 'magnify',
+  },
+  {
+    icon: 'heart',
+    name: 'favorites',
+  },
+  {
+    name: 'bookings',
+    icon: 'calendar-check',
+  },
+  {
+    name: 'account',
+    icon: 'account',
+  },
+];
 
 export default function TabLayout() {
   return (
@@ -12,42 +42,18 @@ export default function TabLayout() {
           backgroundColor: theme.colors.white.DEFAULT,
         },
       }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-
-          tabBarIcon: ({ color }) => <HomeIcon color={color} width={24} height={24} />,
-        }}
-      />
-      <Tabs.Screen
-        name="search"
-        options={{
-          title: 'Search',
-          tabBarIcon: ({ color }) => <SearchIcon color={color} width={24} height={24} />,
-        }}
-      />
-      <Tabs.Screen
-        name="favorites/index"
-        options={{
-          title: 'Favorites',
-          tabBarIcon: ({ color }) => <FavoritesIcon color={color} width={24} height={24} />,
-        }}
-      />
-      <Tabs.Screen
-        name="bookings/index"
-        options={{
-          title: 'Bookings',
-          tabBarIcon: ({ color }) => <BookingIcon color={color} width={24} height={24} />,
-        }}
-      />
-      <Tabs.Screen
-        name="account/index"
-        options={{
-          title: 'Account',
-          tabBarIcon: ({ color }) => <AccountIcon color={color} width={24} height={24} />,
-        }}
-      />
+      {TABS.map(({ name, icon }) => (
+        <Tabs.Screen
+          key={name}
+          name={name}
+          options={{
+            title: name.charAt(0).toUpperCase() + name.slice(1),
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon icon={icon} color={color} focused={focused} size={24} />
+            ),
+          }}
+        />
+      ))}
     </Tabs>
   );
 }
