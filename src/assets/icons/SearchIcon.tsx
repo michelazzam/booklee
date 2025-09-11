@@ -1,9 +1,10 @@
-import Svg, { Path } from 'react-native-svg';
-import { IconProps } from './IconType';
+import { FC } from 'react';
+import { Svg, Path } from 'react-native-svg';
+import { IconType } from './IconType';
 
-export default function SearchIcon({ color = '#1F1F1F', width = 24, height = 24 }: IconProps) {
+const SearchIcon: FC<IconType> = ({ color = '#1F1F1F', width = 24, height = 24 }) => {
   return (
-    <Svg viewBox="0 0 24 24" fill="none" width={width} height={height}>
+    <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
       <Path
         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
         stroke={color}
@@ -12,4 +13,6 @@ export default function SearchIcon({ color = '#1F1F1F', width = 24, height = 24 
       />
     </Svg>
   );
-}
+};
+
+export default SearchIcon;

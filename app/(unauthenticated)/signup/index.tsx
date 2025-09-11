@@ -1,32 +1,29 @@
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { theme } from '~/src/constants/theme';
 
 import { SignupHeader, SignupForm, ConfirmButton } from '~/src/components/utils/auth/signup';
-import { AwareScrollView } from '~/src/components/base';
-import { useAppSafeAreaInsets } from '~/src/hooks/useAppSafeAreaInsets';
+import { Wrapper } from '~/src/components/utils/UI';
 
 export const SignupPage = () => {
   /*** Constants ***/
   const router = useRouter();
-  const insets = useAppSafeAreaInsets();
 
   const handleConfirm = () => {
     // Handle signup logic here
-    router.navigate('/(authenticated)/onboarding');
+    router.navigate('/(authenticated)/(tabs)');
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <AwareScrollView contentContainerStyle={styles.scrollContent}>
-        <SignupHeader />
+    <Wrapper style={[styles.container]} withBottom={true}>
+      {/* Use the already available header component from base folder */}
+      <SignupHeader />
 
-        <SignupForm />
+      <SignupForm />
 
-        <ConfirmButton onPress={handleConfirm} />
-      </AwareScrollView>
-    </View>
+      <ConfirmButton onPress={handleConfirm} />
+    </Wrapper>
   );
 };
 

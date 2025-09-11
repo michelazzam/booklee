@@ -11,13 +11,12 @@ import {
   AboutTab,
 } from '~/src/components/utils/salon/single-salon';
 import SingleSalonHeader from '~/src/components/utils/salon/single-salon/SingleSalonHeader';
-import { useAppSafeAreaInsets } from '~/src/hooks';
+import { Wrapper } from '~/src/components/utils/UI';
 
 export default function SalonDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState<'services' | 'about'>('services');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const insets = useAppSafeAreaInsets();
 
   // Find salon data from all categories
   const allSalons = [...hairAndStyling, ...nails, ...barber, ...eyebrowsEyelashes];
@@ -41,7 +40,7 @@ export default function SalonDetailPage() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <Wrapper style={styles.container} withTop={true}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <SingleSalonHeader isFavorite={salon.isFavorite || false} />
         {/* Image Carousel */}
@@ -66,7 +65,7 @@ export default function SalonDetailPage() {
           )}
         </View>
       </ScrollView>
-    </View>
+    </Wrapper>
   );
 }
 

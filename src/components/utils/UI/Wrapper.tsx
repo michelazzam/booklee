@@ -1,12 +1,24 @@
-import React from 'react';
-import { SafeAreaView, SafeAreaViewProps } from 'react-native-safe-area-context';
+import React, { FC } from 'react';
+import { View, ViewStyle } from 'react-native';
+import { SafeAreaViewProps } from 'react-native-safe-area-context';
+import { useAppSafeAreaInsets } from '~/src/hooks';
 
-export default function Wrapper({
-  children,
-  style,
-}: {
+interface WrapperProps {
   children: React.ReactNode;
   style?: SafeAreaViewProps['style'];
-}) {
-  return <SafeAreaView style={style}>{children}</SafeAreaView>;
+  withTop?: boolean;
+  withBottom?: boolean;
 }
+
+const Wrapper: FC<WrapperProps> = ({ children, style, withTop = true, withBottom = false }) => {
+  const { top, bottom } = useAppSafeAreaInsets();
+
+  const safeAreaStyle: ViewStyle = {
+    ...(withTop && { paddingTop: top }),
+    ...(withBottom && { paddingBottom: bottom }),
+  };
+
+  return <View style={[style, safeAreaStyle]}>{children}</View>;
+};
+
+export default Wrapper;

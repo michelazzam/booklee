@@ -1,7 +1,8 @@
 import Svg, { Mask, G, Path, Defs, ClipPath } from 'react-native-svg';
-import { IconProps } from './IconType';
+import { IconType } from './IconType';
+import { FC } from 'react';
 
-export default function GoogleIcon({ width = 24, height = 24 }: IconProps) {
+const GoogleIcon: FC<IconType> = ({ width = 24, height = 24 }) => {
   return (
     <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
       <G clipPath="url(#clip0_268_2799)">
@@ -88,4 +89,6 @@ export default function GoogleIcon({ width = 24, height = 24 }: IconProps) {
       </Defs>
     </Svg>
   );
-}
+};
+
+export default GoogleIcon;

@@ -42,7 +42,7 @@ export const INPUT_STYLES: InputStyles = {
     text: {
       input: theme.colors.darkText[100],
       error: '#E81717',
-      subText: theme.colors.primaryGreen[100],
+      subText: theme.colors.lightText,
       label: {
         default: theme.colors.lightText,
         focused: theme.colors.darkText[100],
