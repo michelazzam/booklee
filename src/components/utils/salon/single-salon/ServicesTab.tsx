@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { theme } from '../../../../constants/theme';
-import { ServiceCategory } from '../../../../data/mockSalons';
+import { ServiceCategory } from '../../../../mock/homeScreen/types';
 import Svg, { Path } from 'react-native-svg';
 
 interface ServicesTabProps {

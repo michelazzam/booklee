@@ -3,7 +3,7 @@ import { theme } from '../../../constants/theme';
 import Svg, { Path } from 'react-native-svg';
 
 interface SalonCardProps {
-  id: string;
+  id?: string;
   image: string;
   name: string;
   city: string;
@@ -49,7 +49,7 @@ const StarIcon = ({
 );
 
 export default function SalonCard({
-  id,
+  id: _id,
   image,
   name,
   city,
@@ -95,11 +95,11 @@ export default function SalonCard({
 
 const styles = StyleSheet.create({
   container: {
-    width: 200,
+    flex: 1,
     backgroundColor: theme.colors.white.DEFAULT,
     borderRadius: theme.radii.md,
-    marginRight: theme.spacing.md,
-    marginVertical: theme.spacing.md,
+    marginHorizontal: theme.spacing.sm,
+    marginVertical: theme.spacing.sm,
     ...theme.shadows.soft,
   },
   imageContainer: {

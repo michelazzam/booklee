@@ -3,7 +3,9 @@ import { View, StyleSheet } from 'react-native';
 import CustomText from '~/src/components/base/text';
 import { theme } from '~/src/constants/theme';
 import { Input } from '~/src/components/textInputs';
-import PhoneInput, { ICountry } from 'react-native-international-phone-number';
+import { ICountry } from 'react-native-international-phone-number';
+import { AwareScrollView } from '~/src/components/base';
+import PhoneInputComponent from '~/src/components/textInputs/phoneInput';
 
 export default function SignupForm() {
   const [selectedCountry, setSelectedCountry] = useState<null | ICountry>(null);
@@ -18,8 +20,7 @@ export default function SignupForm() {
   }
 
   return (
-    <View style={styles.form}>
-      {/* Full Name */}
+    <AwareScrollView contentContainerStyle={styles.form}>
       <View style={styles.inputField}>
         <CustomText size={14} weight="regular" style={styles.inputLabel}>
           Full Name*
@@ -27,7 +28,6 @@ export default function SignupForm() {
         <Input placeholder="Enter your full name" />
       </View>
 
-      {/* Email */}
       <View style={styles.inputField}>
         <CustomText size={14} weight="regular" style={styles.inputLabel}>
           Email*
@@ -35,56 +35,16 @@ export default function SignupForm() {
         <Input variant="email" placeholder="Enter your email" />
       </View>
 
-      {/* Phone Number */}
       <View style={styles.inputField}>
         <CustomText size={14} weight="regular" style={styles.inputLabel}>
           Phone Number*
         </CustomText>
         <View style={styles.phoneInputContainer}>
-          <PhoneInput
+          <PhoneInputComponent
             value={phoneNumberValue}
             onChangePhoneNumber={onChangePhoneNumber}
             selectedCountry={selectedCountry}
-            defaultCountry="LB"
             onChangeSelectedCountry={onChangeSelectedCountry}
-            phoneInputStyles={{
-              container: {
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: 'transparent',
-                borderWidth: 0,
-                padding: 0,
-              },
-              flagContainer: {
-                width: 90,
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginRight: theme.spacing.sm,
-                paddingHorizontal: theme.spacing.xs,
-                backgroundColor: theme.colors.white.DEFAULT,
-              },
-              input: {
-                flex: 1,
-                fontSize: theme.typography.fontSizes.sm,
-                fontFamily: 'Montserrat-Regular',
-                color: theme.colors.darkText[100],
-                paddingVertical: 0,
-                paddingHorizontal: 0,
-                marginLeft: theme.spacing.xs,
-                backgroundColor: 'transparent',
-                borderWidth: 0,
-              },
-              flag: {
-                fontSize: 16,
-              },
-              callingCode: {
-                fontSize: theme.typography.fontSizes.md,
-                fontFamily: 'Montserrat-Regular',
-                color: theme.colors.darkText[100],
-                marginRight: theme.spacing.xs,
-              },
-            }}
           />
         </View>
         <CustomText size={14} weight="regular" style={styles.hint}>
@@ -92,7 +52,6 @@ export default function SignupForm() {
         </CustomText>
       </View>
 
-      {/* Password */}
       <View style={styles.inputField}>
         <CustomText size={14} weight="regular" style={styles.inputLabel}>
           Password*
@@ -100,14 +59,13 @@ export default function SignupForm() {
         <Input variant="password" placeholder="Enter your password" />
       </View>
 
-      {/* Confirm Password */}
       <View style={styles.inputField}>
         <CustomText size={14} weight="regular" style={styles.inputLabel}>
           Confirm Password*
         </CustomText>
         <Input variant="password" placeholder="Confirm your password" />
       </View>
-    </View>
+    </AwareScrollView>
   );
 }
 

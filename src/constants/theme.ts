@@ -63,11 +63,14 @@ export const colors = {
 
 export const shadows = {
   soft: {
-    shadowColor: 'rgba(31, 31, 31, 0.5)',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 20,
-    elevation: 2,
+    // iOS Shadows
+    shadowRadius: 1,
+    shadowOpacity: 0.1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+
+    // Android Shadows
+    elevation: 4,
   },
 } as const;
 

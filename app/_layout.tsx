@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -7,7 +8,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import ToastManager from 'toastify-react-native';
 import { useEffect, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
-
 import { Platform } from 'react-native';
 import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
@@ -95,8 +95,7 @@ const Navigation = () => {
           contentStyle: { backgroundColor: '#ffffff' },
         }}
       />
-
-      <StatusBar style="auto" animated={true} translucent />
+      <StatusBar style="dark" />
     </>
   );
 };

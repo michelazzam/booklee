@@ -6,8 +6,11 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme.colors.primaryBlue[100],
         headerShown: false,
+        tabBarActiveTintColor: theme.colors.primaryBlue[100],
+        sceneStyle: {
+          backgroundColor: theme.colors.white.DEFAULT,
+        },
       }}>
       <Tabs.Screen
         name="index"
@@ -25,21 +28,21 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="three"
+        name="favorites/index"
         options={{
           title: 'Favorites',
           tabBarIcon: ({ color }) => <FavoritesIcon color={color} width={24} height={24} />,
         }}
       />
       <Tabs.Screen
-        name="four"
+        name="bookings/index"
         options={{
           title: 'Bookings',
           tabBarIcon: ({ color }) => <BookingIcon color={color} width={24} height={24} />,
         }}
       />
       <Tabs.Screen
-        name="five"
+        name="account/index"
         options={{
           title: 'Account',
           tabBarIcon: ({ color }) => <AccountIcon color={color} width={24} height={24} />,

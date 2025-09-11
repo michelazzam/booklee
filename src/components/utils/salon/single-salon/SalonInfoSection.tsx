@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '../../../../constants/theme';
-import { Salon } from '../../../../data/mockSalons';
+import { Store } from '../../../../mock';
 import Svg, { Path } from 'react-native-svg';
 
 interface SalonInfoSectionProps {
-  salon: Salon;
+  salon: Store;
 }
 
 const StarIcon = ({
