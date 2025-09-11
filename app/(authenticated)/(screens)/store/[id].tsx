@@ -1,37 +1,29 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, ScrollView, StyleSheet } from 'react-native';
+import { useMemo, useState } from 'react';
+
+import { hairAndStyling, nails, barber, eyebrowsEyelashes } from '~/src/mock';
+import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
-import { hairAndStyling, nails, barber, eyebrowsEyelashes, type Store } from '~/src/mock';
-import {
-  SalonImageCarousel,
-  SalonInfoSection,
-  SalonTabs,
-  ServicesTab,
-  AboutTab,
-} from '~/src/components/utils/salon/single-salon';
-import SingleSalonHeader from '~/src/components/utils/salon/single-salon/SingleSalonHeader';
-import { Wrapper } from '~/src/components/utils/UI';
 
-export default function SalonDetailPage() {
+import { ImageCarousel, TabMenu } from '~/src/components/utils';
+import { Services } from '~/src/components/preview';
+import { Icon, Text } from '~/src/components/base';
+
+const SalonDetailPage = () => {
+  /***** Constants *****/
+  const router = useRouter();
+  const { top, bottom } = useAppSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [activeTab, setActiveTab] = useState<'services' | 'about'>('services');
+
+  /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<'services' | 'about'>('services');
 
-  // Find salon data from all categories
-  const allSalons = [...hairAndStyling, ...nails, ...barber, ...eyebrowsEyelashes];
-  const salon: Store | undefined = allSalons.find((s) => s.id === id);
-
-  if (!salon) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Salon not found</Text>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  /***** Memoization *****/
+  const store = useMemo(() => {
+    return [...hairAndStyling, ...nails, ...barber, ...eyebrowsEyelashes].find((s) => s.id === id);
+  }, [id]);
 
   const handleServiceToggle = (serviceId: string) => {
     setSelectedServices((prev) =>
@@ -39,91 +31,133 @@ export default function SalonDetailPage() {
     );
   };
 
-  return (
-    <Wrapper style={styles.container} withTop={true}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <SingleSalonHeader isFavorite={salon.isFavorite || false} />
-        {/* Image Carousel */}
-        <SalonImageCarousel images={salon.images || [salon.image]} />
+  const RenderServices = () => {
+    return (
+      <View style={{ gap: theme.spacing.md }}>
+        <Text size={theme.typography.fontSizes.md} weight={'medium'}>
+          {store?.serviceCategories?.name}
+        </Text>
 
-        {/* Salon Info Section */}
-        <SalonInfoSection salon={salon} />
-
-        {/* Tabs */}
-        <SalonTabs activeTab={activeTab} onTabChange={setActiveTab} />
-
-        {/* Tab Content */}
-        <View style={styles.tabContent}>
-          {activeTab === 'services' ? (
-            <ServicesTab
-              serviceCategories={salon.serviceCategories || []}
-              selectedServices={selectedServices}
-              onServiceToggle={handleServiceToggle}
+        <View style={{ gap: theme.spacing.sm }}>
+          {store?.serviceCategories?.services.map((data) => (
+            <Services
+              data={data}
+              key={data.id}
+              onPress={handleServiceToggle}
+              isActive={selectedServices.includes(data.id)}
             />
-          ) : (
-            <AboutTab about={salon.about || ''} />
-          )}
+          ))}
         </View>
-      </ScrollView>
-    </Wrapper>
+      </View>
+    );
+  };
+  const RenderAbout = () => {
+    return (
+      <Text size={theme.typography.fontSizes.md} weight={'medium'}>
+        {store?.about}
+      </Text>
+    );
+  };
+
+  return (
+    <ScrollView
+      bounces={false}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom }}>
+      <View>
+        <View style={[styles.headerComponent, { top }]}>
+          <Icon
+            size={32}
+            name="chevron-left"
+            onPress={() => router.back()}
+            color={theme.colors.white.DEFAULT}
+          />
+
+          <Icon name="heart-outline" size={32} color={theme.colors.white.DEFAULT} />
+        </View>
+
+        <ImageCarousel images={store?.images || []} />
+      </View>
+
+      <View style={styles.storeContentContainer}>
+        <Text size={theme.typography.fontSizes.xl} weight={'bold'}>
+          {store?.name}
+        </Text>
+
+        <View style={styles.storeInfoContainer}>
+          <View style={styles.ratingContainer}>
+            <Icon name="star" size={16} color="#000000" />
+
+            <Text
+              weight={'bold'}
+              size={theme.typography.fontSizes.xs}
+              style={{ textDecorationLine: 'underline' }}>
+              {store?.rating}
+            </Text>
+          </View>
+
+          <Text size={theme.typography.fontSizes.xs}>{store?.openingHours}</Text>
+        </View>
+
+        <View style={styles.locationContainer}>
+          <Text size={theme.typography.fontSizes.md}>{store?.provider}</Text>
+
+          <View style={styles.tagContainer}>
+            <Text size={theme.typography.fontSizes.xs} weight={'bold'}>
+              {store?.tag}
+            </Text>
+          </View>
+        </View>
+
+        <TabMenu
+          activeTab={activeTab}
+          onTabChange={(tab) => setActiveTab(tab as 'services' | 'about')}
+          tabs={[
+            { tabName: { name: 'Services', value: 'services' }, tabChildren: RenderServices() },
+            { tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() },
+          ]}
+        />
+      </View>
+    </ScrollView>
   );
-}
+};
+
+export default SalonDetailPage;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.white.DEFAULT,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: theme.spacing.lg,
-  },
-  errorText: {
-    ...theme.typography.textVariants.headline,
-    color: theme.colors.darkText[100],
-    marginBottom: theme.spacing.lg,
-  },
-  backButton: {
-    padding: theme.spacing.sm,
-  },
-  backButtonText: {
-    ...theme.typography.textVariants.bodyPrimaryBold,
-    color: theme.colors.primaryBlue[100],
-  },
-  header: {
+  headerComponent: {
+    zIndex: 2,
+    width: '100%',
     position: 'absolute',
-    top: 50,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.lg,
-    zIndex: 10,
   },
-  backButtonIcon: {
-    fontSize: 24,
-    color: theme.colors.white.DEFAULT,
-    fontWeight: 'bold',
+  storeContentContainer: {
+    gap: theme.spacing.sm,
+    padding: theme.spacing.lg,
   },
-  favoriteButton: {
-    width: 32,
-    height: 32,
-    borderRadius: theme.radii.full,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    justifyContent: 'center',
+  storeInfoContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: theme.spacing.md,
   },
-  favoriteIcon: {
-    fontSize: 20,
-    color: theme.colors.white.DEFAULT,
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
   },
-  scrollView: {
-    flex: 1,
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.xl,
   },
-  tabContent: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing['2xl'],
+  tagContainer: {
+    height: 30,
+    justifyContent: 'center',
+    borderRadius: theme.radii.xs,
+    paddingHorizontal: theme.spacing.sm,
+    backgroundColor: theme.colors.primaryBlue[50],
   },
 });

@@ -7,11 +7,11 @@ import { type Store } from '~/src/mock';
 import { Text, Icon } from '../base';
 
 type StoreCardProps = {
-  onPress?: () => void;
   data: Store;
+  onPress?: () => void;
 };
 
-export default function StoreCard({ data, onPress }: StoreCardProps) {
+const StoreCard = ({ data, onPress }: StoreCardProps) => {
   /*** Constants ***/
   const { tag = '', name = '', city = '', image = '', rating = 0 } = data;
 
@@ -25,7 +25,7 @@ export default function StoreCard({ data, onPress }: StoreCardProps) {
         <Image source={{ uri: image }} style={styles.image} contentFit="cover" />
 
         <View style={styles.favoriteButton}>
-          <Icon name="heart" size={28} color="#FFFFFF" onPress={handleFavoritePress} />
+          <Icon name="heart-outline" size={28} color="#FFFFFF" onPress={handleFavoritePress} />
         </View>
       </View>
 
@@ -54,7 +54,9 @@ export default function StoreCard({ data, onPress }: StoreCardProps) {
       </View>
     </TouchableOpacity>
   );
-}
+};
+
+export default StoreCard;
 
 const styles = StyleSheet.create({
   container: {

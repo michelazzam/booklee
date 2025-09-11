@@ -23,5 +23,5 @@ export type Store = {
   provider?: string;
   isFavorite?: boolean;
   openingHours?: string;
-  serviceCategories?: ServiceCategory[];
+  serviceCategories?: ServiceCategory;
 };

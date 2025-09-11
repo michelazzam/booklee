@@ -19,34 +19,32 @@ export const hairAndStyling: Store[] = [
     provider: 'Beirut',
     about:
       'Luxe Locks is your ultimate destination for premium hairstyling and beauty care in Beirut. We provide expert services tailored to enhance your style.',
-    serviceCategories: [
-      {
-        id: 'hair-styling',
-        name: 'HAIR & STYLING',
-        services: [
-          {
-            id: 'blow-dry',
-            name: 'Blow-dry',
-            price: 'Starting 10$',
-            duration: '45 min',
-          },
-          {
-            id: 'hairstyle',
-            name: 'Hairstyle',
-            price: '15$',
-            duration: '45 min',
-          },
-          {
-            id: 'caviar-treatment',
-            name: 'Caviar Treatment',
-            price: '25$',
-            duration: '60 min',
-            description:
-              'Mask made with caviar extract is applied to the hair, then left to absorb before rinsing and styling.',
-          },
-        ],
-      },
-    ],
+    serviceCategories: {
+      id: 'hair-styling',
+      name: 'HAIR & STYLING',
+      services: [
+        {
+          id: 'blow-dry',
+          name: 'Blow-dry',
+          price: 'Starting 10$',
+          duration: '45 min',
+        },
+        {
+          id: 'hairstyle',
+          name: 'Hairstyle',
+          price: '15$',
+          duration: '45 min',
+        },
+        {
+          id: 'caviar-treatment',
+          name: 'Caviar Treatment',
+          price: '25$',
+          duration: '60 min',
+          description:
+            'Mask made with caviar extract is applied to the hair, then left to absorb before rinsing and styling.',
+        },
+      ],
+    },
   },
   {
     id: '2',
@@ -78,26 +76,24 @@ export const nails: Store[] = [
     tag: 'Special offer on manicure',
     isFavorite: false,
     about: 'Serenity Spa offers luxurious nail and spa treatments to pamper and rejuvenate.',
-    serviceCategories: [
-      {
-        id: 'nails',
-        name: 'NAILS',
-        services: [
-          {
-            id: 'manicure',
-            name: 'Classic Manicure',
-            price: '12$',
-            duration: '30 min',
-          },
-          {
-            id: 'pedicure',
-            name: 'Pedicure',
-            price: '15$',
-            duration: '40 min',
-          },
-        ],
-      },
-    ],
+    serviceCategories: {
+      id: 'nails',
+      name: 'NAILS',
+      services: [
+        {
+          id: 'manicure',
+          name: 'Classic Manicure',
+          price: '12$',
+          duration: '30 min',
+        },
+        {
+          id: 'pedicure',
+          name: 'Pedicure',
+          price: '15$',
+          duration: '40 min',
+        },
+      ],
+    },
   },
   {
     id: '5',
@@ -120,26 +116,24 @@ export const barber: Store[] = [
     tag: 'Discount for students',
     isFavorite: false,
     about: 'Classic Cuts specializes in modern and traditional men’s grooming services.',
-    serviceCategories: [
-      {
-        id: 'barber',
-        name: 'BARBER SERVICES',
-        services: [
-          {
-            id: 'mens-haircut',
-            name: "Men's Haircut",
-            price: '10$',
-            duration: '30 min',
-          },
-          {
-            id: 'beard-trim',
-            name: 'Beard Trim',
-            price: '5$',
-            duration: '15 min',
-          },
-        ],
-      },
-    ],
+    serviceCategories: {
+      id: 'barber',
+      name: 'BARBER SERVICES',
+      services: [
+        {
+          id: 'mens-haircut',
+          name: "Men's Haircut",
+          price: '10$',
+          duration: '30 min',
+        },
+        {
+          id: 'beard-trim',
+          name: 'Beard Trim',
+          price: '5$',
+          duration: '15 min',
+        },
+      ],
+    },
   },
 ];
 
@@ -160,26 +154,24 @@ export const eyebrowsEyelashes: Store[] = [
     provider: 'Kasslik',
     about:
       'Welcome to Harmony Haven Spa, where tranquility meets beauty. Our expert team provides exceptional spa services in a serene environment designed to rejuvenate your mind, body, and soul.',
-    serviceCategories: [
-      {
-        id: 'eyebrows',
-        name: 'EYEBROWS & EYELASHES',
-        services: [
-          {
-            id: 'eyebrow-shaping',
-            name: 'Eyebrow Shaping',
-            price: '8$',
-            duration: '20 min',
-          },
-          {
-            id: 'eyelash-extensions',
-            name: 'Eyelash Extensions',
-            price: '25$',
-            duration: '60 min',
-            description: 'Semi-permanent lashes applied for a natural or glam look.',
-          },
-        ],
-      },
-    ],
+    serviceCategories: {
+      id: 'eyebrows',
+      name: 'EYEBROWS & EYELASHES',
+      services: [
+        {
+          id: 'eyebrow-shaping',
+          name: 'Eyebrow Shaping',
+          price: '8$',
+          duration: '20 min',
+        },
+        {
+          id: 'eyelash-extensions',
+          name: 'Eyelash Extensions',
+          price: '25$',
+          duration: '60 min',
+          description: 'Semi-permanent lashes applied for a natural or glam look.',
+        },
+      ],
+    },
   },
 ];

@@ -1,5 +1,5 @@
 /*** Data ***/
-export { hairAndStyling, nails, barber, eyebrowsEyelashes } from './homeScreen';
+export { hairAndStyling, nails, barber, eyebrowsEyelashes } from './stores';
 
 /*** Types ***/
-export { type Store } from './homeScreen/types';
+export { type Store, type Service } from './stores/types';
