@@ -60,7 +60,7 @@ export type Location = {
 /*** API Response types ***/
 export type GetLocationsResType = {
   ok: boolean;
-  data: Location[];
+  locations: Location[];
 };
 
 /*** Request types ***/
