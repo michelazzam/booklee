@@ -8,7 +8,7 @@ import { authClient } from './auth-client';
 
 /*** API for get me ***/
 export const getMeApi = async () => {
-  const [response, error] = await withErrorCatch(apiClient.get<GetMeResType>(`user/me`));
+  const [response, error] = await withErrorCatch(apiClient.get<GetMeResType>(`/user/me`));
 
   if (error instanceof AxiosError) {
     throw {

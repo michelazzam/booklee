@@ -25,8 +25,8 @@ export type GetMeResType = {
     name: string;
     role: string;
     phone: string;
-    firstName: string;
     lastName: string;
+    firstName: string;
     salonName: string;
     image: string | null;
     approvedByOwner: boolean;
@@ -34,13 +34,13 @@ export type GetMeResType = {
   organization: {
     _id: string;
     name: string;
-    address: string;
-    phone: string;
-    description: string;
     logo: string;
-    monthlyRevenueTarget: number;
-    geoLocation: object | null;
+    phone: string;
+    address: string;
+    description: string;
     invitationKey: string;
+    geoLocation: object | null;
+    monthlyRevenueTarget: number;
   };
 };
 

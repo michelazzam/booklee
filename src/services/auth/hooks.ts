@@ -12,8 +12,9 @@ import {
   getMeApi,
 } from './api';
 
-import type { GetMeResType } from './types';
 import type { ResErrorType } from '../axios/types';
+import type { GetMeResType } from './types';
+
 import { useUserProvider } from '~/src/store';
 
 export const useSession = () => {
@@ -35,7 +36,8 @@ export const useGetBetterAuthUser = () => {
 export const useGetMe = () => {
   /*** Constants ***/
   const { data: session } = authClient.useSession();
-  console.log('from hooks', session?.session.token);
+  const { isInitialized } = useUserProvider();
+
   return useQuery<GetMeResType, ResErrorType, GetMeResType['user']>({
     retry: 1,
     gcTime: Infinity,
@@ -44,23 +46,21 @@ export const useGetMe = () => {
     staleTime: Infinity,
     refetchOnMount: false,
     refetchInterval: false,
-    enabled: !!session?.session.token,
     select: ({ user }) => user,
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
+    enabled: !!session?.session?.token && isInitialized,
   });
 };
 
 const useLogin = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
-  const { assignTokenToAxios } = useUserProvider();
 
   return useMutation({
     mutationFn: loginWithEmailApi,
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['getMe'] });
-      assignTokenToAxios(data?.token ?? '');
     },
   });
 };
@@ -74,12 +74,11 @@ const useSignUp = () => {
 const useLogout = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
-  const { removeTokenFromAxios } = useUserProvider();
+
   return useMutation({
     mutationFn: logoutApi,
     onSuccess: () => {
       queryClient.clear();
-      removeTokenFromAxios();
     },
   });
 };

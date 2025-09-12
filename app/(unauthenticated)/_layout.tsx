@@ -25,7 +25,6 @@ export default function UnauthenticatedLayout() {
   }
 
   if (user) return <Redirect href="/(authenticated)/(tabs)" />;
-  console.log('user', user);
 
   return (
     <Stack
