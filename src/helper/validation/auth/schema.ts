@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { isValidPhoneNumber, getCountryByCca2 } from 'react-native-international-phone-number';
 
-import type { LoginReqType, SignUpReqType, RoleType } from '~/src/services';
+import type { LoginReqType, SignUpReqType } from '~/src/services';
 
 const passwordValidation = () => {
   return z
