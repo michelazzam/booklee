@@ -1,8 +1,11 @@
-import { TextStyle, ViewStyle } from "react-native";
+import { TextStyle, ViewStyle } from 'react-native';
 
-type InputLayoutStyle = Pick<ViewStyle, "borderRadius">;
-type InputTextStyle = Pick<TextStyle, "fontSize" | "fontWeight" | "fontFamily">;
-type LabelStyle = Pick<TextStyle, "fontSize" | "fontWeight" | "fontFamily">;
+type InputLayoutStyle = Pick<ViewStyle, 'borderRadius'>;
+type InputTextStyle = Pick<TextStyle, 'fontSize' | 'fontWeight' | 'fontFamily'>;
+type ExternalLabelStyle = Pick<
+  TextStyle,
+  'fontSize' | 'fontWeight' | 'fontFamily' | 'color' | 'marginBottom'
+>;
 
 export type BorderStyle = {
   width: {
@@ -22,6 +25,7 @@ export type ColorScheme = {
     input: string;
     error: string;
     subText: string;
+    placeholder: string;
     label: {
       default: string;
       focused: string;
@@ -34,20 +38,20 @@ export type ColorScheme = {
 };
 
 export type DropdownStyle = {
-    background: string;
+  background: string;
   borderRadius: number;
   itemBackground: {
-    default: string;    
+    default: string;
     focused: string;
   };
 };
 
 export type InputStyles = {
-  label: LabelStyle;
   border: BorderStyle;
   colors: ColorScheme;
   dropdown: DropdownStyle;
   layout: InputLayoutStyle;
   inputText: InputTextStyle;
-  errorText: Pick<TextStyle, "fontSize" | "fontWeight">;
+  externalLabel: ExternalLabelStyle;
+  errorText: Pick<TextStyle, 'fontSize' | 'fontWeight'>;
 };

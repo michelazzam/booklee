@@ -13,10 +13,12 @@ export const INPUT_STYLES: InputStyles = {
     fontWeight: '400',
     fontFamily: 'Montserrat-Regular',
   },
-  label: {
-    fontSize: theme.typography.fontSizes.sm,
+  externalLabel: {
     fontWeight: '400',
+    marginBottom: 8,
+    color: theme.colors.darkText[100],
     fontFamily: 'Montserrat-Regular',
+    fontSize: theme.typography.fontSizes.sm,
   },
   errorText: {
     fontSize: theme.typography.fontSizes.sm,
@@ -43,6 +45,7 @@ export const INPUT_STYLES: InputStyles = {
       input: theme.colors.darkText[100],
       error: '#E81717',
       subText: theme.colors.lightText,
+      placeholder: theme.colors.lightText,
       label: {
         default: theme.colors.lightText,
         focused: theme.colors.darkText[100],

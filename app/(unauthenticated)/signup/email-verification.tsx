@@ -26,12 +26,12 @@ const EmailVerificationPage = () => {
         </Text>
 
         <Text size={16} weight="regular" style={styles.description}>
-          We've sent you a verification link at your email address. Please check your inbox and
+          We&apos;ve sent you a verification link at your email address. Please check your inbox and
           click the link to verify your account.
         </Text>
 
         <Text size={14} weight="regular" style={styles.note}>
-          Don't see the email? Check your spam folder or try again.
+          Don&apos;t see the email? Check your spam folder or try again.
         </Text>
 
         <View style={styles.buttonContainer}>

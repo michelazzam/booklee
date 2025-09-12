@@ -29,7 +29,6 @@ import Animated, {
   useSharedValue,
   Extrapolation,
   interpolate,
-  withSpring,
   withTiming,
   runOnJS,
   FadeOut,
@@ -47,6 +46,7 @@ export type InputRef = {
 };
 
 type BaseInputProps = Omit<TextInputProps, 'editable' | 'onPress'> & {
+  label?: string;
   error?: string;
   style?: ViewStyle;
   onBlur?: () => void;
@@ -98,6 +98,7 @@ const Input = forwardRef<InputRef, InputProps>(
   (
     {
       style,
+      label,
       error,
       onBlur,
       onFocus,
@@ -121,7 +122,7 @@ const Input = forwardRef<InputRef, InputProps>(
     const scrollViewRef = useRef<Animated.ScrollView>(null);
 
     /***** Constants *****/
-    const { label, border, layout, colors, dropdown, inputText, errorText } = INPUT_STYLES;
+    const { externalLabel, border, layout, colors, dropdown, inputText, errorText } = INPUT_STYLES;
 
     /***** States ******/
     const [inputValue, setInputValue] = useState('');
@@ -130,7 +131,6 @@ const Input = forwardRef<InputRef, InputProps>(
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     /***** Memoization ******/
-    const hasInput = useMemo(() => inputValue.length > 0, [inputValue]);
     const isPassword = useMemo(() => variant === 'password', [variant]);
     const containerHeight = useMemo(() => ITEM_HEIGHT * VISIBLE_ITEMS, []);
     const isMultiline = useMemo(() => props.multiline ?? false, [props.multiline]);
@@ -174,17 +174,6 @@ const Input = forwardRef<InputRef, InputProps>(
         isMultiline && styles.multilineInput,
       ],
       [inputText, colors.text.input, inputStyle, isMultiline, isDropdown]
-    );
-    const labelStyles: StyleProp<TextStyle> = useMemo(
-      () => [
-        styles.label,
-        {
-          fontSize: label.fontSize,
-          fontWeight: label.fontWeight,
-          fontFamily: label.fontFamily,
-        },
-      ],
-      [label]
     );
     const dropdownWrapperStyles: StyleProp<ViewStyle> = useMemo(
       () => [
@@ -265,28 +254,6 @@ const Input = forwardRef<InputRef, InputProps>(
     /***** Animated Styles ******/
     const scrollY = useSharedValue(0);
     const isUserScrolling = useSharedValue(false);
-    const labelAnimatedStyle = useAnimatedStyle(() => {
-      const getTranslateY = () => {
-        if (isFocused || hasInput) {
-          if (isMultiline) return -35;
-
-          return -20;
-        }
-
-        return isMultiline ? -20 : 0;
-      };
-
-      const scale = withTiming(isFocused || hasInput ? 0.8 : 1);
-      const translateY = withSpring(getTranslateY(), {
-        damping: 15,
-        stiffness: 100,
-      });
-      const color = withTiming(isFocused ? colors.text.label.focused : colors.text.label.default);
-      return {
-        color,
-        transform: [{ translateY }, { scale }],
-      };
-    });
     const containerAnimatedStyle = useAnimatedStyle(() => {
       const getBorderColor = () => {
         if (error) return border.color.error;
@@ -422,19 +389,25 @@ const Input = forwardRef<InputRef, InputProps>(
 
       if (!isDropdown || !Array.isArray(options) || options.length === 0) return;
 
-      if (!isDropdownOpen && inputValue) {
-        const currentIndex = options.findIndex((option) => option === inputValue);
+      setIsDropdownOpen((prevState) => {
+        const willOpen = !prevState;
 
-        if (currentIndex !== -1) {
-          requestAnimationFrame(() => {
-            isUserScrolling.value = false;
-            scrollToIndex(currentIndex);
-            scrollY.value = currentIndex * ITEM_HEIGHT;
-          });
+        // If opening and there's a current value, scroll to it
+        if (willOpen && inputValue) {
+          const currentIndex = options.findIndex((option) => option === inputValue);
+
+          if (currentIndex !== -1) {
+            requestAnimationFrame(() => {
+              isUserScrolling.value = false;
+              scrollToIndex(currentIndex);
+              scrollY.value = currentIndex * ITEM_HEIGHT;
+            });
+          }
         }
-      }
-      setIsDropdownOpen(!isDropdownOpen);
-    }, [options, scrollY, isDropdown, inputValue, scrollToIndex, isDropdownOpen, isUserScrolling]);
+
+        return willOpen;
+      });
+    }, [options, scrollY, isDropdown, inputValue, scrollToIndex, isUserScrolling]);
     const handleSelect = useCallback(
       (option: string, index: number) => {
         scrollY.value = index * ITEM_HEIGHT;
@@ -448,6 +421,8 @@ const Input = forwardRef<InputRef, InputProps>(
 
     return (
       <View style={[styles.container, { width: inputWidth }]}>
+        {label && <Text style={externalLabel}>{label}</Text>}
+
         <Animated.View style={style} layout={LinearTransition.easing(Easing.inOut(Easing.ease))}>
           <AnimatedTouchable
             disabled={disabled}
@@ -464,10 +439,6 @@ const Input = forwardRef<InputRef, InputProps>(
             )}
 
             <View style={[styles.inputWrapper, !editable && styles.disabledInput]}>
-              <Animated.Text numberOfLines={1} style={[labelStyles, labelAnimatedStyle]}>
-                {placeholder}
-              </Animated.Text>
-
               <TextInput
                 ref={inputRef}
                 value={inputValue}
@@ -476,7 +447,9 @@ const Input = forwardRef<InputRef, InputProps>(
                 onFocus={handleFocus}
                 multiline={isMultiline}
                 style={inputTextStyles}
+                placeholder={placeholder}
                 onChangeText={handleChangeText}
+                placeholderTextColor={colors.text.placeholder}
                 secureTextEntry={isPassword && !showPassword}
                 {...inputConfiguration}
                 {...props}
@@ -551,7 +524,7 @@ export default Input;
 
 const styles = StyleSheet.create({
   container: {
-    gap: 12,
+    gap: 4,
     flexShrink: 1,
   },
   inputContainer: {
@@ -566,10 +539,6 @@ const styles = StyleSheet.create({
   },
   disabledInput: {
     pointerEvents: 'none',
-  },
-  label: {
-    top: 20,
-    position: 'absolute',
   },
   input: {
     flex: 1,

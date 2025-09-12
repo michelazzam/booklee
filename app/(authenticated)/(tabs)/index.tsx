@@ -50,8 +50,8 @@ const SectionCategory = ({ title, data, index = 0 }: SectionProps) => {
             <StoreCard
               data={store}
               key={store.id}
-              delay={dataIndex * 150 + index * 150}
               animatedStyle="slideLeft"
+              delay={dataIndex * 150 + index * 150}
               onPress={() =>
                 router.navigate(
                   `/(authenticated)/(screens)/store/${store.id}` as RelativePathString

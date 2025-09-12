@@ -1,20 +1,11 @@
 import { View, StyleSheet } from 'react-native';
 import CustomText from '~/src/components/base/text';
 import { theme } from '~/src/constants/theme';
-import { authClient } from '~/src/services/auth/auth-client';
+import { AuthServices } from '~/src/services';
 import { Button } from '~/src/components/buttons';
 
 export default function SocialLogin() {
-  const handleLogin = async () => {
-    await authClient.signIn
-      .social({
-        provider: 'google',
-        callbackURL: '/(authenticated)/(tabs)', // this will be converted to a deep link (eg. `myapp://dashboard`) on native
-      })
-      .then((res) => {
-        console.log(res);
-      });
-  };
+  const googleLoginMutation = AuthServices.useGoogleLogin();
   return (
     <>
       {/* Separator */}
@@ -29,8 +20,9 @@ export default function SocialLogin() {
       {/* Google Button */}
       <Button
         title="Continue With Google"
-        onPress={handleLogin}
+        onPress={() => googleLoginMutation.mutate()}
         leadingIcon="google"
+        isLoading={googleLoginMutation.isPending}
         containerStyle={styles.googleButton}
         variant="outline"
       />

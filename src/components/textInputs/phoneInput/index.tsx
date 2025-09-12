@@ -1,99 +1,111 @@
-import { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import PhoneInput, { ICountry } from 'react-native-international-phone-number';
-import { theme } from '~/src/constants/theme';
-import { PhoneInputProps } from './types';
+import PhoneInput, { getCountryByCca2, ICountry } from 'react-native-international-phone-number';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { useEffect, useState, useCallback } from 'react';
+import { Platform, View } from 'react-native';
 
-const PhoneInputComponent = ({
-  value = '',
-  onChangePhoneNumber,
-  selectedCountry = null,
-  onChangeSelectedCountry,
-  defaultCountry = 'LB',
-  placeholder = 'Enter phone number',
-  containerStyle,
-  phoneInputStyles,
+import { styles, inputContainerStyle, modalContainerStyle } from './config';
+
+import Text from '~/src/components/base/text';
+
+export type PhoneInputProps = {
+  error?: string;
+  value?: string;
+  editable?: boolean;
+  placeholder: string;
+  onChangeText?: (phoneInput: string) => void;
+};
+
+const PhoneInputWrapper = ({
+  value,
+  error,
+  placeholder,
+  onChangeText,
+  editable = true,
 }: PhoneInputProps) => {
-  const [internalSelectedCountry, setInternalSelectedCountry] = useState<ICountry | null>(
-    selectedCountry
+  /*** States ***/
+  const [phone, setPhone] = useState<string>('');
+  const [country, setCountry] = useState<ICountry | null>(null);
+
+  useEffect(() => {
+    if (value) {
+      const cca2 = value.split('-')[0] || '';
+      const countryInfo = getCountryByCca2(cca2) || null;
+      const phoneNumber = value.split('-')[1] || '';
+
+      setPhone(phoneNumber);
+      setCountry(countryInfo);
+    } else {
+      const defaultCountry = getCountryByCca2('LB');
+      setCountry(defaultCountry || null);
+    }
+  }, [value]);
+
+  const formateNumber = (phoneNumber: string, country: ICountry | null): string => {
+    const selectedCountry = country || getCountryByCca2('LB');
+
+    if (!selectedCountry) {
+      return `${phoneNumber}`;
+    }
+
+    const cca2 = selectedCountry.cca2;
+    const formateNumber = phoneNumber.replace(/ /g, '');
+
+    return `${cca2}-${formateNumber}`;
+  };
+  const handleInputValue = useCallback(
+    (phoneNumber: string) => {
+      const formatNumber = formateNumber(phoneNumber, country);
+
+      setPhone(phoneNumber);
+      onChangeText?.(formatNumber || '');
+    },
+    [country, onChangeText]
   );
-  const [internalPhoneNumber, setInternalPhoneNumber] = useState<string>(value);
+  const handleSelectedCountry = useCallback(
+    (country: ICountry) => {
+      const formatNumber = formateNumber(phone, country);
 
-  const handleCountryChange = (country: ICountry) => {
-    setInternalSelectedCountry(country);
-    onChangeSelectedCountry?.(country);
-  };
+      setCountry(country);
+      onChangeText?.(formatNumber || '');
+    },
+    [phone, onChangeText]
+  );
 
-  const handlePhoneNumberChange = (phoneNumber: string) => {
-    setInternalPhoneNumber(phoneNumber);
-    onChangePhoneNumber?.(phoneNumber);
-  };
-
-  const defaultPhoneInputStyles = {
-    container: {
-      flex: 1,
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
-      backgroundColor: 'transparent',
-      borderWidth: 0,
-      padding: 0,
-    },
-    flagContainer: {
-      width: 90,
-      justifyContent: 'center' as const,
-      alignItems: 'center' as const,
-      marginRight: theme.spacing.sm,
-      paddingHorizontal: theme.spacing.xs,
-      backgroundColor: theme.colors.white.DEFAULT,
-    },
-    input: {
-      flex: 1,
-      fontSize: theme.typography.fontSizes.sm,
-      fontFamily: 'Montserrat-Regular',
-      color: theme.colors.darkText[100],
-      paddingVertical: 0,
-      paddingHorizontal: 0,
-      marginLeft: theme.spacing.xs,
-      backgroundColor: 'transparent',
-      borderWidth: 0,
-    },
-    flag: {
-      fontSize: 16,
-    },
-    callingCode: {
-      fontSize: theme.typography.fontSizes.md,
-      fontFamily: 'Montserrat-Regular',
-      color: theme.colors.darkText[100],
-      marginRight: theme.spacing.xs,
-    },
-  };
+  const renderError = useCallback(() => {
+    if (error) {
+      return (
+        <Animated.Text entering={FadeIn} exiting={FadeOut} style={styles.errorText}>
+          {error}
+        </Animated.Text>
+      );
+    }
+    return null;
+  }, [error]);
 
   return (
-    <View style={[styles.phoneInputContainer, containerStyle]}>
-      <PhoneInput
-        value={internalPhoneNumber}
-        onChangePhoneNumber={handlePhoneNumberChange}
-        selectedCountry={internalSelectedCountry}
-        defaultCountry={defaultCountry as any}
-        onChangeSelectedCountry={handleCountryChange}
-        phoneInputStyles={phoneInputStyles || defaultPhoneInputStyles}
-        placeholder={placeholder}
-      />
+    <View style={{ gap: 4, width: '100%', opacity: editable ? 1 : 0.5 }}>
+      <Text size={14} weight="regular">
+        Phone Number
+      </Text>
+
+      <Animated.View style={styles.inputContainer}>
+        <PhoneInput
+          value={phone}
+          defaultCountry="LB"
+          disabled={!editable}
+          placeholder={placeholder}
+          selectedCountry={country}
+          onChangePhoneNumber={handleInputValue}
+          onChangeSelectedCountry={handleSelectedCountry}
+          modalStyles={{ ...modalContainerStyle.modalStyles }}
+          phoneInputStyles={inputContainerStyle.containerStyle}
+          modalType={Platform.OS === 'ios' ? 'bottomSheet' : 'popup'}
+        />
+      </Animated.View>
+
+      {renderError()}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  phoneInputContainer: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.sm,
-    backgroundColor: theme.colors.white.DEFAULT,
-    minHeight: 65,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-  },
-});
-
-export default PhoneInputComponent;
+export default PhoneInputWrapper;

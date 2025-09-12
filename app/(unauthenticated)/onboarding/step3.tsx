@@ -2,11 +2,16 @@ import { View, Text, StyleSheet, ImageBackground, Dimensions } from 'react-nativ
 import { router } from 'expo-router';
 import { IMAGES } from '~/src/constants/images';
 import { Button } from '~/src/components/buttons';
+import { useUserProvider } from '~/src/store';
 
 const { height } = Dimensions.get('window');
 
 const OnboardingStep3 = () => {
+  /*** Constants ***/
+  const { handleOnboardingCompleted } = useUserProvider();
+
   const handleFinish = () => {
+    handleOnboardingCompleted(true);
     router.replace('/(unauthenticated)/login');
   };
 
@@ -22,7 +27,7 @@ const OnboardingStep3 = () => {
       </ImageBackground>
 
       <View style={styles.bottomSheet}>
-        <Text style={styles.stepTitle}>You're All Set!</Text>
+        <Text style={styles.stepTitle}>You&apos;re All Set!</Text>
         <Text style={styles.stepDescription}>Ready to start booking your appointments.</Text>
 
         <Button title="Start Booking" onPress={handleFinish} variant="default" />

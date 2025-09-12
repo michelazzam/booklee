@@ -2,16 +2,21 @@ import { View, Text, StyleSheet, ImageBackground, Dimensions } from 'react-nativ
 import { router } from 'expo-router';
 import { IMAGES } from '~/src/constants/images';
 import { Button } from '~/src/components/buttons';
+import { useUserProvider } from '~/src/store';
 
 const { height } = Dimensions.get('window');
 
 const OnboardingStep2 = () => {
+  /*** Constants ***/
+  const { handleOnboardingCompleted } = useUserProvider();
+
   const handleNext = () => {
     router.push('/(unauthenticated)/onboarding/step3');
   };
 
   const handleSkip = () => {
     router.replace('/(unauthenticated)/login');
+    handleOnboardingCompleted(true);
   };
 
   return (
@@ -26,9 +31,9 @@ const OnboardingStep2 = () => {
       </ImageBackground>
 
       <View style={styles.bottomSheet}>
-        <Text style={styles.stepTitle}>We'll keep you right on schedule.</Text>
+        <Text style={styles.stepTitle}>We&apos;ll keep you right on schedule.</Text>
         <Text style={styles.stepDescription}>
-          We'll send you gentle reminders so you never miss an appointment.
+          We&apos;ll send you gentle reminders so you never miss an appointment.
         </Text>
 
         <Button title="Enable Notifications" onPress={handleNext} />

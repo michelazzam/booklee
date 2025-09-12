@@ -1,175 +1,123 @@
-import { ICountry } from 'react-native-international-phone-number';
-import { View, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Keyboard } from 'react-native';
+import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+
+import { AuthServices, type LoginReqType } from '~/src/services';
 
 import { theme } from '~/src/constants/theme';
+import { type ValidationResultType, validateLogin } from '~/src/helper/validation';
 
 import { Input, PhoneInput } from '~/src/components/textInputs';
-import { Text } from '~/src/components/base';
 import { Button } from '~/src/components/buttons';
-import { authClient } from '~/src/services/auth/auth-client';
+import { Toast } from 'toastify-react-native';
 
-interface LoginInputsProps {
+type LoginInputsProps = {
   activeTab: 'email' | 'phone';
-}
+};
 
 const LoginInputs = ({ activeTab }: LoginInputsProps) => {
+  /***** Refs *****/
+  const data = useRef<LoginReqType>({
+    password: '',
+  });
+
   /*** Constants ***/
   const router = useRouter();
+  const { mutate: login, isPending: isLoginPending } = AuthServices.useLogin();
 
   /*** States ***/
-  const [phoneNumberValue, setPhoneNumberValue] = useState<string>('');
-  const [selectedCountry, setSelectedCountry] = useState<null | ICountry>(null);
-  const [email, setEmail] = useState<string>('abbaskheiraldeen47@gmail.com');
-  const [password, setPassword] = useState<string>('Test12345@');
-  const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<ValidationResultType<LoginReqType>>({
+    success: false,
+  });
 
-  const onChangeSelectedCountry = (country: ICountry) => {
-    setSelectedCountry(country);
-  };
-  const onChangePhoneNumber = (phoneNumber: string) => {
-    setPhoneNumberValue(phoneNumber);
-  };
-  const handleForgotPassword = () => {
-    router.push('/(unauthenticated)/login/forgot-password/method-selection');
-  };
-
-  const handleLogin = async () => {
-    setIsLoading(true);
-    try {
-      const res = await authClient.signIn.email({
-        email,
-        password,
-      });
-
-      if (res.data && !res.error) {
-        // Check if email is verified
-        if (res.data.user.emailVerified) {
-          // Better Auth handles session management automatically
-          router.replace('/(authenticated)/(tabs)');
-        } else {
-          // Email not verified - show alert and navigate to verification screen
-          Alert.alert(
-            'Email Not Verified',
-            'Please check your email and verify your account before logging in.',
-            [
-              {
-                text: 'OK',
-              },
-            ]
-          );
-        }
-      } else if (res.error) {
-        // Handle specific error cases
-        if (res.error.code === 'EMAIL_NOT_VERIFIED') {
-          Alert.alert(
-            'Email Not Verified',
-            'Please check your email and verify your account before logging in.',
-            [
-              {
-                text: 'OK',
-              },
-            ]
-          );
-        } else {
-          Alert.alert('Login Failed', res.error.message || 'An error occurred during login');
-        }
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      Alert.alert('Login Failed', 'An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
+  const onTextChange = (text: string, field: keyof LoginReqType) => {
+    switch (field) {
+      case 'password':
+        data.current[field] = text;
+        break;
+      case 'email':
+        delete data.current.phone;
+        data.current[field] = text;
+        break;
+      case 'phone':
+        delete data.current.email;
+        data.current[field] = text;
+        break;
     }
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      errors: { ...prev.errors, [field]: undefined },
+    }));
+  };
+  const handleLogin = async () => {
+    Keyboard.dismiss();
+    setValidationErrors({ success: true });
+
+    const { success, errors } = await validateLogin(data.current);
+
+    if (!success) {
+      setValidationErrors({ success: false, errors: errors || {} });
+      return;
+    }
+
+    login(data.current, {
+      onSuccess: () => {
+        Toast.success('Login successful');
+      },
+      onError: () => {
+        Toast.error('Oops! something went wrong');
+      },
+    });
   };
 
   return (
     <View style={styles.inputContainer}>
-      <View style={styles.inputField}>
-        <Text size={14} weight="regular" style={styles.inputLabel}>
-          {activeTab === 'email' ? 'Email' : 'Phone Number'}
-        </Text>
-
-        {activeTab === 'email' ? (
-          <Input
-            variant="email"
-            placeholder="Enter your email"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-        ) : (
-          <PhoneInput
-            defaultCountry="LB"
-            value={phoneNumberValue}
-            placeholder="Enter your phone number"
-            selectedCountry={selectedCountry}
-            onChangePhoneNumber={onChangePhoneNumber}
-            onChangeSelectedCountry={onChangeSelectedCountry}
-          />
-        )}
-      </View>
-
-      <View style={styles.inputField}>
-        <View style={styles.passwordHeader}>
-          <Text size={14} weight="regular" style={styles.inputLabel}>
-            Password
-          </Text>
-
-          <TouchableOpacity onPress={handleForgotPassword}>
-            <Text size={14} weight="regular" style={styles.forgotPassword}>
-              Forgot Password
-            </Text>
-          </TouchableOpacity>
-        </View>
-
+      {activeTab === 'email' ? (
         <Input
-          variant="password"
-          placeholder="Enter your password"
-          value={password}
-          onChangeText={setPassword}
+          label="Email"
+          variant="email"
+          keyboardType="email-address"
+          placeholder="Enter your email"
+          error={validationErrors.errors?.email}
+          onChangeText={(value) => onTextChange(value, 'email')}
         />
-      </View>
+      ) : (
+        <PhoneInput
+          placeholder="xx-xxx-xxxx"
+          error={validationErrors.errors?.phone}
+          onChangeText={(value) => onTextChange(value, 'phone')}
+        />
+      )}
+
+      <Input
+        label="Password"
+        variant="password"
+        placeholder="Enter your password"
+        error={validationErrors.errors?.password}
+        onChangeText={(value) => onTextChange(value, 'password')}
+        subText={{
+          label: 'Forgot Password',
+          action: () =>
+            router.navigate('/(unauthenticated)/login/forgot-password/method-selection'),
+        }}
+      />
 
       <Button
         title="Next"
-        isLoading={isLoading}
-        containerStyle={styles.nextButton}
-        onPress={() => handleLogin()}
+        onPress={handleLogin}
+        disabled={isLoginPending}
+        isLoading={isLoginPending}
       />
     </View>
   );
 };
 
+export default LoginInputs;
+
 const styles = StyleSheet.create({
   inputContainer: {
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.xl,
-  },
-  inputField: {
-    marginBottom: theme.spacing.lg,
-  },
-  inputLabel: {
-    color: theme.colors.darkText[100],
-    marginBottom: theme.spacing.xs,
-  },
-  passwordHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.xs,
-  },
-  forgotPassword: {
-    color: theme.colors.lightText,
-  },
-  passwordInputContainer: {
-    position: 'relative',
-  },
-
-  nextButton: {
+    gap: theme.spacing.lg,
     marginBottom: theme.spacing.xl,
   },
 });
-
-export default LoginInputs;

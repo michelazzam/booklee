@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -11,10 +12,9 @@ import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
 import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
-import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { UserProvider, useUserProvider } from '~/src/store';
-// import { AuthServices } from "~/src/services";
+import { AuthServices } from '~/src/services';
 
 import { CustomToast } from '~/src/components/base/toast';
 
@@ -54,7 +54,8 @@ const toastConfig = {
 const Navigation = () => {
   /*** Constants ***/
   const { isInitialized } = useUserProvider();
-  // const { isFetched: isUserFetched } = AuthServices.useGetMe();
+  const { isFetched: isUserFetched } = AuthServices.useGetMe();
+  const { data: session, isPending: isSessionPending } = AuthServices.useSession();
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../src/assets/fonts/Montserrat-Regular.ttf'),
     'Montserrat-Medium': require('../src/assets/fonts/Montserrat-Medium.ttf'),
@@ -64,14 +65,14 @@ const Navigation = () => {
 
   /*** Memoization ***/
   const isAppReady = useMemo(() => {
-    let isReady = fontsLoaded && isInitialized;
+    let isReady = fontsLoaded && isInitialized && !isSessionPending;
 
-    // if (tokens?.accessToken) {
-    //   isReady = isUserFetched;
-    // }
+    if (session?.session?.token) {
+      isReady = isUserFetched;
+    }
 
     return isReady;
-  }, [fontsLoaded, isInitialized]);
+  }, [fontsLoaded, isInitialized, isUserFetched, session, isSessionPending]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -89,13 +90,14 @@ const Navigation = () => {
 
   return (
     <>
+      <StatusBar style="dark" />
+
       <Slot
         screenOptions={{
           animation: 'fade',
           contentStyle: { backgroundColor: '#ffffff' },
         }}
       />
-      <StatusBar style="dark" />
     </>
   );
 };

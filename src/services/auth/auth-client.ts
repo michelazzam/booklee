@@ -3,12 +3,12 @@ import { expoClient } from '@better-auth/expo/client';
 import * as SecureStore from 'expo-secure-store';
 
 export const authClient = createAuthClient({
-  baseURL: 'https://booklee.app/api/auth', // Base URL of your Better Auth backend.
+  baseURL: 'https://www.booklee.app/api/auth',
   plugins: [
     expoClient({
       scheme: 'booklee',
-      storagePrefix: 'booklee',
       storage: SecureStore,
+      storagePrefix: 'booklee',
     }),
   ],
 });
