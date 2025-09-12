@@ -2,7 +2,7 @@ import { type RelativePathString, useRouter } from 'expo-router';
 import { StyleSheet, ScrollView, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
-import { hairAndStyling, nails, barber, eyebrowsEyelashes, type Store } from '~/src/mock';
+import { type Store } from '~/src/mock';
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
@@ -10,22 +10,22 @@ import { StoreCard } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 import { LocationServices } from '~/src/services';
+// import { mapLocationToStore, groupLocationsByCategory } from '~/src/utils';
 
 type SectionProps = {
   title: string;
   data: Store[];
   index?: number;
+  categoryId: string;
 };
-const SectionCategory = ({ title, data, index = 0 }: SectionProps) => {
+const SectionCategory = ({ title, data, index = 0, categoryId }: SectionProps) => {
   /*** Constants ***/
   const router = useRouter();
-  const { data: locations } = LocationServices.useGetLocations();
-  console.log('locations', locations);
 
   const handleSeeAllPress = () => {
     router.navigate({
-      params: { id: title },
-      pathname: '/(authenticated)/(screens)/store/[id]',
+      params: { filter: categoryId },
+      pathname: '/(authenticated)/(tabs)/search',
     });
   };
 
@@ -68,27 +68,48 @@ const SectionCategory = ({ title, data, index = 0 }: SectionProps) => {
   );
 };
 
-const CATEGORIES = [
-  {
-    title: 'Hair & Styling',
-    data: hairAndStyling,
-  },
-  {
-    title: 'Nails',
-    data: nails,
-  },
-  {
-    title: 'Barber',
-    data: barber,
-  },
-  {
-    title: 'Eyebrows & Eyelashes',
-    data: eyebrowsEyelashes,
-  },
-];
 const HomePage = () => {
   /*** Constants ***/
   const { top, bottom } = useAppSafeAreaInsets();
+
+  // Fetch data from APIs - using grouped categories
+  const {
+    data: locationsData,
+    isLoading: locationsLoading,
+    error: locationsError,
+  } = LocationServices.useGetLocationsByCategories();
+
+  // console.log('locationsData', locationsData);
+
+  const isLoading = locationsLoading;
+  const hasError = locationsError;
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text size={theme.typography.fontSizes.md}>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text size={theme.typography.fontSizes.md} color={theme.colors.red[100]}>
+          Error loading data. Please try again.
+        </Text>
+      </View>
+    );
+  }
+
+  // If no data is available, show a message
+  if (!locationsData?.categories || locationsData.categories.length === 0) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text size={theme.typography.fontSizes.md}>No stores available at the moment.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -96,7 +117,7 @@ const HomePage = () => {
         bounces={false}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
-        <View style={[styles.headerContainer, { paddingTop: top }]}>
+        <View style={[styles.headerContainer, { paddingTop: top * 2 }]}>
           <Text
             weight="bold"
             color={theme.colors.white.DEFAULT}
@@ -112,14 +133,32 @@ const HomePage = () => {
           </Text>
         </View>
 
-        {CATEGORIES.map((category, index) => (
-          <SectionCategory
-            index={index}
-            key={category.title}
-            data={category.data}
-            title={category.title}
-          />
-        ))}
+        {locationsData.categories.map((category, index) => {
+          // Convert locations to Store format for StoreCard
+          const storeData = category.locations.map((location) => ({
+            id: location._id,
+            tag: category.title,
+            name: location.name,
+            city: location.city || 'Unknown',
+            image:
+              location.logo ||
+              'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
+            rating: 4.5, // Default rating
+            about: 'Services available',
+            openingHours: 'Hours not available',
+            isFavorite: false,
+          }));
+
+          return (
+            <SectionCategory
+              index={index}
+              key={category._id}
+              data={storeData}
+              title={category.title}
+              categoryId={category._id}
+            />
+          );
+        })}
       </ScrollView>
     </View>
   );

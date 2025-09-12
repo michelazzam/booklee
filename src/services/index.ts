@@ -4,6 +4,7 @@ export { apiClient } from './axios/interceptor';
 export { withErrorCatch } from './axios/error';
 export { AuthServices } from './auth/hooks';
 export { LocationServices } from './locations/hooks';
+export { CategoryServices } from './categories/hooks';
 
 /*** Types ***/
 export type { ResErrorType } from './axios/types';
@@ -23,8 +24,9 @@ export type {
   LocationService,
   Service,
   Price,
-  Category,
+  Category as LocationCategory,
   GeoLocation,
   OperatingHours,
   WeeklyOperatingHours,
 } from './locations/types';
+export type { Category, GetCategoriesResType, GetCategoriesReqType } from './categories/types';

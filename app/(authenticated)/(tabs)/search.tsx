@@ -1,8 +1,7 @@
 import { useLocalSearchParams, useRouter, type RelativePathString } from 'expo-router';
-import { View, FlatList, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { useState, useMemo, useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 
-import { hairAndStyling, nails, barber, eyebrowsEyelashes, type Store } from '~/src/mock';
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
@@ -10,20 +9,8 @@ import { SearchInput } from '~/src/components/textInputs';
 import { StoreCard } from '~/src/components/preview';
 import { FilterModal } from '~/src/components/modals';
 import { Icon, Text } from '~/src/components/base';
+import { LocationServices, type Location } from '~/src/services';
 
-type Filter = {
-  id: string;
-  label: string;
-};
-const filters: Filter[] = [
-  { id: '', label: 'All' },
-  { id: 'hair-styling', label: 'Hair & Styling' },
-  { id: 'nails', label: 'Nails' },
-  { id: 'barber', label: 'Barber' },
-  { id: 'eyebrows-eyelashes', label: 'Eyebrows & Eyelashes' },
-];
-
-const allSalons: Store[] = [...hairAndStyling, ...nails, ...barber, ...eyebrowsEyelashes];
 const Search = () => {
   /*** Constants ***/
   const router = useRouter();
@@ -35,52 +22,110 @@ const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<string>(filter || '');
 
+  // Sync filter parameter with selectedFilter state
+  useEffect(() => {
+    if (filter) {
+      setSelectedFilter(filter);
+    }
+  }, [filter]);
+
+  // Fetch data from APIs - using grouped categories
+  const {
+    data: locationsData,
+    isLoading: locationsLoading,
+    error: locationsError,
+  } = LocationServices.useGetLocationsByCategories();
+
   /*** Memoization ***/
-  const stores = useMemo(() => {
-    let filtered = allSalons;
+  const filters = useMemo(() => {
+    if (!locationsData?.categories) return [{ id: '', label: 'All' }];
 
-    switch (selectedFilter) {
-      case 'hair-styling':
-        filtered = hairAndStyling;
-        break;
-      case 'nails':
-        filtered = nails;
-        break;
-      case 'barber':
-        filtered = barber;
-        break;
-      case 'eyebrows-eyelashes':
-        filtered = eyebrowsEyelashes;
-        break;
-      default:
-        filtered = allSalons;
-        break;
+    return [
+      { id: '', label: 'All' },
+      ...locationsData.categories.map((category) => ({
+        id: category._id,
+        label: category.title,
+      })),
+    ];
+  }, [locationsData]);
+
+  const filteredCategories = useMemo(() => {
+    if (!locationsData?.categories) return [];
+
+    let categories = locationsData.categories;
+
+    // Filter by category if selected
+    if (selectedFilter) {
+      categories = categories.filter((category) => category._id === selectedFilter);
     }
 
+    // Filter locations within each category by search query
     if (searchQuery.trim()) {
-      filtered = filtered.filter(
-        (store) =>
-          store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          store.city.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      categories = categories
+        .map((category) => ({
+          ...category,
+          locations: category.locations.filter(
+            (location) =>
+              location.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              (location.city && location.city.toLowerCase().includes(searchQuery.toLowerCase()))
+          ),
+        }))
+        .filter((category) => category.locations.length > 0); // Remove categories with no matching locations
     }
 
-    return filtered;
-  }, [selectedFilter, searchQuery]);
+    return categories;
+  }, [locationsData, selectedFilter, searchQuery]);
 
-  const RenderItem = useCallback(
-    ({ item, index }: { item: Store; index: number }) => (
-      <View style={{ paddingHorizontal: theme.spacing.lg }}>
-        <StoreCard
-          data={item}
-          delay={index * 150}
-          animatedStyle="slideUp"
-          onPress={() =>
-            router.navigate(`/(authenticated)/(screens)/store/${item.id}` as RelativePathString)
-          }
-        />
-      </View>
-    ),
+  const RenderCategorySection = useCallback(
+    ({ category, categoryIndex }: { category: any; categoryIndex: number }) => {
+      return (
+        <View style={{ marginBottom: theme.spacing.xl }}>
+          {/* Category Title */}
+          <View style={{ paddingHorizontal: theme.spacing.lg, marginBottom: theme.spacing.md }}>
+            <Text
+              weight="medium"
+              color={theme.colors.darkText[100]}
+              size={theme.typography.fontSizes.lg}>
+              {category.title}
+            </Text>
+          </View>
+
+          {/* Locations in this category */}
+          {category.locations.map((location: Location, locationIndex: number) => {
+            const storeData = {
+              id: location._id,
+              tag: category.title,
+              name: location.name,
+              city: location.city || 'Unknown',
+              image:
+                location.logo ||
+                'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
+              rating: 4.5, // Default rating
+              about: 'Services available',
+              openingHours: 'Hours not available',
+              isFavorite: false,
+            };
+
+            return (
+              <View
+                key={location._id}
+                style={{ paddingHorizontal: theme.spacing.lg, marginBottom: theme.spacing.md }}>
+                <StoreCard
+                  data={storeData}
+                  delay={categoryIndex * 100 + locationIndex * 150}
+                  animatedStyle="slideUp"
+                  onPress={() =>
+                    router.navigate(
+                      `/(authenticated)/(screens)/store/${location._id}` as RelativePathString
+                    )
+                  }
+                />
+              </View>
+            );
+          })}
+        </View>
+      );
+    },
     [router]
   );
   const RenderHeader = useCallback(() => {
@@ -125,8 +170,32 @@ const Search = () => {
         </ScrollView>
       </View>
     );
-  }, [setSearchQuery, selectedFilter, top]);
+  }, [filters, selectedFilter, setSearchQuery, top]);
+
+  const isLoading = locationsLoading;
+  const hasError = locationsError;
+
   const RenderEmptyComponent = useCallback(() => {
+    if (isLoading) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text color={theme.colors.darkText[100]} weight="medium">
+            Loading salons...
+          </Text>
+        </View>
+      );
+    }
+
+    if (hasError) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text color={theme.colors.red[100]} weight="medium">
+            Error loading data. Please try again.
+          </Text>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.emptyContainer}>
         <Text color={theme.colors.darkText[100]} weight="medium">
@@ -134,21 +203,24 @@ const Search = () => {
         </Text>
       </View>
     );
-  }, []);
+  }, [isLoading, hasError]);
 
   return (
     <>
-      <FlatList
-        data={stores}
-        renderItem={RenderItem}
+      <ScrollView
         stickyHeaderIndices={[0]}
-        stickyHeaderHiddenOnScroll
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={RenderHeader}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={RenderEmptyComponent}
-        contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
-      />
+        contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}>
+        <RenderHeader />
+
+        {filteredCategories.length === 0 ? (
+          <RenderEmptyComponent />
+        ) : (
+          filteredCategories.map((category, index) => (
+            <RenderCategorySection key={category._id} category={category} categoryIndex={index} />
+          ))
+        )}
+      </ScrollView>
 
       <FilterModal
         visible={showFilterModal}
