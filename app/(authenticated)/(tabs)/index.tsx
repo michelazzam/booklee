@@ -9,6 +9,7 @@ import { theme } from '~/src/constants/theme';
 import { StoreCard } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
+import { LocationServices } from '~/src/services';
 
 type SectionProps = {
   title: string;
@@ -18,7 +19,9 @@ type SectionProps = {
 const SectionCategory = ({ title, data, index = 0 }: SectionProps) => {
   /*** Constants ***/
   const router = useRouter();
+  const { data: locations, isLoading, error } = LocationServices.useGetLocations();
 
+  console.log('locations', locations, error);
   const handleSeeAllPress = () => {
     router.navigate({
       params: { id: title },
