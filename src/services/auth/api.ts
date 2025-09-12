@@ -24,7 +24,7 @@ export const getMeApi = async () => {
 
 /*** API for sign up ***/
 export const signUpApi = async (data: SignUpReqType) => {
-  const { firstName, lastName, email, password, role, phone } = data;
+  const { firstName, lastName, email, password, role, phone, salonName } = data;
   const name = `${firstName} ${lastName}`.trim();
 
   const [response, error] = await withErrorCatch(
@@ -32,12 +32,16 @@ export const signUpApi = async (data: SignUpReqType) => {
       name,
       email,
       password,
-
-      role,
-      phone,
-      lastName,
-      firstName,
-    } as any)
+      fetchOptions: {
+        body: {
+          role,
+          phone,
+          lastName,
+          firstName,
+          salonName,
+        },
+      },
+    })
   );
 
   if (error instanceof AxiosError) {

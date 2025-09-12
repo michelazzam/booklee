@@ -5,9 +5,12 @@ import { theme } from '~/src/constants/theme';
 
 import { AuthServices } from '~/src/services';
 
+const excludedAuthPaths = ['login', 'signup'];
+
 export default function UnauthenticatedLayout() {
   /*** Constants ***/
   const pathname = usePathname();
+  const lastPath = pathname.split('/')[1] || '';
   const { data: user } = AuthServices.useGetMe();
   const { isOnboardingCompleted } = useUserProvider();
 
@@ -17,9 +20,7 @@ export default function UnauthenticatedLayout() {
   }
 
   // Redirects users to login if they have completed onboarding and are not logged in
-  const excludedPaths = ['login', 'signup'];
-  const lastPath = pathname.split('/').pop() || '';
-  if (isOnboardingCompleted && !user && !excludedPaths.includes(lastPath)) {
+  if (isOnboardingCompleted && !user && !excludedAuthPaths.includes(lastPath)) {
     return <Redirect href="/(unauthenticated)/login" />;
   }
 

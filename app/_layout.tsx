@@ -55,7 +55,7 @@ const Navigation = () => {
   /*** Constants ***/
   const { isInitialized } = useUserProvider();
   const { isFetched: isUserFetched } = AuthServices.useGetMe();
-  const { data: session, isPending: isSessionPending } = AuthServices.useSession();
+  const { isAuthenticated } = AuthServices.useGetBetterAuthUser();
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../src/assets/fonts/Montserrat-Regular.ttf'),
     'Montserrat-Medium': require('../src/assets/fonts/Montserrat-Medium.ttf'),
@@ -65,14 +65,14 @@ const Navigation = () => {
 
   /*** Memoization ***/
   const isAppReady = useMemo(() => {
-    let isReady = fontsLoaded && isInitialized && !isSessionPending;
+    let isReady = fontsLoaded && isInitialized;
 
-    if (session?.session?.token) {
+    if (isAuthenticated) {
       isReady = isUserFetched;
     }
 
     return isReady;
-  }, [fontsLoaded, isInitialized, isUserFetched, session, isSessionPending]);
+  }, [fontsLoaded, isInitialized, isUserFetched, isAuthenticated]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
