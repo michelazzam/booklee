@@ -63,7 +63,7 @@ const LoginInputs = ({ activeTab }: LoginInputsProps) => {
 
     login(data.current, {
       onSuccess: () => {
-        Toast.success('Login successful');
+        router.replace('/(authenticated)/(tabs)');
       },
       onError: () => {
         Toast.error('Oops! something went wrong');
