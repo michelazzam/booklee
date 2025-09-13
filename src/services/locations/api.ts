@@ -19,11 +19,6 @@ export const getLocationsApi = async (params?: GetLocationsReqType) => {
   // Merge provided params with defaults
   const mergedParams = { ...DEFAULT_LOCATIONS_PARAMS, ...params };
 
-  // Log the full endpoint URL
-  const fullUrl = `${apiClient.defaults.baseURL}locations`;
-  console.log('Full endpoint URL:', fullUrl);
-  console.log('Request params:', mergedParams);
-
   const [response, error] = await withErrorCatch(
     apiClient.get<GetLocationsResType | GetLocationsByCategoriesResType>('locations', {
       params: mergedParams,
@@ -38,18 +33,12 @@ export const getLocationsApi = async (params?: GetLocationsReqType) => {
   } else if (error) {
     throw error;
   }
-  console.log('response', response.data);
   return response?.data;
 };
 
 /*** API for get single location by ID ***/
 export const getLocationByIdApi = async (params: GetLocationByIdReqType) => {
   const { id, byId = true } = params;
-
-  // Log the full endpoint URL
-  const fullUrl = `${apiClient.defaults.baseURL}locations/${id}`;
-  console.log('Full endpoint URL:', fullUrl);
-  console.log('Request params:', { id, byId });
 
   const [response, error] = await withErrorCatch(
     apiClient.get<GetLocationByIdResType>(`locations/${id}`, {
@@ -65,7 +54,7 @@ export const getLocationByIdApi = async (params: GetLocationByIdReqType) => {
   } else if (error) {
     throw error;
   }
-  console.log('response', response.data);
+
   return response?.data;
 };
 

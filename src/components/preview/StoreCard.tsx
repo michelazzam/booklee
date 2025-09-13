@@ -12,6 +12,7 @@ import Animated, {
 
 import { theme } from '../../constants/theme';
 import { type Store } from '~/src/mock';
+import { FavoritesServices } from '~/src/services';
 
 import { Text, Icon } from '../base';
 
@@ -32,7 +33,14 @@ const StoreCard = ({
   animatedStyle = 'none',
 }: StoreCardProps) => {
   /***** Constants *****/
-  const { tag = '', name = '', city = '', image = '', rating = 0 } = data;
+  const { tag = '', name = '', city = '', image = '', rating = 0, id } = data;
+
+  /***** Hooks *****/
+  const { data: favorites } = FavoritesServices.useGetFavorites();
+  const { toggleFavorite } = FavoritesServices.useToggleFavorite();
+
+  /***** Computed values *****/
+  const isFavorite = favorites?.some((fav) => fav._id === id) || false;
 
   /***** Memoization *****/
   const getEnteringAnimation = useMemo(() => {
@@ -72,8 +80,12 @@ const StoreCard = ({
     }
   }, [animatedStyle, delay, duration]);
 
-  const handleFavoritePress = () => {
-    console.log('favorite');
+  const handleFavoritePress = async () => {
+    try {
+      await toggleFavorite(id);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
   };
 
   return (
@@ -87,7 +99,12 @@ const StoreCard = ({
         <Image source={{ uri: image }} style={styles.image} contentFit="cover" />
 
         <View style={styles.favoriteButton}>
-          <Icon name="heart-outline" size={28} color="#FFFFFF" onPress={handleFavoritePress} />
+          <Icon
+            name={isFavorite ? 'heart' : 'heart-outline'}
+            size={28}
+            color={isFavorite ? '#FF6B6B' : '#FFFFFF'}
+            onPress={handleFavoritePress}
+          />
         </View>
       </View>
 

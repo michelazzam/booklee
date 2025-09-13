@@ -1,15 +1,15 @@
 import { useLocalSearchParams, useRouter, type RelativePathString } from 'expo-router';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useDebouncing } from '~/src/hooks';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { SearchInput } from '~/src/components/textInputs';
 import { StoreCard } from '~/src/components/preview';
-import { FilterModal } from '~/src/components/modals';
+import { FilterModal, SearchModal } from '~/src/components/modals';
 import { Icon, Text } from '~/src/components/base';
-import { LocationServices, type Location } from '~/src/services';
+import { LocationServices, SearchServices } from '~/src/services';
 
 const Search = () => {
   /*** Constants ***/
@@ -19,8 +19,10 @@ const Search = () => {
 
   /*** States ***/
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<string>(filter || '');
+  const debouncedSearchQuery = useDebouncing(searchQuery, 500);
 
   // Sync filter parameter with selectedFilter state
   useEffect(() => {
@@ -36,6 +38,16 @@ const Search = () => {
     error: locationsError,
   } = LocationServices.useGetLocationsByCategories();
 
+  // Fetch search results when there's a search query
+  const {
+    data: searchResults,
+    isLoading: searchLoading,
+    error: searchError,
+  } = SearchServices.useSearchLocations(
+    { query: debouncedSearchQuery, limit: 50 },
+    !!debouncedSearchQuery.trim()
+  );
+
   /*** Memoization ***/
   const filters = useMemo(() => {
     if (!locationsData?.categories) return [{ id: '', label: 'All' }];
@@ -50,6 +62,30 @@ const Search = () => {
   }, [locationsData]);
 
   const filteredCategories = useMemo(() => {
+    // If there's a search query, use search results instead of filtered categories
+    if (debouncedSearchQuery.trim() && searchResults) {
+      // Group search results by category
+      const groupedResults = searchResults.reduce(
+        (acc, location) => {
+          const categoryId = location.categoryId;
+          if (!acc[categoryId]) {
+            acc[categoryId] = {
+              _id: categoryId,
+              title: location.category.title,
+              slug: location.category.slug,
+              locations: [],
+            };
+          }
+          acc[categoryId].locations.push(location);
+          return acc;
+        },
+        {} as Record<string, any>
+      );
+
+      return Object.values(groupedResults);
+    }
+
+    // Default behavior: filter categories by selected filter
     if (!locationsData?.categories) return [];
 
     let categories = locationsData.categories;
@@ -59,22 +95,8 @@ const Search = () => {
       categories = categories.filter((category) => category._id === selectedFilter);
     }
 
-    // Filter locations within each category by search query
-    if (searchQuery.trim()) {
-      categories = categories
-        .map((category) => ({
-          ...category,
-          locations: category.locations.filter(
-            (location) =>
-              location.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              (location.city && location.city.toLowerCase().includes(searchQuery.toLowerCase()))
-          ),
-        }))
-        .filter((category) => category.locations.length > 0); // Remove categories with no matching locations
-    }
-
     return categories;
-  }, [locationsData, selectedFilter, searchQuery]);
+  }, [locationsData, selectedFilter, debouncedSearchQuery, searchResults]);
 
   const RenderCategorySection = useCallback(
     ({ category, categoryIndex }: { category: any; categoryIndex: number }) => {
@@ -91,7 +113,7 @@ const Search = () => {
           </View>
 
           {/* Locations in this category */}
-          {category.locations.map((location: Location, locationIndex: number) => {
+          {category.locations.map((location: any, locationIndex: number) => {
             const storeData = {
               id: location._id,
               tag: category.title,
@@ -100,7 +122,7 @@ const Search = () => {
               image:
                 location.logo ||
                 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
-              rating: 4.5, // Default rating
+              rating: location.rating || 4.5,
               about: 'Services available',
               openingHours: 'Hours not available',
               isFavorite: false,
@@ -132,7 +154,34 @@ const Search = () => {
     return (
       <View style={[styles.headerContainer, { paddingTop: top }]}>
         <View style={styles.searchContainer}>
-          <SearchInput onSearch={setSearchQuery} placeholder="Store, location, or service" />
+          <TouchableOpacity
+            style={[styles.searchButton, searchQuery && styles.searchButtonActive]}
+            onPress={() => setShowSearchModal(true)}
+            activeOpacity={0.8}>
+            <View style={styles.searchButtonContent}>
+              <Icon
+                name="magnify"
+                size={20}
+                color={searchQuery ? theme.colors.primaryBlue[100] : theme.colors.lightText}
+              />
+              <Text
+                style={styles.searchButtonText}
+                color={searchQuery ? theme.colors.darkText[100] : theme.colors.lightText}>
+                {searchQuery ? `"${searchQuery}"` : 'Store, location, or service'}
+              </Text>
+              {searchQuery && (
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    setSearchQuery('');
+                  }}
+                  style={styles.clearButton}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                  <Icon name="close" size={18} color={theme.colors.lightText} />
+                </TouchableOpacity>
+              )}
+            </View>
+          </TouchableOpacity>
 
           <TouchableOpacity
             activeOpacity={0.8}
@@ -170,17 +219,17 @@ const Search = () => {
         </ScrollView>
       </View>
     );
-  }, [filters, selectedFilter, setSearchQuery, top]);
+  }, [filters, selectedFilter, searchQuery, top]);
 
-  const isLoading = locationsLoading;
-  const hasError = locationsError;
+  const isLoading = debouncedSearchQuery.trim() ? searchLoading : locationsLoading;
+  const hasError = debouncedSearchQuery.trim() ? searchError : locationsError;
 
   const RenderEmptyComponent = useCallback(() => {
     if (isLoading) {
       return (
         <View style={styles.emptyContainer}>
           <Text color={theme.colors.darkText[100]} weight="medium">
-            Loading salons...
+            {debouncedSearchQuery.trim() ? 'Searching...' : 'Loading salons...'}
           </Text>
         </View>
       );
@@ -199,11 +248,13 @@ const Search = () => {
     return (
       <View style={styles.emptyContainer}>
         <Text color={theme.colors.darkText[100]} weight="medium">
-          No salons found
+          {debouncedSearchQuery.trim()
+            ? `No results found for "${debouncedSearchQuery}"`
+            : 'No salons found'}
         </Text>
       </View>
     );
-  }, [isLoading, hasError]);
+  }, [isLoading, hasError, debouncedSearchQuery]);
 
   return (
     <>
@@ -227,6 +278,15 @@ const Search = () => {
         onClose={() => setShowFilterModal(false)}
         onApply={() => {}}
       />
+
+      <SearchModal
+        visible={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        onSearch={(query) => {
+          setSearchQuery(query);
+        }}
+        initialQuery={searchQuery}
+      />
     </>
   );
 };
@@ -245,6 +305,32 @@ const styles = StyleSheet.create({
     gap: theme.spacing.lg,
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.lg,
+  },
+  searchButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.md,
+    backgroundColor: theme.colors.white.DEFAULT,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
+  searchButtonActive: {
+    borderColor: theme.colors.primaryBlue[100],
+    backgroundColor: theme.colors.primaryBlue[10] || theme.colors.white.DEFAULT,
+  },
+  searchButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  searchButtonText: {
+    flex: 1,
+    fontSize: theme.typography.fontSizes.md,
+  },
+  clearButton: {
+    padding: theme.spacing.xs,
+    marginLeft: theme.spacing.xs,
   },
   filterButton: {
     borderWidth: 1,

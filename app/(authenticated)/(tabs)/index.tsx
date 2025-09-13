@@ -79,8 +79,6 @@ const HomePage = () => {
     error: locationsError,
   } = LocationServices.useGetLocationsByCategories();
 
-  // console.log('locationsData', locationsData);
-
   const isLoading = locationsLoading;
   const hasError = locationsError;
 
