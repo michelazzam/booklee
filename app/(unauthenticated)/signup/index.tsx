@@ -61,7 +61,6 @@ export const SignupPage = () => {
     setValidationErrors({ success: true });
 
     const { success, errors } = await validateSignup(data.current);
-
     if (!success) {
       setValidationErrors({ success: false, errors: errors || {} });
       return;
@@ -70,7 +69,12 @@ export const SignupPage = () => {
     const { confirmPassword, ...signupData } = data.current;
     signup(signupData, {
       onSuccess: () => {
-        router.replace('/(unauthenticated)/signup/email-verification');
+        router.replace({
+          pathname: '/(unauthenticated)/signup/email-verification',
+          params: {
+            email: signupData.email,
+          },
+        });
       },
       onError: (error: any) => {
         console.error('Sign up error:', error);
@@ -152,15 +156,18 @@ export const SignupPage = () => {
 
         <Input
           variant="password"
-          label="Confirm Password*"
           placeholder="********"
+          label="Confirm Password*"
           error={validationErrors.errors?.confirmPassword}
           onChangeText={(value) => onTextChange(value, 'confirmPassword')}
         />
 
-        <View style={{ marginTop: theme.spacing.xl }}>
-          <Button title="Sign up" onPress={handleSignup} isLoading={isSignupPending} />
-        </View>
+        <Button
+          title="Sign up"
+          onPress={handleSignup}
+          isLoading={isSignupPending}
+          containerStyle={{ marginTop: theme.spacing.xl }}
+        />
       </AwareScrollView>
     </>
   );

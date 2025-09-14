@@ -1,90 +1,193 @@
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, StyleSheet, Keyboard } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Toast } from 'toastify-react-native';
+import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 
+import { AuthServices, type LoginReqType } from '~/src/services';
+
+import { type ValidationResultType, validateLogin } from '~/src/helper/validation';
 import { theme } from '~/src/constants/theme';
 
 import { AwareScrollView, Text } from '~/src/components/base';
-import {
-  AuthBackground,
-  LoginInputs,
-  SocialLogin,
-  LoginTabs,
-  AppTitle,
-} from '~/src/components/utils/auth/login';
+import { Input } from '~/src/components/textInputs';
+import { Button } from '~/src/components/buttons';
 
 const SignInPage = () => {
+  /***** Refs *****/
+  const data = useRef<LoginReqType>({
+    password: '',
+  });
+
   /*** Constants ***/
   const router = useRouter();
+  const { mutate: login, isPending: isLoginPending } = AuthServices.useLogin();
+  const { mutate: googleLogin, isPending: isGoogleLoginPending } = AuthServices.useGoogleLogin();
 
   /*** States ***/
-  const [activeTab, setActiveTab] = useState<'email' | 'phone'>('email');
+  const [validationErrors, setValidationErrors] = useState<ValidationResultType<LoginReqType>>({
+    success: false,
+  });
+
+  const onTextChange = (text: string, field: keyof LoginReqType) => {
+    switch (field) {
+      case 'password':
+        data.current[field] = text;
+        break;
+      case 'email':
+        delete data.current.phone;
+        data.current[field] = text;
+        break;
+      case 'phone':
+        delete data.current.email;
+        data.current[field] = text;
+        break;
+    }
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      errors: { ...prev.errors, [field]: undefined },
+    }));
+  };
+  const handleLogin = async () => {
+    Keyboard.dismiss();
+    setValidationErrors({ success: true });
+
+    const { success, errors } = await validateLogin(data.current);
+
+    if (!success) {
+      setValidationErrors({ success: false, errors: errors || {} });
+      return;
+    }
+
+    login(data.current, {
+      onSuccess: () => {
+        router.replace('/(authenticated)/(tabs)');
+      },
+      onError: () => {
+        Toast.error('Oops! something went wrong');
+      },
+    });
+  };
 
   return (
-    <AuthBackground>
-      <View style={styles.container}>
-        <AppTitle />
+    <LinearGradient
+      style={styles.container}
+      end={{ x: 1, y: 1 }}
+      start={{ x: 0, y: 0 }}
+      colors={[theme.colors.primaryBlue[100], theme.colors.darkText[100]]}>
+      <Text
+        size={28}
+        weight="black"
+        style={{ textAlign: 'center' }}
+        color={theme.colors.white.DEFAULT}>
+        Booklee
+      </Text>
 
-        <AwareScrollView contentContainerStyle={styles.formCard}>
-          <View style={styles.formHeader}>
-            <Text size={22} weight="semiBold" style={styles.formTitle}>
-              Log In
-            </Text>
+      <AwareScrollView contentContainerStyle={styles.formCard}>
+        <Text size={28} weight="semiBold">
+          Log In
+        </Text>
 
-            <LoginTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        <View style={{ gap: 62 }}>
+          <View style={{ gap: theme.spacing.xl }}>
+            <Input
+              label="Email"
+              variant="email"
+              keyboardType="email-address"
+              placeholder="Enter your email"
+              error={validationErrors.errors?.email}
+              onChangeText={(value) => onTextChange(value, 'email')}
+            />
+
+            <Input
+              label="Password"
+              variant="password"
+              placeholder="Enter your password"
+              error={validationErrors.errors?.password}
+              onChangeText={(value) => onTextChange(value, 'password')}
+              subText={{
+                label: 'Forgot Password',
+                action: () =>
+                  router.navigate('/(unauthenticated)/login/forgot-password/method-selection'),
+              }}
+            />
+
+            <Button
+              title="Next"
+              onPress={handleLogin}
+              disabled={isLoginPending}
+              isLoading={isLoginPending}
+            />
           </View>
 
-          <LoginInputs activeTab={activeTab} />
+          <View style={{ gap: theme.spacing.lg }}>
+            <View style={styles.separator}>
+              <View style={styles.separatorLine} />
 
-          <SocialLogin />
-
-          <View style={styles.signUpContainer}>
-            <Text size={14} weight="regular" style={styles.signUpText}>
-              Don&apos;t have an account?{' '}
-            </Text>
-
-            <TouchableOpacity onPress={() => router.navigate('/(unauthenticated)/signup')}>
-              <Text size={14} weight="semiBold" style={styles.signUpLink}>
-                Sign Up
+              <Text size={14} weight="regular">
+                Or sign in with
               </Text>
-            </TouchableOpacity>
+
+              <View style={styles.separatorLine} />
+            </View>
+
+            <Button
+              variant="outline"
+              leadingIcon="google"
+              onPress={googleLogin}
+              title="Continue With Google"
+              isLoading={isGoogleLoginPending}
+            />
           </View>
-        </AwareScrollView>
-      </View>
-    </AuthBackground>
+        </View>
+
+        <View style={styles.signUpContainer}>
+          <Text size={14} weight="regular">
+            Don&apos;t have an account?{' '}
+          </Text>
+
+          <Text
+            size={14}
+            weight="semiBold"
+            color={theme.colors.darkText[100]}
+            style={{ textDecorationLine: 'underline' }}
+            onPress={() => router.navigate('/(unauthenticated)/signup')}>
+            Sign Up
+          </Text>
+        </View>
+      </AwareScrollView>
+    </LinearGradient>
   );
 };
 
+export default SignInPage;
+
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     paddingTop: '30%',
+    gap: theme.spacing.lg,
     paddingHorizontal: theme.spacing.xl,
   },
   formCard: {
+    gap: theme.spacing.lg,
     padding: theme.spacing.xl,
     borderRadius: theme.radii.lg,
     backgroundColor: theme.colors.white.DEFAULT,
   },
-  formHeader: {
-    marginBottom: theme.spacing.xl,
-  },
-  formTitle: {
-    color: theme.colors.darkText[100],
-    marginBottom: theme.spacing.lg,
-  },
-
-  signUpContainer: {
+  separator: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
   },
-  signUpText: {
-    color: theme.colors.lightText,
+  separatorLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: theme.colors.border,
   },
-  signUpLink: {
-    color: theme.colors.darkText[100],
-    textDecorationLine: 'underline',
+  signUpContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
-
-export default SignInPage;
