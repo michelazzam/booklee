@@ -21,6 +21,7 @@ type SectionProps = {
 const SectionCategory = ({ title, data, index = 0, categoryId }: SectionProps) => {
   /*** Constants ***/
   const router = useRouter();
+  const { data: locations } = LocationServices.useGetLocations();
 
   const handleSeeAllPress = () => {
     router.navigate({

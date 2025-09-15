@@ -1,5 +1,5 @@
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
 
 import { theme } from '~/src/constants/theme';
 
@@ -7,7 +7,9 @@ import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
 const EmailVerificationPage = () => {
+  /*** Constants ***/
   const router = useRouter();
+  const { email } = useLocalSearchParams<{ email: string }>();
 
   return (
     <View style={styles.container}>
@@ -15,9 +17,15 @@ const EmailVerificationPage = () => {
         📧
       </Text>
 
-      <Text size={24} weight="semiBold" style={{ textAlign: 'center' }}>
-        Check Your Email
-      </Text>
+      <View style={{ gap: theme.spacing.sm }}>
+        <Text size={24} weight="semiBold" style={{ textAlign: 'center' }}>
+          Check Your Email
+        </Text>
+
+        <Text size={14} weight="regular" style={{ textAlign: 'center' }}>
+          {email}
+        </Text>
+      </View>
 
       <View style={styles.descriptionContainer}>
         <Text
