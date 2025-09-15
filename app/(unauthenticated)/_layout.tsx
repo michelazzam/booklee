@@ -11,8 +11,8 @@ export default function UnauthenticatedLayout() {
   /*** Constants ***/
   const pathname = usePathname();
   const lastPath = pathname.split('/')[1] || '';
+  const { data: userData } = AuthServices.useGetMe();
   const { isOnboardingCompleted } = useUserProvider();
-  const { data: userData, isLoading: isUserLoading } = AuthServices.useGetMe();
   const { isAuthenticated, user: authUser } = AuthServices.useGetBetterAuthUser();
 
   // If user is authenticated and has getMe data and is verified, redirect to app
