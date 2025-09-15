@@ -11,8 +11,14 @@ export default function UnauthenticatedLayout() {
   /*** Constants ***/
   const pathname = usePathname();
   const lastPath = pathname.split('/')[1] || '';
-  const { data: user } = AuthServices.useGetMe();
   const { isOnboardingCompleted } = useUserProvider();
+  const { data: userData, isLoading: isUserLoading } = AuthServices.useGetMe();
+  const { isAuthenticated, user: authUser } = AuthServices.useGetBetterAuthUser();
+
+  // If user is authenticated and has getMe data and is verified, redirect to app
+  if (isAuthenticated && userData && authUser?.emailVerified) {
+    return <Redirect href="/(authenticated)/(tabs)" />;
+  }
 
   // Redirects users to onboarding if they haven't completed it
   if (!isOnboardingCompleted && !pathname.includes('onboarding')) {
@@ -20,11 +26,9 @@ export default function UnauthenticatedLayout() {
   }
 
   // Redirects users to login if they have completed onboarding and are not logged in
-  if (isOnboardingCompleted && !user && !excludedAuthPaths.includes(lastPath)) {
+  if (isOnboardingCompleted && !isAuthenticated && !excludedAuthPaths.includes(lastPath)) {
     return <Redirect href="/(unauthenticated)/login" />;
   }
-
-  if (user) return <Redirect href="/(authenticated)/(tabs)" />;
 
   return (
     <Stack

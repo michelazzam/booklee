@@ -18,30 +18,32 @@ export type Session = {
 };
 
 /*** Get me response type ***/
+export type UserType = {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  phone: string;
+  lastName: string;
+  firstName: string;
+  salonName: string;
+  image: string | null;
+  approvedByOwner: boolean;
+};
+export type OrganizationType = {
+  _id: string;
+  name: string;
+  logo: string;
+  phone: string;
+  address: string;
+  description: string;
+  invitationKey: string;
+  geoLocation: object | null;
+  monthlyRevenueTarget: number;
+};
 export type GetMeResType = {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-    phone: string;
-    lastName: string;
-    firstName: string;
-    salonName: string;
-    image: string | null;
-    approvedByOwner: boolean;
-  };
-  organization: {
-    _id: string;
-    name: string;
-    logo: string;
-    phone: string;
-    address: string;
-    description: string;
-    invitationKey: string;
-    geoLocation: object | null;
-    monthlyRevenueTarget: number;
-  };
+  user: UserType;
+  organization: OrganizationType;
 };
 
 /*** Login types ***/

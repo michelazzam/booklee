@@ -1,7 +1,7 @@
 import { View, StyleSheet, Keyboard } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Toast } from 'toastify-react-native';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 
 import { AuthServices, type LoginReqType } from '~/src/services';
@@ -21,6 +21,8 @@ const SignInPage = () => {
 
   /*** Constants ***/
   const router = useRouter();
+  const { user: authUser } = AuthServices.useGetBetterAuthUser();
+  const { data: userData, isLoading: isUserLoading } = AuthServices.useGetMe();
   const { mutate: login, isPending: isLoginPending } = AuthServices.useLogin();
   const { mutate: googleLogin, isPending: isGoogleLoginPending } = AuthServices.useGoogleLogin();
 
@@ -28,6 +30,16 @@ const SignInPage = () => {
   const [validationErrors, setValidationErrors] = useState<ValidationResultType<LoginReqType>>({
     success: false,
   });
+
+  useEffect(() => {
+    if (!userData || !authUser || isUserLoading) {
+      return;
+    }
+
+    if (authUser.emailVerified) {
+      router.replace('/(authenticated)/(tabs)');
+    }
+  }, [isUserLoading, userData, authUser, router]);
 
   const onTextChange = (text: string, field: keyof LoginReqType) => {
     switch (field) {
@@ -61,20 +73,19 @@ const SignInPage = () => {
     }
 
     login(data.current, {
-      onSuccess: (data) => {
-        if (data?.user.emailVerified) {
-          router.replace('/(authenticated)/(tabs)');
-        } else {
-          router.replace({
+      onError: (error) => {
+        //@ts-expect-error
+        if (error?.code === 'EMAIL_NOT_VERIFIED') {
+          router.navigate({
             pathname: '/(unauthenticated)/signup/email-verification',
             params: {
-              email: data?.user.email,
+              fromLogin: 'true',
+              email: data.current.email,
             },
           });
+        } else {
+          Toast.error(error.message);
         }
-      },
-      onError: () => {
-        Toast.error('Oops! something went wrong');
       },
     });
   };
