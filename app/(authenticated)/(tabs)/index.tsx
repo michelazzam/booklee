@@ -1,15 +1,14 @@
 import { type RelativePathString, useRouter } from 'expo-router';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import { StyleSheet, FlatList, View, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import { type Store } from '~/src/mock';
-import { useAppSafeAreaInsets, useLocationFilters } from '~/src/hooks';
+import { useAppSafeAreaInsets, useLocationFilters, useInfiniteLocations } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
 import { StoreCard } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
-import { LocationServices } from '~/src/services';
 // import { mapLocationToStore, groupLocationsByCategory } from '~/src/utils';
 
 type SectionProps = {
@@ -75,15 +74,18 @@ const HomePage = () => {
   // Use the location filters hook
   const { getApiParams } = useLocationFilters();
 
-  // Get API parameters based on current filters (home page shows fewer items)
-  const apiParams = getApiParams({ limit: 20 });
+  // Get API parameters based on current filters (home page shows fewer items per category)
+  const apiParams = getApiParams({ limit: 10 }); // Reduced limit for better pagination
 
-  // Fetch data from APIs - using grouped categories with filters
+  // Fetch data from APIs - using infinite scroll for categories
   const {
     data: locationsData,
     isLoading: locationsLoading,
     error: locationsError,
-  } = LocationServices.useGetLocationsByCategories(apiParams);
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useInfiniteLocations(apiParams);
 
   const isLoading = locationsLoading;
   const hasError = locationsError;
@@ -107,7 +109,7 @@ const HomePage = () => {
   }
 
   // If no data is available, show a message
-  if (!locationsData?.categories || locationsData.categories.length === 0) {
+  if (!locationsData || locationsData.length === 0) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text size={theme.typography.fontSizes.md}>No stores available at the moment.</Text>
@@ -115,55 +117,77 @@ const HomePage = () => {
     );
   }
 
+  // Render functions for FlatList
+  const renderHeader = () => (
+    <View style={[styles.headerContainer, { paddingTop: top * 2 }]}>
+      <Text weight="bold" color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.xl}>
+        Hello Samir!
+      </Text>
+
+      <Text weight="medium" color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.sm}>
+        What would you like to do today?
+      </Text>
+    </View>
+  );
+
+  const renderCategory = ({ item: category, index }: { item: any; index: number }) => {
+    // Convert locations to Store format for StoreCard
+    const storeData = category.locations.map((location: any) => ({
+      id: location._id,
+      tag: category.title,
+      name: location.name,
+      city: location.city || 'Unknown',
+      image:
+        location.logo ||
+        'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
+      rating: 4.5, // Default rating
+      about: 'Services available',
+      openingHours: 'Hours not available',
+      isFavorite: false,
+    }));
+
+    return (
+      <SectionCategory
+        index={index}
+        data={storeData}
+        title={category.title}
+        categoryId={category._id}
+      />
+    );
+  };
+
+  const renderFooter = () => {
+    if (!isFetchingNextPage) return null;
+
+    return (
+      <View style={styles.footerContainer}>
+        <Text color={theme.colors.lightText} weight="medium">
+          Loading more categories...
+        </Text>
+      </View>
+    );
+  };
+
+  const handleEndReached = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView
-        bounces={false}
+      <FlatList
+        data={locationsData}
+        renderItem={renderCategory}
+        keyExtractor={(item, index) => `category-${item._id}-${index}`}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
-        <View style={[styles.headerContainer, { paddingTop: top * 2 }]}>
-          <Text
-            weight="bold"
-            color={theme.colors.white.DEFAULT}
-            size={theme.typography.fontSizes.xl}>
-            Hello Samir!
-          </Text>
-
-          <Text
-            weight="medium"
-            color={theme.colors.white.DEFAULT}
-            size={theme.typography.fontSizes.sm}>
-            What would you like to do today?
-          </Text>
-        </View>
-
-        {locationsData.categories.map((category, index) => {
-          // Convert locations to Store format for StoreCard
-          const storeData = category.locations.map((location) => ({
-            id: location._id,
-            tag: category.title,
-            name: location.name,
-            city: location.city || 'Unknown',
-            image:
-              location.logo ||
-              'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
-            rating: 4.5, // Default rating
-            about: 'Services available',
-            openingHours: 'Hours not available',
-            isFavorite: false,
-          }));
-
-          return (
-            <SectionCategory
-              index={index}
-              key={category._id}
-              data={storeData}
-              title={category.title}
-              categoryId={category._id}
-            />
-          );
-        })}
-      </ScrollView>
+        contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
+        bounces={false}
+      />
     </View>
   );
 };
@@ -191,5 +215,9 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xl,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.lg,
+  },
+  footerContainer: {
+    paddingVertical: theme.spacing.lg,
+    alignItems: 'center',
   },
 });

@@ -267,7 +267,10 @@ const Search = () => {
     [RenderCategorySection]
   );
 
-  const keyExtractor = useCallback((item: any) => item._id, []);
+  const keyExtractor = useCallback(
+    (item: any, index: number) => `category-${item._id}-${index}`,
+    []
+  );
 
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {

@@ -54,9 +54,17 @@ export const useInfiniteLocations = (params?: UseInfiniteLocationsParams) => {
     query.data.pages.forEach((page: GetLocationsByCategoriesResType) => {
       page.categories.forEach((category: any) => {
         if (categoryMap.has(category._id)) {
-          // Merge locations for existing category
+          // Merge locations for existing category, avoiding duplicates
           const existingCategory = categoryMap.get(category._id);
-          existingCategory.locations.push(...category.locations);
+          const existingLocationIds = new Set(
+            existingCategory.locations.map((loc: any) => loc._id)
+          );
+
+          // Only add locations that don't already exist
+          const newLocations = category.locations.filter(
+            (loc: any) => !existingLocationIds.has(loc._id)
+          );
+          existingCategory.locations.push(...newLocations);
         } else {
           // Add new category
           categoryMap.set(category._id, { ...category });
