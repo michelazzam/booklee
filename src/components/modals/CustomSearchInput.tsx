@@ -11,6 +11,7 @@ interface CustomSearchInputProps {
   placeholder?: string;
   autoFocus?: boolean;
   debounceTime?: number;
+  backButton?: React.ReactNode;
 }
 
 const CustomSearchInput: React.FC<CustomSearchInputProps> = ({
@@ -20,6 +21,7 @@ const CustomSearchInput: React.FC<CustomSearchInputProps> = ({
   placeholder = 'Store, location, or service',
   autoFocus = false,
   debounceTime = 800,
+  backButton,
 }) => {
   const debouncedValue = useDebouncing(value, debounceTime);
 
@@ -36,7 +38,7 @@ const CustomSearchInput: React.FC<CustomSearchInputProps> = ({
 
   return (
     <View style={styles.container}>
-      <Icon name="magnify" size={20} color={theme.colors.lightText} style={styles.searchIcon} />
+      {backButton && <View style={styles.backButtonContainer}>{backButton}</View>}
 
       <TextInput
         value={value}
@@ -70,9 +72,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     height: 48,
   },
-  searchIcon: {
+  backButtonContainer: {
     marginRight: theme.spacing.sm,
   },
+
   input: {
     flex: 1,
     fontSize: theme.typography.fontSizes.md,

@@ -6,6 +6,7 @@ import { Icon, Text } from '~/src/components/base';
 import { SearchServices, type SearchHistoryItem } from '~/src/services';
 import CustomSearchInput from './CustomSearchInput';
 import ModalWrapper, { type ModalWrapperRef } from './ModalWrapper';
+import BuildingIcon from '~/src/assets/icons/BuildingIcon';
 
 interface SearchModalProps {
   visible: boolean;
@@ -80,7 +81,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
         onPress={() => handleHistoryItemPress(item)}
         activeOpacity={0.7}>
         <View style={styles.historyItemContent}>
-          <Icon name="store" size={20} color={theme.colors.lightText} />
+          <BuildingIcon />
           <Text style={styles.historyItemText} color={theme.colors.darkText[100]} weight="medium">
             {item.query}
           </Text>
@@ -108,7 +109,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
         onPress={() => handleSearchResultPress(item)}
         activeOpacity={0.7}>
         <View style={styles.historyItemContent}>
-          <Icon name="store" size={20} color={theme.colors.lightText} />
+          <BuildingIcon />
           <View style={styles.searchResultTextContainer}>
             <Text style={styles.historyItemText} color={theme.colors.darkText[100]} weight="medium">
               {item.name}
@@ -147,7 +148,6 @@ const SearchModal: React.FC<SearchModalProps> = ({
       ref={modalRef}
       snapPoints={['100%']}
       onDismiss={handleClose} // Make sure this calls handleClose
-      leadingIcon={<BackButton />}
       contentContainerStyle={styles.contentContainer}>
       <View style={[styles.container, { paddingTop: top, paddingBottom: bottom }]}>
         {/* Search Input */}
@@ -159,6 +159,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
             placeholder="Store, location, or service"
             autoFocus
             debounceTime={800}
+            backButton={<BackButton />}
           />
         </View>
 
