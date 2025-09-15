@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter, type RelativePathString } from 'expo-router';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useDebouncing } from '~/src/hooks';
+import { useDebouncing, useLocationFilters } from '~/src/hooks';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
@@ -10,6 +10,10 @@ import { StoreCard } from '~/src/components/preview';
 import { FilterModal, SearchModal } from '~/src/components/modals';
 import { Icon, Text } from '~/src/components/base';
 import { LocationServices, SearchServices } from '~/src/services';
+import FilterIcon from '~/src/assets/icons/FilterIcon';
+import { SearchIcon } from '~/src/assets/icons';
+import { StatusBar } from 'expo-status-bar';
+import { Wrapper } from '~/src/components/utils/UI';
 
 const Search = () => {
   /*** Constants ***/
@@ -24,6 +28,9 @@ const Search = () => {
   const [selectedFilter, setSelectedFilter] = useState<string>(filter || '');
   const debouncedSearchQuery = useDebouncing(searchQuery, 500);
 
+  // Use the location filters hook
+  const { appliedFilters, setAppliedFilters, getApiParams } = useLocationFilters();
+
   // Sync filter parameter with selectedFilter state
   useEffect(() => {
     if (filter) {
@@ -31,12 +38,24 @@ const Search = () => {
     }
   }, [filter]);
 
-  // Fetch data from APIs - using grouped categories
+  // Get API parameters based on current filters and selected category
+  const apiParams = useMemo(() => {
+    const params = getApiParams({ limit: 50 });
+
+    // Apply category filter if selected
+    if (selectedFilter) {
+      params.category = selectedFilter;
+    }
+
+    return params;
+  }, [getApiParams, selectedFilter]);
+
+  // Fetch data from APIs - using grouped categories with filters
   const {
     data: locationsData,
     isLoading: locationsLoading,
     error: locationsError,
-  } = LocationServices.useGetLocationsByCategories();
+  } = LocationServices.useGetLocationsByCategories(apiParams);
 
   // Fetch search results when there's a search query
   const {
@@ -159,9 +178,7 @@ const Search = () => {
             onPress={() => setShowSearchModal(true)}
             activeOpacity={0.8}>
             <View style={styles.searchButtonContent}>
-              <Icon
-                name="magnify"
-                size={20}
+              <SearchIcon
                 color={searchQuery ? theme.colors.primaryBlue[100] : theme.colors.lightText}
               />
               <Text
@@ -187,7 +204,7 @@ const Search = () => {
             activeOpacity={0.8}
             style={styles.filterButton}
             onPress={() => setShowFilterModal(true)}>
-            <Icon name="filter" size={24} color={theme.colors.darkText[100]} />
+            <FilterIcon />
           </TouchableOpacity>
         </View>
 
@@ -257,7 +274,7 @@ const Search = () => {
   }, [isLoading, hasError, debouncedSearchQuery]);
 
   return (
-    <>
+    <Wrapper style={[{ paddingTop: top }]}>
       <ScrollView
         stickyHeaderIndices={[0]}
         showsVerticalScrollIndicator={false}
@@ -276,7 +293,10 @@ const Search = () => {
       <FilterModal
         visible={showFilterModal}
         onClose={() => setShowFilterModal(false)}
-        onApply={() => {}}
+        onApply={(filters) => {
+          setAppliedFilters(filters);
+        }}
+        initialFilters={appliedFilters}
       />
 
       <SearchModal
@@ -287,7 +307,8 @@ const Search = () => {
         }}
         initialQuery={searchQuery}
       />
-    </>
+      <StatusBar style="dark" />
+    </Wrapper>
   );
 };
 
@@ -312,8 +333,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     borderRadius: theme.radii.md,
     backgroundColor: theme.colors.white.DEFAULT,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    padding: theme.spacing.md,
   },
   searchButtonActive: {
     borderColor: theme.colors.primaryBlue[100],
