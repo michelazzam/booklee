@@ -13,10 +13,6 @@ import type {
 
 import { authClient } from '../auth/auth-client';
 
-type MutationContext = {
-  previousFavorites?: GetFavoritesResType['favorites'];
-};
-
 /*** Hook for get favorites ***/
 export const useGetFavorites = () => {
   /*** Constants ***/
@@ -42,43 +38,10 @@ export const useAddToFavorites = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
 
-  return useMutation<AddToFavoritesResType, ResErrorType, AddToFavoritesReqType, MutationContext>({
+  return useMutation<AddToFavoritesResType, ResErrorType, AddToFavoritesReqType>({
     mutationFn: addToFavoritesApi,
-    onMutate: async ({ locationId }) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['getFavorites'] });
-
-      // Snapshot the previous value
-      const previousFavorites = queryClient.getQueryData<GetFavoritesResType['favorites']>([
-        'getFavorites',
-      ]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData<GetFavoritesResType['favorites']>(['getFavorites'], (old) => {
-        if (!old) return old;
-        // Add the new favorite (we'll use a placeholder until the real data comes back)
-        const newFavorite = {
-          _id: locationId,
-          slug: '',
-          name: 'Loading...',
-          logo: '',
-          city: '',
-          tags: [],
-        };
-        return [...old, newFavorite];
-      });
-
-      // Return a context object with the snapshotted value
-      return { previousFavorites };
-    },
-    onError: (_, __, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
-      if (context?.previousFavorites) {
-        queryClient.setQueryData(['getFavorites'], context.previousFavorites);
-      }
-    },
-    onSettled: () => {
-      // Always refetch after error or success to ensure we have the latest data
+    onSuccess: () => {
+      // Simply refetch the favorites data after successful add
       queryClient.invalidateQueries({ queryKey: ['getFavorites'] });
     },
   });
@@ -89,40 +52,10 @@ export const useRemoveFromFavorites = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
 
-  return useMutation<
-    RemoveFromFavoritesResType,
-    ResErrorType,
-    RemoveFromFavoritesReqType,
-    MutationContext
-  >({
+  return useMutation<RemoveFromFavoritesResType, ResErrorType, RemoveFromFavoritesReqType>({
     mutationFn: removeFromFavoritesApi,
-    onMutate: async ({ locationId }) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['getFavorites'] });
-
-      // Snapshot the previous value
-      const previousFavorites = queryClient.getQueryData<GetFavoritesResType['favorites']>([
-        'getFavorites',
-      ]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData<GetFavoritesResType['favorites']>(['getFavorites'], (old) => {
-        if (!old) return old;
-        // Remove the favorite
-        return old.filter((fav) => fav._id !== locationId);
-      });
-
-      // Return a context object with the snapshotted value
-      return { previousFavorites };
-    },
-    onError: (_, __, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
-      if (context?.previousFavorites) {
-        queryClient.setQueryData(['getFavorites'], context.previousFavorites);
-      }
-    },
-    onSettled: () => {
-      // Always refetch after error or success to ensure we have the latest data
+    onSuccess: () => {
+      // Simply refetch the favorites data after successful remove
       queryClient.invalidateQueries({ queryKey: ['getFavorites'] });
     },
   });

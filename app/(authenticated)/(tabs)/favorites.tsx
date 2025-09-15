@@ -1,33 +1,40 @@
 import { useState } from 'react';
-import { View, StyleSheet, FlatList, Image, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import { type RelativePathString } from 'expo-router';
 import { theme, IMAGES } from '../../../src/constants';
 import Button from '../../../src/components/buttons/button';
 import CustomText from '../../../src/components/base/text';
-import SalonCard from '../../../src/components/utils/salon/SalonCard';
+import { StoreCard } from '../../../src/components/preview';
 import { Wrapper } from '~/src/components/utils/UI';
 import { FavoritesServices } from '~/src/services';
+import { type Store } from '~/src/mock';
 
-// Transform favorite data to match SalonCard props
-const transformFavoriteToSalon = (favorite: any) => ({
+// Transform favorite data to match Store props
+const transformFavoriteToStore = (favorite: any): Store => ({
   id: favorite._id,
-  image: favorite.logo,
+  image:
+    favorite.logo ||
+    'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
   name: favorite.name,
   city: favorite.city,
   rating: 4.5, // Default rating since it's not in the API response
   tag: favorite.tags?.[0] || 'Available',
+  about: 'Services available',
+  openingHours: 'Hours not available',
   isFavorite: true,
 });
 
 const FavoritesPage = () => {
   // Toggle between empty and populated states for demo
   const [showEmptyState, setShowEmptyState] = useState(false);
+  const router = useRouter();
 
   // Get favorites data
   const { data: favorites, isLoading, error } = FavoritesServices.useGetFavorites();
-  const { toggleFavorite } = FavoritesServices.useToggleFavorite();
 
-  // Transform favorites to salon format
-  const favoriteSalons = favorites?.map(transformFavoriteToSalon) || [];
+  // Transform favorites to store format
+  const favoriteStores = favorites?.map(transformFavoriteToStore) || [];
 
   const EmptyState = () => (
     <View style={styles.emptyStateContainer}>
@@ -94,38 +101,24 @@ const FavoritesPage = () => {
 
     return (
       <View style={styles.populatedContainer}>
-        <FlatList
-          data={favoriteSalons}
-          numColumns={2}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.salonGrid}
-          columnWrapperStyle={styles.salonRow}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={styles.salonCardWrapper}>
-              <SalonCard
-                id={item.id}
-                image={item.image}
-                name={item.name}
-                city={item.city}
-                rating={item.rating}
-                tag={item.tag}
-                isFavorite={item.isFavorite}
-                onPress={() => {
-                  // Navigate to salon details
-                  console.log('Navigate to salon:', item.name);
-                }}
-                onFavoritePress={async () => {
-                  try {
-                    await toggleFavorite(item.id);
-                  } catch (error) {
-                    console.error('Error toggling favorite:', error);
-                  }
-                }}
-              />
-            </View>
-          )}
-        />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.storesContainer}>
+          {favoriteStores.map((store, index) => (
+            <StoreCard
+              key={store.id}
+              data={store}
+              animatedStyle="slideLeft"
+              delay={index * 150}
+              onPress={() => {
+                router.navigate(
+                  `/(authenticated)/(screens)/store/${store.id}` as RelativePathString
+                );
+              }}
+            />
+          ))}
+        </ScrollView>
       </View>
     );
   };
@@ -138,7 +131,7 @@ const FavoritesPage = () => {
         </CustomText>
       </View>
 
-      {showEmptyState || favoriteSalons.length === 0 ? <EmptyState /> : <PopulatedState />}
+      {showEmptyState || favoriteStores.length === 0 ? <EmptyState /> : <PopulatedState />}
     </Wrapper>
   );
 };
@@ -194,18 +187,11 @@ const styles = StyleSheet.create({
   },
   populatedContainer: {
     flexGrow: 1,
-    paddingHorizontal: theme.spacing.md,
-  },
-  salonGrid: {
     paddingVertical: theme.spacing.md,
-    flexGrow: 1,
   },
-  salonRow: {
-    justifyContent: 'space-between',
-  },
-  salonCardWrapper: {
-    flex: 1,
-    maxWidth: '50%',
+  storesContainer: {
+    gap: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.lg,
   },
   loadingContainer: {
     flex: 1,
