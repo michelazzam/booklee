@@ -91,11 +91,16 @@ const useLogout = () => {
 const useGoogleLogin = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
+  const cookies = authClient.getCookie();
+  const headers = {
+    Cookie: cookies,
+  };
 
   return useMutation({
     mutationFn: googleLoginApi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['getMe'] });
+      apiClient.defaults.headers.common = headers;
     },
   });
 };

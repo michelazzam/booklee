@@ -128,8 +128,7 @@ const SignInPage = () => {
               onChangeText={(value) => onTextChange(value, 'password')}
               subText={{
                 label: 'Forgot Password',
-                action: () =>
-                  router.navigate('/(unauthenticated)/login/forgot-password/method-selection'),
+                action: () => router.navigate('/(unauthenticated)/login/forgot-password'),
               }}
             />
 

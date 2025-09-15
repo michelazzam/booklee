@@ -114,9 +114,8 @@ export const googleLoginApi = async () => {
 /*** API for forgot password ***/
 export const forgotPasswordApi = async (email: string) => {
   const [response] = await withErrorCatch(
-    authClient.forgetPassword({
+    authClient.requestPasswordReset({
       email,
-      redirectTo: '/(unauthenticated)/login/forgot-password/reset',
     })
   );
 
