@@ -1,13 +1,21 @@
-import Animated, { useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { IconType } from '~/src/components/base/icon';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { HomeIcon, SearchIcon, FavoritesIcon, BookingIcon, AccountIcon } from '~/src/assets/icons';
 
 type TabBarIconProps = {
   color: string;
   size?: number;
-  icon: IconType;
+  icon: string;
   focused?: boolean;
 };
+
+// Icon mapping for tab bar
+const iconMap = {
+  home: HomeIcon,
+  magnify: SearchIcon,
+  heart: FavoritesIcon,
+  'calendar-check': BookingIcon,
+  account: AccountIcon,
+} as const;
 
 const TabBarIcon = ({ icon, color, focused = false, size = 24 }: TabBarIconProps) => {
   /***** Animations *****/
@@ -29,9 +37,15 @@ const TabBarIcon = ({ icon, color, focused = false, size = 24 }: TabBarIconProps
     };
   }, [focused]);
 
+  const IconComponent = iconMap[icon as keyof typeof iconMap];
+
+  if (!IconComponent) {
+    return null;
+  }
+
   return (
     <Animated.View style={iconAnimatedStyle}>
-      <MaterialCommunityIcons size={size} name={icon} color={color} />
+      <IconComponent color={color} width={size} height={size} />
     </Animated.View>
   );
 };
