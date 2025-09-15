@@ -1,78 +1,61 @@
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { AwareScrollView } from '~/src/components/base';
+import { useRouter } from 'expo-router';
+
+import { theme } from '~/src/constants/theme';
 import {
+  QuestionMarkIcon,
+  UserInfoIcon,
+  EnvelopeIcon,
+  LogoutIcon,
+  PhoneIcon,
+  TrashIcon,
+  GearIcon,
+  HomeIcon,
+} from '~/src/assets/icons';
+
+import { AuthServices } from '~/src/services';
+
+import {
+  AccountButton,
   AccountHeader,
   AccountCard,
   AccountRow,
-  AccountButton,
 } from '~/src/components/utils/account';
-import {
-  UserInfoIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  GearIcon,
-  QuestionMarkIcon,
-  LogoutIcon,
-  TrashIcon,
-  HomeIcon,
-} from '~/src/assets/icons';
-import { theme } from '~/src/constants/theme';
-import { useUserProvider } from '~/src/store';
-import { useRouter } from 'expo-router';
 
 const AccountPage = () => {
-  const { deleteTokenFromStorage } = useUserProvider();
+  /*** Constants ***/
   const router = useRouter();
+  const { mutate: logout } = AuthServices.useLogout();
 
   const handleNotificationPress = () => {
     // Handle notification press
     console.log('Notification pressed');
   };
-
   const handleNamePress = () => {
     // Handle name edit
     console.log('Name pressed');
   };
-
   const handleEmailPress = () => {
     // Handle email edit
     console.log('Email pressed');
   };
-
   const handlePhonePress = () => {
     // Handle phone edit
     console.log('Phone pressed');
   };
-
   const handleSettingsPress = () => {
     // Handle settings
     console.log('Settings pressed');
   };
-
   const handleHelpPress = () => {
     // Handle help center
     console.log('Help pressed');
   };
-
   const handleOpenBusinessPress = () => {
     // Handle open business
     console.log('Open business pressed');
   };
-
-  const handleLogoutPress = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Log Out',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteTokenFromStorage();
-          router.navigate('/(unauthenticated)/login');
-        },
-      },
-    ]);
-  };
-
   const handleDeleteAccountPress = () => {
     Alert.alert(
       'Delete Account',
@@ -121,26 +104,19 @@ const AccountPage = () => {
         {/* Open Business Button */}
         <AccountButton
           icon={HomeIcon}
-          title="OPEN A BUSINESS"
           variant="primary"
           showChevron={true}
+          title="OPEN A BUSINESS"
           onPress={handleOpenBusinessPress}
         />
 
-        {/* Log Out Button */}
-        <AccountButton
-          icon={LogoutIcon}
-          title="LOG OUT"
-          variant="secondary"
-          onPress={handleLogoutPress}
-        />
+        <AccountButton icon={LogoutIcon} title="LOG OUT" variant="secondary" onPress={logout} />
 
-        {/* Delete Account Button */}
         <AccountButton
-          icon={TrashIcon}
-          title="DELETE ACCOUNT"
           variant="danger"
+          icon={TrashIcon}
           showChevron={true}
+          title="DELETE ACCOUNT"
           onPress={handleDeleteAccountPress}
         />
       </AwareScrollView>

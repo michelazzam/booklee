@@ -61,8 +61,17 @@ const SignInPage = () => {
     }
 
     login(data.current, {
-      onSuccess: () => {
-        router.replace('/(authenticated)/(tabs)');
+      onSuccess: (data) => {
+        if (data?.user.emailVerified) {
+          router.replace('/(authenticated)/(tabs)');
+        } else {
+          router.replace({
+            pathname: '/(unauthenticated)/signup/email-verification',
+            params: {
+              email: data?.user.email,
+            },
+          });
+        }
       },
       onError: () => {
         Toast.error('Oops! something went wrong');
