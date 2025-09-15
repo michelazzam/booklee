@@ -3,7 +3,7 @@ import { StyleSheet, ScrollView, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import { type Store } from '~/src/mock';
-import { useAppSafeAreaInsets } from '~/src/hooks';
+import { useAppSafeAreaInsets, useLocationFilters } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
 import { StoreCard } from '~/src/components/preview';
@@ -21,7 +21,6 @@ type SectionProps = {
 const SectionCategory = ({ title, data, index = 0, categoryId }: SectionProps) => {
   /*** Constants ***/
   const router = useRouter();
-  const { data: locations } = LocationServices.useGetLocations();
 
   const handleSeeAllPress = () => {
     router.navigate({
@@ -73,12 +72,18 @@ const HomePage = () => {
   /*** Constants ***/
   const { top, bottom } = useAppSafeAreaInsets();
 
-  // Fetch data from APIs - using grouped categories
+  // Use the location filters hook
+  const { getApiParams } = useLocationFilters();
+
+  // Get API parameters based on current filters (home page shows fewer items)
+  const apiParams = getApiParams({ limit: 20 });
+
+  // Fetch data from APIs - using grouped categories with filters
   const {
     data: locationsData,
     isLoading: locationsLoading,
     error: locationsError,
-  } = LocationServices.useGetLocationsByCategories();
+  } = LocationServices.useGetLocationsByCategories(apiParams);
 
   const isLoading = locationsLoading;
   const hasError = locationsError;
