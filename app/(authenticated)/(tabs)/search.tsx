@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter, type RelativePathString } from 'expo-router';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useDebouncing, useLocationFilters } from '~/src/hooks';
+import { useDebouncing, useLocationFilters, useInfiniteLocations } from '~/src/hooks';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
@@ -9,7 +9,6 @@ import { theme } from '~/src/constants/theme';
 import { StoreCard } from '~/src/components/preview';
 import { FilterModal, SearchModal } from '~/src/components/modals';
 import { Icon, Text } from '~/src/components/base';
-import { LocationServices, SearchServices } from '~/src/services';
 import FilterIcon from '~/src/assets/icons/FilterIcon';
 import { SearchIcon } from '~/src/assets/icons';
 import { StatusBar } from 'expo-status-bar';
@@ -26,7 +25,7 @@ const Search = () => {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<string>(filter || '');
-  const debouncedSearchQuery = useDebouncing(searchQuery, 500);
+  const debouncedSearchQuery = useDebouncing(searchQuery, 100);
 
   // Use the location filters hook
   const { appliedFilters, setAppliedFilters, getApiParams } = useLocationFilters();
@@ -40,40 +39,38 @@ const Search = () => {
 
   // Get API parameters based on current filters and selected category
   const apiParams = useMemo(() => {
-    const params = getApiParams({ limit: 50 });
+    const params = getApiParams({ limit: 20 }); // Reduced limit for better pagination
 
     // Apply category filter if selected
     if (selectedFilter) {
       params.category = selectedFilter;
     }
 
-    return params;
-  }, [getApiParams, selectedFilter]);
+    // Apply search query if present
+    if (debouncedSearchQuery.trim()) {
+      params.title = debouncedSearchQuery.trim();
+    }
 
-  // Fetch data from APIs - using grouped categories with filters
+    return params;
+  }, [getApiParams, selectedFilter, debouncedSearchQuery]);
+
+  // Fetch data from APIs - using infinite scroll for locations (includes search)
   const {
     data: locationsData,
     isLoading: locationsLoading,
     error: locationsError,
-  } = LocationServices.useGetLocationsByCategories(apiParams);
-
-  // Fetch search results when there's a search query
-  const {
-    data: searchResults,
-    isLoading: searchLoading,
-    error: searchError,
-  } = SearchServices.useSearchLocations(
-    { query: debouncedSearchQuery, limit: 50 },
-    !!debouncedSearchQuery.trim()
-  );
+    hasNextPage: hasNextPage,
+    fetchNextPage: fetchNextPage,
+    isFetchingNextPage: isFetchingNextPage,
+  } = useInfiniteLocations(apiParams);
 
   /*** Memoization ***/
   const filters = useMemo(() => {
-    if (!locationsData?.categories) return [{ id: '', label: 'All' }];
+    if (!locationsData || locationsData.length === 0) return [{ id: '', label: 'All' }];
 
     return [
       { id: '', label: 'All' },
-      ...locationsData.categories.map((category) => ({
+      ...locationsData.map((category) => ({
         id: category._id,
         label: category.title,
       })),
@@ -81,33 +78,10 @@ const Search = () => {
   }, [locationsData]);
 
   const filteredCategories = useMemo(() => {
-    // If there's a search query, use search results instead of filtered categories
-    if (debouncedSearchQuery.trim() && searchResults) {
-      // Group search results by category
-      const groupedResults = searchResults.reduce(
-        (acc, location) => {
-          const categoryId = location.categoryId;
-          if (!acc[categoryId]) {
-            acc[categoryId] = {
-              _id: categoryId,
-              title: location.category.title,
-              slug: location.category.slug,
-              locations: [],
-            };
-          }
-          acc[categoryId].locations.push(location);
-          return acc;
-        },
-        {} as Record<string, any>
-      );
-
-      return Object.values(groupedResults);
-    }
-
     // Default behavior: filter categories by selected filter
-    if (!locationsData?.categories) return [];
+    if (!locationsData || locationsData.length === 0) return [];
 
-    let categories = locationsData.categories;
+    let categories = locationsData;
 
     // Filter by category if selected
     if (selectedFilter) {
@@ -115,7 +89,7 @@ const Search = () => {
     }
 
     return categories;
-  }, [locationsData, selectedFilter, debouncedSearchQuery, searchResults]);
+  }, [locationsData, selectedFilter]);
 
   const RenderCategorySection = useCallback(
     ({ category, categoryIndex }: { category: any; categoryIndex: number }) => {
@@ -208,13 +182,13 @@ const Search = () => {
           </TouchableOpacity>
         </View>
 
-        <ScrollView
+        <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterContainer}>
-          {filters.map((filter) => {
+          contentContainerStyle={styles.filterContainer}
+          data={filters}
+          renderItem={({ item: filter }) => {
             const isSelected = selectedFilter === filter.id;
-
             return (
               <TouchableOpacity
                 key={filter.id}
@@ -232,14 +206,15 @@ const Search = () => {
                 </Text>
               </TouchableOpacity>
             );
-          })}
-        </ScrollView>
+          }}
+          keyExtractor={(item) => item.id}
+        />
       </View>
     );
   }, [filters, selectedFilter, searchQuery, top]);
 
-  const isLoading = debouncedSearchQuery.trim() ? searchLoading : locationsLoading;
-  const hasError = debouncedSearchQuery.trim() ? searchError : locationsError;
+  const isLoading = locationsLoading;
+  const hasError = locationsError;
 
   const RenderEmptyComponent = useCallback(() => {
     if (isLoading) {
@@ -273,22 +248,48 @@ const Search = () => {
     );
   }, [isLoading, hasError, debouncedSearchQuery]);
 
+  const RenderFooter = useCallback(() => {
+    if (!isFetchingNextPage) return null;
+
+    return (
+      <View style={styles.footerContainer}>
+        <Text color={theme.colors.lightText} weight="medium">
+          Loading more...
+        </Text>
+      </View>
+    );
+  }, [isFetchingNextPage]);
+
+  const renderItem = useCallback(
+    ({ item: category, index }: { item: any; index: number }) => (
+      <RenderCategorySection category={category} categoryIndex={index} />
+    ),
+    [RenderCategorySection]
+  );
+
+  const keyExtractor = useCallback((item: any) => item._id, []);
+
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   return (
     <Wrapper style={[{ paddingTop: top }]}>
-      <ScrollView
-        stickyHeaderIndices={[0]}
+      <FlatList
+        data={filteredCategories}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={RenderHeader}
+        ListEmptyComponent={RenderEmptyComponent}
+        ListFooterComponent={RenderFooter}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}>
-        <RenderHeader />
-
-        {filteredCategories.length === 0 ? (
-          <RenderEmptyComponent />
-        ) : (
-          filteredCategories.map((category, index) => (
-            <RenderCategorySection key={category._id} category={category} categoryIndex={index} />
-          ))
-        )}
-      </ScrollView>
+        contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
+        stickyHeaderIndices={[0]}
+      />
 
       <FilterModal
         visible={showFilterModal}
@@ -374,6 +375,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  footerContainer: {
+    paddingVertical: theme.spacing.lg,
+    alignItems: 'center',
   },
   listContent: {
     flexGrow: 1,
