@@ -20,7 +20,6 @@ const SectionCategory = ({ title, data, index = 0 }: SectionProps) => {
   /*** Constants ***/
   const router = useRouter();
   const { data: locations } = LocationServices.useGetLocations();
-  console.log('locations', locations);
 
   const handleSeeAllPress = () => {
     router.navigate({

@@ -55,7 +55,7 @@ const Navigation = () => {
   /*** Constants ***/
   const { isInitialized } = useUserProvider();
   const { isFetched: isUserFetched } = AuthServices.useGetMe();
-  const { isAuthenticated } = AuthServices.useGetBetterAuthUser();
+  const { isAuthenticated, isLoading } = AuthServices.useGetBetterAuthUser();
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../src/assets/fonts/Montserrat-Regular.ttf'),
     'Montserrat-Medium': require('../src/assets/fonts/Montserrat-Medium.ttf'),
@@ -65,13 +65,11 @@ const Navigation = () => {
 
   /*** Memoization ***/
   const isAppReady = useMemo(() => {
-    let isReady = fontsLoaded && isInitialized;
-
     if (isAuthenticated) {
-      isReady = isUserFetched;
+      return isUserFetched && fontsLoaded && isInitialized;
     }
 
-    return isReady;
+    return fontsLoaded && isInitialized;
   }, [fontsLoaded, isInitialized, isUserFetched, isAuthenticated]);
 
   useEffect(() => {
@@ -79,10 +77,10 @@ const Navigation = () => {
       NavigationBar.setVisibilityAsync('hidden');
     }
 
-    if (isAppReady) {
+    if (isAppReady && !isLoading) {
       SplashScreen.hideAsync();
     }
-  }, [isAppReady]);
+  }, [isAppReady, isLoading]);
 
   if (!isAppReady) {
     return null;
