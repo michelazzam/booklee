@@ -56,9 +56,9 @@ export type LoginReqType = {
 /*** Sign up types ***/
 export type RoleType = 'owner' | 'manager' | 'stylist' | 'receptionist';
 export type SignUpReqType = {
+  role?: string;
   email: string;
   phone: string;
-  role: RoleType;
   password: string;
   lastName: string;
   firstName: string;
