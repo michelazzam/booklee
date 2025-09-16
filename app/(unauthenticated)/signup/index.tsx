@@ -3,7 +3,7 @@ import { Toast } from 'toastify-react-native';
 import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 
-import { type SignUpReqType, AuthServices, type RoleType } from '~/src/services';
+import { type SignUpReqType, AuthServices } from '~/src/services';
 
 import { type ValidationResultType, validateSignup } from '~/src/helper/validation';
 import { theme } from '~/src/constants/theme';
