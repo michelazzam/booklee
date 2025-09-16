@@ -1,18 +1,23 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useCallback, useRef } from 'react';
 import { Image } from 'expo-image';
 
 import { theme } from '~/src/constants';
 
 import { BookingIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
+import { ModifyBookingModal, type ModalWrapperRef } from '../modals';
 import { Icon, Text } from '~/src/components/base';
-import { useCallback } from 'react';
 
 type BookingProps = {
   data: any;
-  onModify: () => void;
+  onCancel: () => void;
+  onChangeDateTime: () => void;
 };
 
-const Booking = ({ data, onModify }: BookingProps) => {
+const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
+  /***** Refs *****/
+  const modifyBookingModalRef = useRef<ModalWrapperRef>(null);
+
   /***** Constants *****/
   const {
     rating = 4.0,
@@ -61,72 +66,83 @@ const Booking = ({ data, onModify }: BookingProps) => {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.headerContainer, styles.borderStyle]}>
-        <Image source={image} style={styles.imageStyle} />
+    <>
+      <View style={styles.container}>
+        <View style={[styles.headerContainer, styles.borderStyle]}>
+          <Image source={image} style={styles.imageStyle} />
 
-        <View style={styles.infoContainer}>
-          <View style={{ gap: theme.spacing.md }}>
-            <Text size={theme.typography.fontSizes.lg} weight={'bold'}>
-              {name}
+          <View style={styles.infoContainer}>
+            <View style={{ gap: theme.spacing.md }}>
+              <Text size={theme.typography.fontSizes.lg} weight={'bold'}>
+                {name}
+              </Text>
+
+              <View style={styles.ratingContainer}>
+                <StarIcon />
+
+                <Text
+                  size={theme.typography.fontSizes.xs}
+                  weight={'bold'}
+                  style={{ marginBottom: 4 }}>
+                  {rating}
+                </Text>
+              </View>
+            </View>
+
+            <Text size={theme.typography.fontSizes.sm}>{city}</Text>
+          </View>
+        </View>
+
+        <View style={[styles.bookingDetails, styles.borderStyle]}>
+          <View style={styles.bookingDetailsItem}>
+            <View style={styles.iconContainer}>
+              <BookingIcon />
+            </View>
+
+            <Text size={theme.typography.fontSizes.sm}>{date}</Text>
+          </View>
+
+          <View style={styles.bookingDetailsItem}>
+            <View style={styles.iconContainer}>
+              <ClockIcon />
+            </View>
+
+            <Text size={theme.typography.fontSizes.sm}>{time}</Text>
+          </View>
+        </View>
+
+        <View style={styles.paymentDetailsContainer}>
+          {services.map((service: any) => (
+            <RenderService key={service.id} service={service} />
+          ))}
+
+          <View style={styles.dashedLine} />
+
+          <View style={styles.totalPriceContainer}>
+            <Text size={theme.typography.fontSizes.md} weight={'bold'}>
+              Total minimum
             </Text>
 
-            <View style={styles.ratingContainer}>
-              <StarIcon />
-
-              <Text
-                size={theme.typography.fontSizes.xs}
-                weight={'bold'}
-                style={{ marginBottom: 4 }}>
-                {rating}
-              </Text>
-            </View>
+            <Text size={theme.typography.fontSizes.md}>{totalPrice} $</Text>
           </View>
-
-          <Text size={theme.typography.fontSizes.sm}>{city}</Text>
         </View>
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.modifyButton}
+          onPress={modifyBookingModalRef.current?.present}>
+          <Icon name="pencil-outline" size={20} color={theme.colors.darkText[100]} />
+
+          <Text size={theme.typography.fontSizes.md}>Modify</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={[styles.bookingDetails, styles.borderStyle]}>
-        <View style={styles.bookingDetailsItem}>
-          <View style={styles.iconContainer}>
-            <BookingIcon />
-          </View>
-
-          <Text size={theme.typography.fontSizes.sm}>{date}</Text>
-        </View>
-
-        <View style={styles.bookingDetailsItem}>
-          <View style={styles.iconContainer}>
-            <ClockIcon />
-          </View>
-
-          <Text size={theme.typography.fontSizes.sm}>{time}</Text>
-        </View>
-      </View>
-
-      <View style={styles.paymentDetailsContainer}>
-        {services.map((service: any) => (
-          <RenderService key={service.id} service={service} />
-        ))}
-
-        <View style={styles.dashedLine} />
-
-        <View style={styles.totalPriceContainer}>
-          <Text size={theme.typography.fontSizes.md} weight={'bold'}>
-            Total minimum
-          </Text>
-
-          <Text size={theme.typography.fontSizes.md}>{totalPrice} $</Text>
-        </View>
-      </View>
-
-      <TouchableOpacity style={styles.modifyButton} onPress={onModify} activeOpacity={0.8}>
-        <Icon name="pencil-outline" size={20} color={theme.colors.darkText[100]} />
-
-        <Text size={theme.typography.fontSizes.md}>Modify</Text>
-      </TouchableOpacity>
-    </View>
+      <ModifyBookingModal
+        onCancel={onCancel}
+        ref={modifyBookingModalRef}
+        onChangeDateTime={onChangeDateTime}
+      />
+    </>
   );
 };
 
@@ -134,11 +150,12 @@ export default Booking;
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1,
+    borderWidth: 2,
     gap: theme.spacing.md,
     padding: theme.spacing.md,
     borderRadius: theme.radii.md,
     borderColor: theme.colors.border,
+    backgroundColor: theme.colors.white.DEFAULT,
   },
   borderStyle: {
     borderWidth: 1,
