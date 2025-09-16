@@ -1,11 +1,11 @@
-import { View, StyleSheet } from 'react-native';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { StyleSheet } from 'react-native';
 
 import { theme } from '~/src/constants/theme';
 
-import { Button } from '~/src/components/buttons';
-import { Icon, Text } from '~/src/components/base';
 import ModalWrapper, { type ModalWrapperRef } from './ModalWrapper';
+import { Button } from '~/src/components/buttons';
+import { Icon } from '~/src/components/base';
 
 export type ModifyBookingModalRef = {
   present: () => void;
