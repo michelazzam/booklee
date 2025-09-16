@@ -7,28 +7,34 @@ import { TabBarIcon } from '~/src/components/tabBar';
 
 type TabType = {
   name: string;
+  label: string;
   icon: IconType;
 };
 const TABS: TabType[] = [
   {
     icon: 'home',
     name: 'index',
+    label: 'Home',
   },
   {
     name: 'search',
     icon: 'magnify',
+    label: 'Search',
   },
   {
     icon: 'heart',
     name: 'favorites',
+    label: 'Favorites',
   },
   {
     name: 'bookings',
+    label: 'Bookings',
     icon: 'calendar-check',
   },
   {
     name: 'account',
     icon: 'account',
+    label: 'Account',
   },
 ];
 
@@ -42,12 +48,12 @@ export default function TabLayout() {
           backgroundColor: theme.colors.white.DEFAULT,
         },
       }}>
-      {TABS.map(({ name, icon }) => (
+      {TABS.map(({ name, icon, label }) => (
         <Tabs.Screen
           key={name}
           name={name}
           options={{
-            title: name.charAt(0).toUpperCase() + name.slice(1),
+            title: label,
             tabBarIcon: ({ color, focused }) => (
               <TabBarIcon icon={icon} color={color} focused={focused} size={24} />
             ),
