@@ -1,29 +1,20 @@
 import { useLocalSearchParams, useRouter, type RelativePathString } from 'expo-router';
-import { View, FlatList, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { useState, useMemo, useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useDebouncing, useLocationFilters, useInfiniteLocations } from '~/src/hooks';
 
-import { hairAndStyling, nails, barber, eyebrowsEyelashes, type Store } from '~/src/mock';
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { SearchInput } from '~/src/components/textInputs';
 import { StoreCard } from '~/src/components/preview';
-import { FilterModal } from '~/src/components/modals';
+import { FilterModal, SearchModal } from '~/src/components/modals';
 import { Icon, Text } from '~/src/components/base';
+import FilterIcon from '~/src/assets/icons/FilterIcon';
+import { SearchIcon } from '~/src/assets/icons';
+import { StatusBar } from 'expo-status-bar';
+import { Wrapper } from '~/src/components/utils/UI';
+import { Location } from '~/src/services';
 
-type Filter = {
-  id: string;
-  label: string;
-};
-const filters: Filter[] = [
-  { id: '', label: 'All' },
-  { id: 'hair-styling', label: 'Hair & Styling' },
-  { id: 'nails', label: 'Nails' },
-  { id: 'barber', label: 'Barber' },
-  { id: 'eyebrows-eyelashes', label: 'Eyebrows & Eyelashes' },
-];
-
-const allSalons: Store[] = [...hairAndStyling, ...nails, ...barber, ...eyebrowsEyelashes];
 const Search = () => {
   /*** Constants ***/
   const router = useRouter();
@@ -32,78 +23,159 @@ const Search = () => {
 
   /*** States ***/
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<string>(filter || '');
+  const debouncedSearchQuery = useDebouncing(searchQuery, 100);
+
+  // Use the location filters hook
+  const { appliedFilters, setAppliedFilters, getApiParams } = useLocationFilters();
+
+  // Sync filter parameter with selectedFilter state
+  useEffect(() => {
+    if (filter) {
+      setSelectedFilter(filter);
+    }
+  }, [filter]);
+
+  // Get API parameters based on current filters and selected category
+  const apiParams = useMemo(() => {
+    const params = getApiParams({ limit: 20 }); // Reduced limit for better pagination
+
+    // Apply category filter if selected
+    if (selectedFilter) {
+      params.category = selectedFilter;
+    }
+
+    // Apply search query if present
+    if (debouncedSearchQuery.trim()) {
+      params.title = debouncedSearchQuery.trim();
+    }
+
+    return params;
+  }, [getApiParams, selectedFilter, debouncedSearchQuery]);
+
+  // Fetch data from APIs - using infinite scroll for locations (includes search)
+  const {
+    data: locationsData,
+    isLoading: locationsLoading,
+    error: locationsError,
+    hasNextPage: hasNextPage,
+    fetchNextPage: fetchNextPage,
+    isFetchingNextPage: isFetchingNextPage,
+  } = useInfiniteLocations(apiParams);
 
   /*** Memoization ***/
-  const stores = useMemo(() => {
-    let filtered = allSalons;
+  const filters = useMemo(() => {
+    if (!locationsData || locationsData.length === 0) return [{ id: '', label: 'All' }];
 
-    switch (selectedFilter) {
-      case 'hair-styling':
-        filtered = hairAndStyling;
-        break;
-      case 'nails':
-        filtered = nails;
-        break;
-      case 'barber':
-        filtered = barber;
-        break;
-      case 'eyebrows-eyelashes':
-        filtered = eyebrowsEyelashes;
-        break;
-      default:
-        filtered = allSalons;
-        break;
+    return [
+      { id: '', label: 'All' },
+      ...locationsData.map((category) => ({
+        id: category._id,
+        label: category.title,
+      })),
+    ];
+  }, [locationsData]);
+
+  const filteredCategories = useMemo(() => {
+    // Default behavior: filter categories by selected filter
+    if (!locationsData || locationsData.length === 0) return [];
+
+    let categories = locationsData;
+
+    // Filter by category if selected
+    if (selectedFilter) {
+      categories = categories.filter((category) => category._id === selectedFilter);
     }
 
-    if (searchQuery.trim()) {
-      filtered = filtered.filter(
-        (store) =>
-          store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          store.city.toLowerCase().includes(searchQuery.toLowerCase())
+    return categories;
+  }, [locationsData, selectedFilter]);
+
+  const RenderCategorySection = useCallback(
+    ({ category, categoryIndex }: { category: any; categoryIndex: number }) => {
+      return (
+        <View style={{ marginBottom: theme.spacing.xl }}>
+          {/* Category Title */}
+          <View style={{ paddingHorizontal: theme.spacing.lg, marginBottom: theme.spacing.md }}>
+            <Text
+              weight="medium"
+              color={theme.colors.darkText[100]}
+              size={theme.typography.fontSizes.lg}>
+              {category.title}
+            </Text>
+          </View>
+
+          {/* Locations in this category */}
+          {category.locations.map((location: Location, locationIndex: number) => {
+            return (
+              <View
+                key={location._id}
+                style={{ paddingHorizontal: theme.spacing.lg, marginBottom: theme.spacing.md }}>
+                <StoreCard
+                  data={location}
+                  delay={categoryIndex * 100 + locationIndex * 150}
+                  animatedStyle="slideUp"
+                  onPress={() =>
+                    router.navigate(
+                      `/(authenticated)/(screens)/store/${location._id}` as RelativePathString
+                    )
+                  }
+                />
+              </View>
+            );
+          })}
+        </View>
       );
-    }
-
-    return filtered;
-  }, [selectedFilter, searchQuery]);
-
-  const RenderItem = useCallback(
-    ({ item, index }: { item: Store; index: number }) => (
-      <View style={{ paddingHorizontal: theme.spacing.lg }}>
-        <StoreCard
-          data={item}
-          delay={index * 150}
-          animatedStyle="slideUp"
-          onPress={() =>
-            router.navigate(`/(authenticated)/(screens)/store/${item.id}` as RelativePathString)
-          }
-        />
-      </View>
-    ),
+    },
     [router]
   );
   const RenderHeader = useCallback(() => {
     return (
       <View style={[styles.headerContainer, { paddingTop: top }]}>
         <View style={styles.searchContainer}>
-          <SearchInput onSearch={setSearchQuery} placeholder="Store, location, or service" />
+          <TouchableOpacity
+            style={[styles.searchButton, searchQuery && styles.searchButtonActive]}
+            onPress={() => setShowSearchModal(true)}
+            activeOpacity={0.8}>
+            <View style={styles.searchButtonContent}>
+              <SearchIcon
+                color={searchQuery ? theme.colors.primaryBlue[100] : theme.colors.lightText}
+              />
+              <Text
+                style={styles.searchButtonText}
+                color={searchQuery ? theme.colors.darkText[100] : theme.colors.lightText}>
+                {searchQuery ? `"${searchQuery}"` : 'Store, location, or service'}
+              </Text>
+              {searchQuery && (
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    setSearchQuery('');
+                  }}
+                  style={styles.clearButton}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                  <Icon name="close" size={18} color={theme.colors.lightText} />
+                </TouchableOpacity>
+              )}
+            </View>
+          </TouchableOpacity>
 
           <TouchableOpacity
             activeOpacity={0.8}
             style={styles.filterButton}
             onPress={() => setShowFilterModal(true)}>
-            <Icon name="filter" size={24} color={theme.colors.darkText[100]} />
+            <FilterIcon />
           </TouchableOpacity>
         </View>
 
-        <ScrollView
+        <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterContainer}>
-          {filters.map((filter) => {
+          contentContainerStyle={styles.filterContainer}
+          data={filters}
+          renderItem={({ item: filter }) => {
             const isSelected = selectedFilter === filter.id;
-
             return (
               <TouchableOpacity
                 key={filter.id}
@@ -121,41 +193,110 @@ const Search = () => {
                 </Text>
               </TouchableOpacity>
             );
-          })}
-        </ScrollView>
+          }}
+          keyExtractor={(item) => item.id}
+        />
       </View>
     );
-  }, [setSearchQuery, selectedFilter, top]);
+  }, [filters, selectedFilter, searchQuery, top]);
+
   const RenderEmptyComponent = useCallback(() => {
+    if (locationsLoading) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text color={theme.colors.darkText[100]} weight="medium">
+            {debouncedSearchQuery.trim() ? 'Searching...' : 'Loading salons...'}
+          </Text>
+        </View>
+      );
+    }
+
+    if (locationsError) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text color={theme.colors.red[100]} weight="medium">
+            Error loading data. Please try again.
+          </Text>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.emptyContainer}>
         <Text color={theme.colors.darkText[100]} weight="medium">
-          No salons found
+          {debouncedSearchQuery.trim()
+            ? `No results found for "${debouncedSearchQuery}"`
+            : 'No salons found'}
         </Text>
       </View>
     );
-  }, []);
+  }, [locationsLoading, locationsError, debouncedSearchQuery]);
+
+  const RenderFooter = useCallback(() => {
+    if (!isFetchingNextPage) return null;
+
+    return (
+      <View style={styles.footerContainer}>
+        <Text color={theme.colors.lightText} weight="medium">
+          Loading more...
+        </Text>
+      </View>
+    );
+  }, [isFetchingNextPage]);
+
+  const renderItem = useCallback(
+    ({ item: category, index }: { item: any; index: number }) => (
+      <RenderCategorySection category={category} categoryIndex={index} />
+    ),
+    [RenderCategorySection]
+  );
+
+  const keyExtractor = useCallback(
+    (item: any, index: number) => `category-${item._id}-${index}`,
+    []
+  );
+
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <>
+    <Wrapper style={[{ paddingTop: top }]}>
       <FlatList
-        data={stores}
-        renderItem={RenderItem}
-        stickyHeaderIndices={[0]}
-        stickyHeaderHiddenOnScroll
-        keyExtractor={(item) => item.id}
+        data={filteredCategories}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
         ListHeaderComponent={RenderHeader}
-        showsVerticalScrollIndicator={false}
         ListEmptyComponent={RenderEmptyComponent}
+        ListFooterComponent={RenderFooter}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
+        stickyHeaderIndices={[0]}
       />
 
       <FilterModal
         visible={showFilterModal}
         onClose={() => setShowFilterModal(false)}
-        onApply={() => {}}
+        onApply={(filters) => {
+          setAppliedFilters(filters);
+        }}
+        initialFilters={appliedFilters}
       />
-    </>
+
+      <SearchModal
+        visible={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        onSearch={(query) => {
+          setSearchQuery(query);
+        }}
+        initialQuery={searchQuery}
+      />
+      <StatusBar style="dark" />
+    </Wrapper>
   );
 };
 
@@ -173,6 +314,31 @@ const styles = StyleSheet.create({
     gap: theme.spacing.lg,
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.lg,
+  },
+  searchButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.md,
+    backgroundColor: theme.colors.white.DEFAULT,
+    padding: theme.spacing.md,
+  },
+  searchButtonActive: {
+    borderColor: theme.colors.primaryBlue[100],
+    backgroundColor: theme.colors.primaryBlue[10] || theme.colors.white.DEFAULT,
+  },
+  searchButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  searchButtonText: {
+    flex: 1,
+    fontSize: theme.typography.fontSizes.md,
+  },
+  clearButton: {
+    padding: theme.spacing.xs,
+    marginLeft: theme.spacing.xs,
   },
   filterButton: {
     borderWidth: 1,
@@ -196,6 +362,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  footerContainer: {
+    paddingVertical: theme.spacing.lg,
+    alignItems: 'center',
   },
   listContent: {
     flexGrow: 1,

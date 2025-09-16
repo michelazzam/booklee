@@ -2,39 +2,38 @@ import { Tabs } from 'expo-router';
 
 import { theme } from '~/src/constants/theme';
 
-import { type IconType } from '~/src/components/base';
 import { TabBarIcon } from '~/src/components/tabBar';
 
 type TabType = {
   name: string;
-  label: string;
-  icon: IconType;
+  icon: string;
+  title: string;
 };
 const TABS: TabType[] = [
   {
     icon: 'home',
+    title: 'Home',
     name: 'index',
-    label: 'Home',
   },
   {
     name: 'search',
+    title: 'Search',
     icon: 'magnify',
-    label: 'Search',
   },
   {
     icon: 'heart',
+    title: 'Favorites',
     name: 'favorites',
-    label: 'Favorites',
   },
   {
     name: 'bookings',
-    label: 'Bookings',
+    title: 'Bookings',
     icon: 'calendar-check',
   },
   {
     name: 'account',
+    title: 'Account',
     icon: 'account',
-    label: 'Account',
   },
 ];
 
@@ -48,12 +47,12 @@ export default function TabLayout() {
           backgroundColor: theme.colors.white.DEFAULT,
         },
       }}>
-      {TABS.map(({ name, icon, label }) => (
+      {TABS.map(({ name, icon, title }) => (
         <Tabs.Screen
           key={name}
           name={name}
           options={{
-            title: label,
+            title: title,
             tabBarIcon: ({ color, focused }) => (
               <TabBarIcon icon={icon} color={color} focused={focused} size={24} />
             ),

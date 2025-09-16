@@ -3,7 +3,7 @@ import { Toast } from 'toastify-react-native';
 import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 
-import { type SignUpReqType, AuthServices, type RoleType } from '~/src/services';
+import { type SignUpReqType, AuthServices } from '~/src/services';
 
 import { type ValidationResultType, validateSignup } from '~/src/helper/validation';
 import { theme } from '~/src/constants/theme';
@@ -20,12 +20,12 @@ export const SignupPage = () => {
 
   /***** Refs *****/
   const data = useRef<SignUpReqType & { confirmPassword: string }>({
+    role: '',
     phone: '',
     email: '',
     password: '',
     lastName: '',
     firstName: '',
-    role: 'owner',
     confirmPassword: '',
   });
 
@@ -34,7 +34,6 @@ export const SignupPage = () => {
   const { mutate: signup, isPending: isSignupPending } = AuthServices.useSignUp();
 
   /*** States ***/
-  const [role, setRole] = useState<RoleType>('owner');
   const [validationErrors, setValidationErrors] = useState<ValidationResultType<SignUpReqType>>({
     success: false,
   });
@@ -43,12 +42,6 @@ export const SignupPage = () => {
     text: string,
     field: keyof (SignUpReqType & { confirmPassword: string })
   ) => {
-    if (field === 'role') {
-      setRole(text as RoleType);
-      data.current[field] = text as RoleType;
-      return;
-    }
-
     data.current[field] = text;
 
     setValidationErrors((prev) => ({
@@ -114,7 +107,7 @@ export const SignupPage = () => {
           onChangeText={(value) => onTextChange(value, 'email')}
         />
 
-        <Input
+        {/* <Input
           label="Role*"
           editable={false}
           variant="dropdown"
@@ -123,9 +116,9 @@ export const SignupPage = () => {
           error={validationErrors.errors?.role}
           onChangeText={(value) => onTextChange(value, 'role')}
           options={['owner', 'manager', 'stylist', 'receptionist']}
-        />
+        /> */}
 
-        {role !== 'owner' ? (
+        {/* {role !== 'owner' ? (
           <Input
             placeholder="123456"
             label="Invitation Key*"
@@ -138,7 +131,7 @@ export const SignupPage = () => {
             error={validationErrors.errors?.salonName}
             onChangeText={(value) => onTextChange(value, 'salonName')}
           />
-        )}
+        )} */}
 
         <PhoneInput
           placeholder="xx-xxx-xxxx"

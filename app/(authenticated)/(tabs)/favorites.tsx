@@ -2,6 +2,8 @@ import { View, StyleSheet, FlatList, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
+import { FavoritesServices } from '~/src/services';
+
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
 
@@ -13,6 +15,7 @@ const FavoritesPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
+  const { data: favorites } = FavoritesServices.useGetFavorites();
 
   const RenderItem = useCallback(({ item }: { item: any }) => <StoreCard data={item} />, []);
   const RenderListEmptyComponent = useCallback(
@@ -51,8 +54,8 @@ const FavoritesPage = () => {
       <HeaderNavigation title="FAVORITES" showBackButton={false} />
 
       <FlatList
-        data={[]}
         numColumns={2}
+        data={favorites}
         renderItem={RenderItem}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={RenderListEmptyComponent}

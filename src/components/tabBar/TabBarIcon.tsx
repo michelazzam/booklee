@@ -1,13 +1,12 @@
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useMemo } from 'react';
 
-import { IconType } from '~/src/components/base/icon';
 import { AccountIcon, BookingIcon, FavoritesIcon, HomeIcon, SearchIcon } from '~/src/assets/icons';
 
 type TabBarIconProps = {
   color: string;
   size?: number;
-  icon: IconType;
+  icon: string;
   focused?: boolean;
 };
 
