@@ -15,7 +15,9 @@ const UpcomingBookingsPage = () => {
   const { bottom } = useAppSafeAreaInsets();
 
   const RenderItem = useCallback(
-    ({ item }: { item: any }) => <Booking data={item} onModify={() => {}} />,
+    ({ item }: { item: any }) => (
+      <Booking data={item} onCancel={() => {}} onChangeDateTime={() => {}} />
+    ),
     []
   );
   const RenderListEmptyComponent = useCallback(

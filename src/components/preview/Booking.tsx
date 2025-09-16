@@ -130,7 +130,7 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
         <TouchableOpacity
           activeOpacity={0.8}
           style={styles.modifyButton}
-          onPress={modifyBookingModalRef.current?.present}>
+          onPress={() => modifyBookingModalRef.current?.present()}>
           <Icon name="pencil-outline" size={20} color={theme.colors.darkText[100]} />
 
           <Text size={theme.typography.fontSizes.md}>Modify</Text>
