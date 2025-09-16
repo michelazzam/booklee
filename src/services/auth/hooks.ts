@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { apiClient } from '../axios/interceptor';
 import { authClient } from './auth-client';
+
 import {
+  resendEmailVerificationApi,
   loginWithEmailApi,
   forgotPasswordApi,
   resetPasswordApi,
@@ -12,10 +15,8 @@ import {
   getMeApi,
 } from './api';
 
+import type { GetMeResType, UserType } from './types';
 import type { ResErrorType } from '../axios/types';
-import type { GetMeResType } from './types';
-
-import { useUserProvider } from '~/src/store';
 
 export const useSession = () => {
   return authClient.useSession();
@@ -36,9 +37,8 @@ export const useGetBetterAuthUser = () => {
 export const useGetMe = () => {
   /*** Constants ***/
   const { data: session } = authClient.useSession();
-  const { isInitialized } = useUserProvider();
 
-  return useQuery<GetMeResType, ResErrorType, GetMeResType['user']>({
+  return useQuery<GetMeResType, ResErrorType, UserType>({
     retry: 1,
     gcTime: Infinity,
     queryFn: getMeApi,
@@ -49,18 +49,23 @@ export const useGetMe = () => {
     select: ({ user }) => user,
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
-    enabled: !!session?.session?.token && isInitialized,
+    enabled: !!session?.session?.token,
   });
 };
 
 const useLogin = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
+  const cookies = authClient.getCookie();
+  const headers = {
+    Cookie: cookies,
+  };
 
   return useMutation({
     mutationFn: loginWithEmailApi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['getMe'] });
+      apiClient.defaults.headers.common = headers;
     },
   });
 };
@@ -86,11 +91,16 @@ const useLogout = () => {
 const useGoogleLogin = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
+  const cookies = authClient.getCookie();
+  const headers = {
+    Cookie: cookies,
+  };
 
   return useMutation({
     mutationFn: googleLoginApi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['getMe'] });
+      apiClient.defaults.headers.common = headers;
     },
   });
 };
@@ -113,7 +123,14 @@ const useVerifyEmail = () => {
   });
 };
 
+const useResendEmailVerification = () => {
+  return useMutation({
+    mutationFn: resendEmailVerificationApi,
+  });
+};
+
 export const AuthServices = {
+  useResendEmailVerification,
   useGetBetterAuthUser,
   useForgotPassword,
   useResetPassword,
