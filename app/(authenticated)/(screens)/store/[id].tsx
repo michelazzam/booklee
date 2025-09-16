@@ -1,14 +1,15 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useMemo, useState } from 'react';
 
-import { hairAndStyling, nails, barber, eyebrowsEyelashes } from '~/src/mock';
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
+import { LocationServices } from '~/src/services';
 
 import { ImageCarousel, TabMenu } from '~/src/components/utils';
 import { Services } from '~/src/components/preview';
 import { Icon, Text } from '~/src/components/base';
+import { Button } from '~/src/components/buttons';
 
 const SalonDetailPage = () => {
   /***** Constants *****/
@@ -20,10 +21,12 @@ const SalonDetailPage = () => {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'services' | 'about'>('services');
 
-  /***** Memoization *****/
-  const store = useMemo(() => {
-    return [...hairAndStyling, ...nails, ...barber, ...eyebrowsEyelashes].find((s) => s.id === id);
-  }, [id]);
+  /***** API *****/
+  const {
+    data: location,
+    isLoading,
+    error,
+  } = LocationServices.useGetLocationById({ id: id || '', byId: true });
 
   const handleServiceToggle = (serviceId: string) => {
     setSelectedServices((prev) =>
@@ -31,33 +34,111 @@ const SalonDetailPage = () => {
     );
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <View style={[styles.loadingContainer, { paddingTop: top, paddingBottom: bottom }]}>
+        <Text size={theme.typography.fontSizes.md}>Loading salon details...</Text>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error || !location) {
+    return (
+      <View style={[styles.errorContainer, { paddingTop: top, paddingBottom: bottom }]}>
+        <Text size={theme.typography.fontSizes.md} color={theme.colors.red[100]}>
+          Error loading salon details. Please try again.
+        </Text>
+        <Button title="Go Back" onPress={() => router.back()} />
+      </View>
+    );
+  }
+
+  const {
+    operatingHours,
+    photos,
+    name,
+    address,
+    category,
+    rating,
+    phone,
+    teamSize,
+    bookable,
+    price: _price,
+  } = location;
+
   const RenderServices = () => {
     return (
       <View style={{ gap: theme.spacing.md }}>
         <Text size={theme.typography.fontSizes.md} weight={'medium'}>
-          {store?.serviceCategories?.name}
+          Services
         </Text>
 
         <View style={{ gap: theme.spacing.sm }}>
-          {store?.serviceCategories?.services.map((data) => (
+          {location.locationServices.map((service) => (
             <Services
-              data={data}
-              key={data.id}
+              data={service}
+              key={service.id}
               onPress={handleServiceToggle}
-              isActive={selectedServices.includes(data.id)}
+              isActive={selectedServices.includes(service.id)}
             />
           ))}
         </View>
       </View>
     );
   };
+
   const RenderAbout = () => {
     return (
-      <Text size={theme.typography.fontSizes.md} weight={'medium'}>
-        {store?.about}
-      </Text>
+      <View style={{ gap: theme.spacing.md }}>
+        <Text size={theme.typography.fontSizes.md} weight={'medium'}>
+          About {name}
+        </Text>
+
+        <View style={{ gap: theme.spacing.sm }}>
+          <View style={styles.infoRow}>
+            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
+              Address:
+            </Text>
+            <Text size={theme.typography.fontSizes.sm}>{address}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
+              Phone:
+            </Text>
+            <Text size={theme.typography.fontSizes.sm}>{phone}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
+              Team Size:
+            </Text>
+            <Text size={theme.typography.fontSizes.sm}>{teamSize} professionals</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
+              Bookable:
+            </Text>
+            <Text size={theme.typography.fontSizes.sm}>{bookable ? 'Yes' : 'No'}</Text>
+          </View>
+        </View>
+      </View>
     );
   };
+
+  const operatingHoursText = useMemo(() => {
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const todayHours = operatingHours[today as keyof typeof operatingHours];
+
+    if (todayHours?.closed) {
+      return 'Closed today';
+    }
+
+    return `Open ${todayHours?.open} - ${todayHours?.close}`;
+  }, [operatingHours]);
 
   return (
     <ScrollView
@@ -66,45 +147,50 @@ const SalonDetailPage = () => {
       contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom }}>
       <View>
         <View style={[styles.headerComponent, { top }]}>
-          <Icon
-            size={32}
-            name="chevron-left"
-            onPress={() => router.back()}
-            color={theme.colors.white.DEFAULT}
-          />
+          <TouchableOpacity onPress={() => router.back()}>
+            <Icon size={32} name="chevron-left" color={theme.colors.white.DEFAULT} />
+          </TouchableOpacity>
 
-          <Icon name="heart-outline" size={32} color={theme.colors.white.DEFAULT} />
+          <TouchableOpacity>
+            <Icon name="heart-outline" size={32} color={theme.colors.white.DEFAULT} />
+          </TouchableOpacity>
         </View>
 
-        <ImageCarousel images={store?.images || []} />
+        <ImageCarousel
+          images={
+            photos.length > 0
+              ? photos
+              : ['https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop']
+          }
+        />
       </View>
 
       <View style={styles.storeContentContainer}>
         <Text size={theme.typography.fontSizes.xl} weight={'bold'}>
-          {store?.name}
+          {name}
         </Text>
 
         <View style={styles.storeInfoContainer}>
           <View style={styles.ratingContainer}>
-            <Icon name="star" size={16} color="#000000" />
+            <Icon name="star" size={16} color="#FFD700" />
 
             <Text
               weight={'bold'}
               size={theme.typography.fontSizes.xs}
               style={{ textDecorationLine: 'underline' }}>
-              {store?.rating}
+              {rating}
             </Text>
           </View>
 
-          <Text size={theme.typography.fontSizes.xs}>{store?.openingHours}</Text>
+          <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
         </View>
 
         <View style={styles.locationContainer}>
-          <Text size={theme.typography.fontSizes.md}>{store?.provider}</Text>
+          <Text size={theme.typography.fontSizes.md}>{address}</Text>
 
           <View style={styles.tagContainer}>
             <Text size={theme.typography.fontSizes.xs} weight={'bold'}>
-              {store?.tag}
+              {category.title}
             </Text>
           </View>
         </View>
@@ -117,6 +203,18 @@ const SalonDetailPage = () => {
             { tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() },
           ]}
         />
+
+        {selectedServices.length > 0 && (
+          <View style={styles.bookingContainer}>
+            <Button
+              title={`Book ${selectedServices.length} service${selectedServices.length > 1 ? 's' : ''}`}
+              onPress={() => {
+                // TODO: Implement booking flow
+                console.log('Selected services:', selectedServices);
+              }}
+            />
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -159,5 +257,29 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.xs,
     paddingHorizontal: theme.spacing.sm,
     backgroundColor: theme.colors.primaryBlue[50],
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.lg,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.lg,
+    gap: theme.spacing.md,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  bookingContainer: {
+    marginTop: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
   },
 });

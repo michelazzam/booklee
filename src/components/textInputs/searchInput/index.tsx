@@ -7,13 +7,24 @@ import { useDebouncing } from '~/src/hooks';
 import { searchInputStyles, searchInputConfig } from './config';
 import { SearchInputProps } from './types';
 
+// SearchInput component with enhanced props
+
 const SearchInput = ({
   onSearch,
   containerStyle,
   placeholder = searchInputConfig.placeholder,
+  onFocus,
+  value,
+  onChangeText,
+  onSubmitEditing,
+  autoFocus = false,
 }: SearchInputProps) => {
   /***** States ******/
-  const [searchQuery, setSearchQuery] = useState('');
+  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+
+  /***** Constants ******/
+  const searchQuery = value !== undefined ? value : internalSearchQuery;
+  const setSearchQuery = onChangeText || setInternalSearchQuery;
 
   /***** Constants ******/
   const debouncedQuery = useDebouncing(searchQuery);
@@ -39,6 +50,9 @@ const SearchInput = ({
         autoCapitalize="none"
         placeholder={placeholder}
         onChangeText={setSearchQuery}
+        onFocus={onFocus}
+        onSubmitEditing={onSubmitEditing}
+        autoFocus={autoFocus}
         style={searchInputStyles.input}
         placeholderTextColor={searchInputConfig.placeholderTextColor}
       />

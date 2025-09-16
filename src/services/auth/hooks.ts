@@ -26,6 +26,7 @@ export const useGetBetterAuthUser = () => {
   /*** Constants ***/
   const { data: session, isPending, error } = authClient.useSession();
 
+  console.log('session', session?.session?.token);
   return {
     error,
     isLoading: isPending,

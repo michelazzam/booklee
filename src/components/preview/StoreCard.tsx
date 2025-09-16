@@ -11,12 +11,13 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { theme } from '../../constants/theme';
-import { type Store } from '~/src/mock';
+import { type Location } from '~/src/services/locations/types';
+import { FavoritesServices } from '~/src/services';
 
 import { Text, Icon } from '../base';
 
 type StoreCardProps = {
-  data: Store;
+  data: Location;
   delay?: number;
   duration?: number;
   onPress?: () => void;
@@ -32,7 +33,18 @@ const StoreCard = ({
   animatedStyle = 'none',
 }: StoreCardProps) => {
   /***** Constants *****/
-  const { tag = '', name = '', city = '', image = '', rating = 0 } = data;
+  const { _id, name = '', city = 'Unknown', logo, rating: locationRating, category } = data;
+  const image =
+    logo || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop';
+  const rating = typeof locationRating === 'number' ? locationRating : 4.5;
+  const tag = category?.title ?? '';
+
+  /***** Hooks *****/
+  const { data: favorites } = FavoritesServices.useGetFavorites();
+  const { toggleFavorite } = FavoritesServices.useToggleFavorite();
+
+  /***** Computed values *****/
+  const isFavorite = favorites?.some((fav) => fav._id === _id) || false;
 
   /***** Memoization *****/
   const getEnteringAnimation = useMemo(() => {
@@ -72,8 +84,12 @@ const StoreCard = ({
     }
   }, [animatedStyle, delay, duration]);
 
-  const handleFavoritePress = () => {
-    console.log('favorite');
+  const handleFavoritePress = async () => {
+    try {
+      await toggleFavorite(_id);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
   };
 
   return (
@@ -87,7 +103,12 @@ const StoreCard = ({
         <Image source={{ uri: image }} style={styles.image} contentFit="cover" />
 
         <View style={styles.favoriteButton}>
-          <Icon name="heart-outline" size={28} color="#FFFFFF" onPress={handleFavoritePress} />
+          <Icon
+            name={isFavorite ? 'heart' : 'heart-outline'}
+            size={28}
+            color={isFavorite ? '#FF6B6B' : '#FFFFFF'}
+            onPress={handleFavoritePress}
+          />
         </View>
       </View>
 
