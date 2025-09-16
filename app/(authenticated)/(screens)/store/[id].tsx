@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
@@ -55,6 +55,19 @@ const SalonDetailPage = () => {
     );
   }
 
+  const {
+    operatingHours,
+    photos,
+    name,
+    address,
+    category,
+    rating,
+    phone,
+    teamSize,
+    bookable,
+    price: _price,
+  } = location;
+
   const RenderServices = () => {
     return (
       <View style={{ gap: theme.spacing.md }}>
@@ -63,24 +76,14 @@ const SalonDetailPage = () => {
         </Text>
 
         <View style={{ gap: theme.spacing.sm }}>
-          {location.locationServices.map((service) => {
-            const serviceData = {
-              id: service.id,
-              name: service.service.name,
-              price: formatPrice(service.price),
-              duration: `${service.duration} min`,
-              description: '',
-            };
-
-            return (
-              <Services
-                data={serviceData}
-                key={service.id}
-                onPress={handleServiceToggle}
-                isActive={selectedServices.includes(service.id)}
-              />
-            );
-          })}
+          {location.locationServices.map((service) => (
+            <Services
+              data={service}
+              key={service.id}
+              onPress={handleServiceToggle}
+              isActive={selectedServices.includes(service.id)}
+            />
+          ))}
         </View>
       </View>
     );
@@ -90,7 +93,7 @@ const SalonDetailPage = () => {
     return (
       <View style={{ gap: theme.spacing.md }}>
         <Text size={theme.typography.fontSizes.md} weight={'medium'}>
-          About {location.name}
+          About {name}
         </Text>
 
         <View style={{ gap: theme.spacing.sm }}>
@@ -98,55 +101,44 @@ const SalonDetailPage = () => {
             <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
               Address:
             </Text>
-            <Text size={theme.typography.fontSizes.sm}>{location.address}</Text>
+            <Text size={theme.typography.fontSizes.sm}>{address}</Text>
           </View>
 
           <View style={styles.infoRow}>
             <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
               Phone:
             </Text>
-            <Text size={theme.typography.fontSizes.sm}>{location.phone}</Text>
+            <Text size={theme.typography.fontSizes.sm}>{phone}</Text>
           </View>
 
           <View style={styles.infoRow}>
             <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
               Team Size:
             </Text>
-            <Text size={theme.typography.fontSizes.sm}>{location.teamSize} professionals</Text>
+            <Text size={theme.typography.fontSizes.sm}>{teamSize} professionals</Text>
           </View>
 
           <View style={styles.infoRow}>
             <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
               Bookable:
             </Text>
-            <Text size={theme.typography.fontSizes.sm}>{location.bookable ? 'Yes' : 'No'}</Text>
+            <Text size={theme.typography.fontSizes.sm}>{bookable ? 'Yes' : 'No'}</Text>
           </View>
         </View>
       </View>
     );
   };
 
-  const formatPrice = (price: any) => {
-    if (price.type === 'fixed') {
-      return `$${price.value}`;
-    } else if (price.type === 'range') {
-      return `$${price.min} - $${price.max}`;
-    } else if (price.type === 'starting') {
-      return `Starting from $${price.value}`;
-    }
-    return `$${price.value}`;
-  };
-
-  const getOperatingHoursText = () => {
+  const operatingHoursText = useMemo(() => {
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const todayHours = location.operatingHours[today as keyof typeof location.operatingHours];
+    const todayHours = operatingHours[today as keyof typeof operatingHours];
 
     if (todayHours?.closed) {
       return 'Closed today';
     }
 
     return `Open ${todayHours?.open} - ${todayHours?.close}`;
-  };
+  }, [operatingHours]);
 
   return (
     <ScrollView
@@ -166,8 +158,8 @@ const SalonDetailPage = () => {
 
         <ImageCarousel
           images={
-            location.photos.length > 0
-              ? location.photos
+            photos.length > 0
+              ? photos
               : ['https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop']
           }
         />
@@ -175,7 +167,7 @@ const SalonDetailPage = () => {
 
       <View style={styles.storeContentContainer}>
         <Text size={theme.typography.fontSizes.xl} weight={'bold'}>
-          {location.name}
+          {name}
         </Text>
 
         <View style={styles.storeInfoContainer}>
@@ -186,19 +178,19 @@ const SalonDetailPage = () => {
               weight={'bold'}
               size={theme.typography.fontSizes.xs}
               style={{ textDecorationLine: 'underline' }}>
-              {location.rating}
+              {rating}
             </Text>
           </View>
 
-          <Text size={theme.typography.fontSizes.xs}>{getOperatingHoursText()}</Text>
+          <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
         </View>
 
         <View style={styles.locationContainer}>
-          <Text size={theme.typography.fontSizes.md}>{location.address}</Text>
+          <Text size={theme.typography.fontSizes.md}>{address}</Text>
 
           <View style={styles.tagContainer}>
             <Text size={theme.typography.fontSizes.xs} weight={'bold'}>
-              {location.category.title}
+              {category.title}
             </Text>
           </View>
         </View>

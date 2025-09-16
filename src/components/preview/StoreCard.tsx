@@ -11,13 +11,13 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { theme } from '../../constants/theme';
-import { type Store } from '~/src/mock';
+import { type Location } from '~/src/services/locations/types';
 import { FavoritesServices } from '~/src/services';
 
 import { Text, Icon } from '../base';
 
 type StoreCardProps = {
-  data: Store;
+  data: Location;
   delay?: number;
   duration?: number;
   onPress?: () => void;
@@ -33,14 +33,18 @@ const StoreCard = ({
   animatedStyle = 'none',
 }: StoreCardProps) => {
   /***** Constants *****/
-  const { tag = '', name = '', city = '', image = '', rating = 0, id } = data;
+  const { _id, name = '', city = 'Unknown', logo, rating: locationRating, category } = data;
+  const image =
+    logo || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop';
+  const rating = typeof locationRating === 'number' ? locationRating : 4.5;
+  const tag = category?.title ?? '';
 
   /***** Hooks *****/
   const { data: favorites } = FavoritesServices.useGetFavorites();
   const { toggleFavorite } = FavoritesServices.useToggleFavorite();
 
   /***** Computed values *****/
-  const isFavorite = favorites?.some((fav) => fav._id === id) || false;
+  const isFavorite = favorites?.some((fav) => fav._id === _id) || false;
 
   /***** Memoization *****/
   const getEnteringAnimation = useMemo(() => {
@@ -82,7 +86,7 @@ const StoreCard = ({
 
   const handleFavoritePress = async () => {
     try {
-      await toggleFavorite(id);
+      await toggleFavorite(_id);
     } catch (error) {
       console.error('Error toggling favorite:', error);
     }

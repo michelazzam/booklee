@@ -1,18 +1,32 @@
+import { useMemo } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { theme } from '~/src/constants/theme';
-import { type Service } from '~/src/mock';
+import { type LocationService } from '~/src/services/locations/types';
 
 import { Icon, Text } from '../base';
 
 type ServicesPreviewProps = {
-  data: Service;
+  data: LocationService;
   isActive: boolean;
   onPress: (serviceId: string) => void;
 };
 const ServicesPreview = ({ data, onPress, isActive }: ServicesPreviewProps) => {
   /***** Constants *****/
-  const { id, name = '', price = '', duration = '', description = '' } = data;
+  const { id, service, price, duration } = data;
+
+  const formatPrice = useMemo(() => {
+    if (price.type === 'fixed') {
+      return `$${price.value}`;
+    }
+    if (price.type === 'range') {
+      return `$${price.min} - $${price.max}`;
+    }
+    if (price.type === 'starting') {
+      return `Starting from $${price.value}`;
+    }
+    return `$${price.value}`;
+  }, [price]);
 
   return (
     <TouchableOpacity activeOpacity={0.8} style={styles.container} onPress={() => onPress(id)}>
@@ -26,20 +40,14 @@ const ServicesPreview = ({ data, onPress, isActive }: ServicesPreviewProps) => {
 
       <View style={styles.infoContainer}>
         <Text size={theme.typography.fontSizes.md} weight={'bold'}>
-          {name}
+          {service?.name ?? ''}
         </Text>
-
-        {description && (
-          <Text size={theme.typography.fontSizes.sm} color={theme.colors.lightText}>
-            {description}
-          </Text>
-        )}
       </View>
 
       <View style={styles.pricingContainer}>
-        <Text size={theme.typography.fontSizes.sm}>{price}</Text>
+        <Text size={theme.typography.fontSizes.sm}>{formatPrice}</Text>
 
-        <Text size={theme.typography.fontSizes.sm}>{duration}</Text>
+        <Text size={theme.typography.fontSizes.sm}>{`${duration} min`}</Text>
       </View>
     </TouchableOpacity>
   );

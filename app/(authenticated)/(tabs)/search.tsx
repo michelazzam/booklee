@@ -13,6 +13,7 @@ import FilterIcon from '~/src/assets/icons/FilterIcon';
 import { SearchIcon } from '~/src/assets/icons';
 import { StatusBar } from 'expo-status-bar';
 import { Wrapper } from '~/src/components/utils/UI';
+import { Location } from '~/src/services';
 
 const Search = () => {
   /*** Constants ***/
@@ -106,27 +107,13 @@ const Search = () => {
           </View>
 
           {/* Locations in this category */}
-          {category.locations.map((location: any, locationIndex: number) => {
-            const storeData = {
-              id: location._id,
-              tag: category.title,
-              name: location.name,
-              city: location.city || 'Unknown',
-              image:
-                location.logo ||
-                'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
-              rating: location.rating || 4.5,
-              about: 'Services available',
-              openingHours: 'Hours not available',
-              isFavorite: false,
-            };
-
+          {category.locations.map((location: Location, locationIndex: number) => {
             return (
               <View
                 key={location._id}
                 style={{ paddingHorizontal: theme.spacing.lg, marginBottom: theme.spacing.md }}>
                 <StoreCard
-                  data={storeData}
+                  data={location}
                   delay={categoryIndex * 100 + locationIndex * 150}
                   animatedStyle="slideUp"
                   onPress={() =>
@@ -213,11 +200,8 @@ const Search = () => {
     );
   }, [filters, selectedFilter, searchQuery, top]);
 
-  const isLoading = locationsLoading;
-  const hasError = locationsError;
-
   const RenderEmptyComponent = useCallback(() => {
-    if (isLoading) {
+    if (locationsLoading) {
       return (
         <View style={styles.emptyContainer}>
           <Text color={theme.colors.darkText[100]} weight="medium">
@@ -227,7 +211,7 @@ const Search = () => {
       );
     }
 
-    if (hasError) {
+    if (locationsError) {
       return (
         <View style={styles.emptyContainer}>
           <Text color={theme.colors.red[100]} weight="medium">
@@ -246,7 +230,7 @@ const Search = () => {
         </Text>
       </View>
     );
-  }, [isLoading, hasError, debouncedSearchQuery]);
+  }, [locationsLoading, locationsError, debouncedSearchQuery]);
 
   const RenderFooter = useCallback(() => {
     if (!isFetchingNextPage) return null;

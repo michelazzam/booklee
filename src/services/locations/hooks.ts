@@ -17,6 +17,7 @@ import type { ResErrorType } from '../axios/types';
 export const useGetLocationsByCategories = (params?: GetLocationsReqType) => {
   return useQuery<GetLocationsByCategoriesResType, ResErrorType, GetLocationsByCategoriesResType>({
     queryKey: ['getLocationsByCategories', params],
+
     queryFn: async () => {
       const result = await getLocationsApi(params);
       if ('categories' in result) {
