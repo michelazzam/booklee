@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { AwareScrollView } from '~/src/components/base';
 import { useRouter } from 'expo-router';
+import { AwareScrollView } from '~/src/components/base';
 
 import { theme } from '~/src/constants/theme';
 import {
@@ -14,7 +14,7 @@ import {
   HomeIcon,
 } from '~/src/assets/icons';
 
-import { AuthServices } from '~/src/services';
+import { AuthServices, UserServices } from '~/src/services';
 
 import {
   AccountButton,
@@ -27,14 +27,15 @@ const AccountPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { mutate: logout } = AuthServices.useLogout();
+  const { user } = UserServices.useGetUser();
 
   const handleNotificationPress = () => {
     // Handle notification press
     console.log('Notification pressed');
   };
   const handleNamePress = () => {
-    // Handle name edit
-    console.log('Name pressed');
+    // Navigate to edit personal info page
+    router.push('/(authenticated)/(tabs)/account/edit-personal-info');
   };
   const handleEmailPress = () => {
     // Handle email edit
@@ -78,24 +79,36 @@ const AccountPage = () => {
       <AwareScrollView contentContainerStyle={styles.scrollContent}>
         {/* Personal Information Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>PERSONAL INFORMATION</Text>
           <AccountCard>
-            <AccountRow icon={UserInfoIcon} title="Samir Abi Frem" onPress={handleNamePress} />
+            <Text style={styles.sectionTitle}>PERSONAL INFORMATION</Text>
+            <AccountRow
+              icon={UserInfoIcon}
+              title={
+                user?.name || (user?.firstName && user?.lastName)
+                  ? `${user.firstName} ${user.lastName}`
+                  : 'Loading...'
+              }
+              onPress={handleNamePress}
+            />
             <View style={styles.divider} />
             <AccountRow
               icon={EnvelopeIcon}
-              title="samirabifrem@gmail.com"
-              badge="not verified"
-              badgeVerified={false}
+              title={user?.email || 'Loading...'}
+              badge={user?.email ? 'verified' : 'not verified'}
+              badgeVerified={!!user?.email}
               onPress={handleEmailPress}
             />
             <View style={styles.divider} />
-            <AccountRow icon={PhoneIcon} title="+961 123 456" onPress={handlePhonePress} />
+            <AccountRow
+              icon={PhoneIcon}
+              title={user?.phone || 'No phone number'}
+              onPress={handlePhonePress}
+            />
           </AccountCard>
         </View>
 
         {/* Settings and Help Section */}
-        <AccountCard>
+        <AccountCard style={styles.section}>
           <AccountRow icon={GearIcon} title="SETTINGS" onPress={handleSettingsPress} />
           <View style={styles.divider} />
           <AccountRow icon={QuestionMarkIcon} title="USERS HELP CENTER" onPress={handleHelpPress} />
@@ -109,9 +122,10 @@ const AccountPage = () => {
           title="OPEN A BUSINESS"
           onPress={handleOpenBusinessPress}
         />
-
+        <View style={{ marginVertical: theme.spacing.xs }} />
         <AccountButton icon={LogoutIcon} title="LOG OUT" variant="secondary" onPress={logout} />
 
+        <View style={{ marginVertical: theme.spacing.xs }} />
         <AccountButton
           variant="danger"
           icon={TrashIcon}
@@ -135,12 +149,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   section: {
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.xl,
   },
   sectionTitle: {
     ...theme.typography.textVariants.ctaSecondaryBold,
     color: theme.colors.darkText[100],
-    marginHorizontal: theme.spacing.lg,
     marginBottom: theme.spacing.sm,
   },
   divider: {

@@ -28,6 +28,20 @@ const SalonDetailPage = () => {
     error,
   } = LocationServices.useGetLocationById({ id: id || '', byId: true });
 
+  /***** Memoized values *****/
+  const operatingHoursText = useMemo(() => {
+    if (!location?.operatingHours) return 'Hours not available';
+
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const todayHours = location.operatingHours[today as keyof typeof location.operatingHours];
+
+    if (todayHours?.closed) {
+      return 'Closed today';
+    }
+
+    return `Open ${todayHours?.open} - ${todayHours?.close}`;
+  }, [location?.operatingHours]);
+
   const handleServiceToggle = (serviceId: string) => {
     setSelectedServices((prev) =>
       prev.includes(serviceId) ? prev.filter((id) => id !== serviceId) : [...prev, serviceId]
@@ -56,7 +70,6 @@ const SalonDetailPage = () => {
   }
 
   const {
-    operatingHours,
     photos,
     name,
     address,
@@ -128,17 +141,6 @@ const SalonDetailPage = () => {
       </View>
     );
   };
-
-  const operatingHoursText = useMemo(() => {
-    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const todayHours = operatingHours[today as keyof typeof operatingHours];
-
-    if (todayHours?.closed) {
-      return 'Closed today';
-    }
-
-    return `Open ${todayHours?.open} - ${todayHours?.close}`;
-  }, [operatingHours]);
 
   return (
     <ScrollView

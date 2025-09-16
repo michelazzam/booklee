@@ -5,13 +5,12 @@ import { type RelativePathString } from 'expo-router';
 import { theme, IMAGES } from '../../../src/constants';
 import Button from '../../../src/components/buttons/button';
 import CustomText from '../../../src/components/base/text';
-import { StoreCard } from '../../../src/components/preview';
+import { FavoriteCard } from '../../../src/components/preview';
 import { Wrapper } from '~/src/components/utils/UI';
 import { FavoritesServices } from '~/src/services';
-import { type Store } from '~/src/mock';
 
 // Transform favorite data to match Store props
-const transformFavoriteToStore = (favorite: any): Store => ({
+const transformFavoriteToStore = (favorite: any): any => ({
   id: favorite._id,
   image:
     favorite.logo ||
@@ -100,26 +99,27 @@ const FavoritesPage = () => {
     }
 
     return (
-      <View style={styles.populatedContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.storesContainer}>
+      <ScrollView
+        style={styles.populatedContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
+        <View style={styles.gridContainer}>
           {favoriteStores.map((store, index) => (
-            <StoreCard
-              key={store.id}
-              data={store}
-              animatedStyle="slideLeft"
-              delay={index * 150}
-              onPress={() => {
-                router.navigate(
-                  `/(authenticated)/(screens)/store/${store.id}` as RelativePathString
-                );
-              }}
-            />
+            <View key={store.id} style={styles.cardWrapper}>
+              <FavoriteCard
+                data={store}
+                animatedStyle="slideUp"
+                delay={index * 100}
+                onPress={() => {
+                  router.navigate(
+                    `/(authenticated)/(screens)/store/${store.id}` as RelativePathString
+                  );
+                }}
+              />
+            </View>
           ))}
-        </ScrollView>
-      </View>
+        </View>
+      </ScrollView>
     );
   };
 
@@ -138,7 +138,7 @@ const FavoritesPage = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: theme.colors.white.DEFAULT,
   },
   header: {
@@ -186,12 +186,22 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   populatedContainer: {
+    flex: 1,
+  },
+  scrollContent: {
     flexGrow: 1,
+    paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
   },
-  storesContainer: {
-    gap: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.lg,
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: theme.spacing.md,
+  },
+  cardWrapper: {
+    width: '48%',
+    marginBottom: theme.spacing.md,
   },
   loadingContainer: {
     flex: 1,

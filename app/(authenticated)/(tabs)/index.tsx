@@ -9,11 +9,11 @@ import { theme } from '~/src/constants/theme';
 import { StoreCard } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
-// import { mapLocationToStore, groupLocationsByCategory } from '~/src/utils';
+import { Location } from '~/src/services';
 
 type SectionProps = {
   title: string;
-  data: Store[];
+  data: Location[];
   index?: number;
   categoryId: string;
 };
@@ -51,12 +51,12 @@ const SectionCategory = ({ title, data, index = 0, categoryId }: SectionProps) =
           {data.map((store, dataIndex) => (
             <StoreCard
               data={store}
-              key={store.id}
+              key={`${categoryId}-${store._id}-${dataIndex}`}
               animatedStyle="slideLeft"
               delay={dataIndex * 150 + index * 150}
               onPress={() =>
                 router.navigate(
-                  `/(authenticated)/(screens)/store/${store.id}` as RelativePathString
+                  `/(authenticated)/(screens)/store/${store._id}` as RelativePathString
                 )
               }
             />
@@ -133,6 +133,7 @@ const HomePage = () => {
   const renderCategory = ({ item: category, index }: { item: any; index: number }) => {
     // Convert locations to Store format for StoreCard
     const storeData = category.locations.map((location: any) => ({
+      _id: location._id, // Keep the original _id for the key prop
       id: location._id,
       tag: category.title,
       name: location.name,
