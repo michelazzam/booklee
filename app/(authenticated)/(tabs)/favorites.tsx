@@ -6,6 +6,7 @@ import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
 
 import { HeaderNavigation, Text } from '~/src/components/base';
+import { StoreCard } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 
 const FavoritesPage = () => {
@@ -13,7 +14,8 @@ const FavoritesPage = () => {
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
 
-  const EmptyState = useCallback(
+  const RenderItem = useCallback(({ item }: { item: any }) => <StoreCard data={item} />, []);
+  const RenderListEmptyComponent = useCallback(
     () => (
       <View style={styles.emptyStateContent}>
         <Image source={IMAGES.favorites.placeholder} style={styles.emptyStateImage} />
@@ -51,11 +53,11 @@ const FavoritesPage = () => {
       <FlatList
         data={[]}
         numColumns={2}
-        ListEmptyComponent={EmptyState}
+        renderItem={RenderItem}
         showsVerticalScrollIndicator={false}
-        keyExtractor={(item, index) => index.toString()}
+        ListEmptyComponent={RenderListEmptyComponent}
+        keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
-        renderItem={({ item }) => <View />}
       />
     </>
   );
