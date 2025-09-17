@@ -163,6 +163,7 @@ export const DEFAULT_LOCATIONS_PARAMS: Partial<GetLocationsReqType> = {
   defaults: 'full',
 };
 
+//TODO: These should not be inside the types file.
 // Type guard to check if response is grouped by categories
 export const isGroupedByCategories = (
   response: GetLocationsResType | GetLocationsByCategoriesResType

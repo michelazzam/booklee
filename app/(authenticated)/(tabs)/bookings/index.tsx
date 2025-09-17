@@ -1,23 +1,25 @@
-import { View, StyleSheet, FlatList, Image } from 'react-native';
+import { View, StyleSheet, Image, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
-
-import { FavoritesServices } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
 
-import { HeaderNavigation, Text } from '~/src/components/base';
-import { StoreCard } from '~/src/components/preview';
+import { Booking } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
+import { Text } from '~/src/components/base';
 
-const FavoritesPage = () => {
+const UpcomingBookingsPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
-  const { data: favorites } = FavoritesServices.useGetFavorites();
 
-  const RenderItem = useCallback(({ item }: { item: any }) => <StoreCard data={item} />, []);
+  const RenderItem = useCallback(
+    ({ item }: { item: any }) => (
+      <Booking data={item} onCancel={() => {}} onChangeDateTime={() => {}} />
+    ),
+    []
+  );
   const RenderListEmptyComponent = useCallback(
     () => (
       <View style={styles.emptyStateContent}>
@@ -28,7 +30,7 @@ const FavoritesPage = () => {
           weight="semiBold"
           style={{ textAlign: 'center' }}
           color={theme.colors.darkText[100]}>
-          No favorites yet
+          No bookings yet
         </Text>
 
         <Text
@@ -50,25 +52,25 @@ const FavoritesPage = () => {
   );
 
   return (
-    <>
-      <HeaderNavigation title="FAVORITES" showBackButton={false} />
-
-      <FlatList
-        numColumns={2}
-        data={favorites}
-        renderItem={RenderItem}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={RenderListEmptyComponent}
-        keyExtractor={(_, index) => index.toString()}
-        contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
-      />
-    </>
+    <FlatList
+      data={[1, 2, 3]}
+      renderItem={RenderItem}
+      ListEmptyComponent={RenderListEmptyComponent}
+      keyExtractor={(_, index) => index.toString()}
+      contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
+    />
   );
 };
 
-export default FavoritesPage;
+export default UpcomingBookingsPage;
 
 const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    gap: theme.spacing.lg,
+    paddingTop: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.md,
+  },
   emptyStateContent: {
     flex: 1,
     gap: theme.spacing.xl,
@@ -83,9 +85,5 @@ const styles = StyleSheet.create({
   emptyStateDescription: {
     lineHeight: 20,
     textAlign: 'center',
-  },
-  listContent: {
-    flexGrow: 1,
-    gap: theme.spacing.lg,
   },
 });

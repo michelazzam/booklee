@@ -1,5 +1,7 @@
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { HomeIcon, SearchIcon, FavoritesIcon, BookingIcon, AccountIcon } from '~/src/assets/icons';
+import { useMemo } from 'react';
+
+import { AccountIcon, BookingIcon, FavoritesIcon, HomeIcon, SearchIcon } from '~/src/assets/icons';
 
 type TabBarIconProps = {
   color: string;
@@ -8,16 +10,7 @@ type TabBarIconProps = {
   focused?: boolean;
 };
 
-// Icon mapping for tab bar
-const iconMap = {
-  home: HomeIcon,
-  magnify: SearchIcon,
-  heart: FavoritesIcon,
-  'calendar-check': BookingIcon,
-  account: AccountIcon,
-} as const;
-
-const TabBarIcon = ({ icon, color, focused = false, size = 24 }: TabBarIconProps) => {
+const TabBarIcon = ({ icon, color, focused = false }: TabBarIconProps) => {
   /***** Animations *****/
   const iconAnimatedStyle = useAnimatedStyle(() => {
     const opacityValue = withTiming(focused ? 1 : 0.7, {
@@ -37,17 +30,25 @@ const TabBarIcon = ({ icon, color, focused = false, size = 24 }: TabBarIconProps
     };
   }, [focused]);
 
-  const IconComponent = iconMap[icon as keyof typeof iconMap];
+  /***** Memoization *****/
+  const IconComponent = useMemo(() => {
+    switch (icon) {
+      case 'home':
+        return <HomeIcon color={color} />;
+      case 'magnify':
+        return <SearchIcon color={color} />;
+      case 'heart':
+        return <FavoritesIcon color={color} />;
+      case 'calendar-check':
+        return <BookingIcon color={color} />;
+      case 'account':
+        return <AccountIcon color={color} />;
+      default:
+        return null;
+    }
+  }, [icon, color]);
 
-  if (!IconComponent) {
-    return null;
-  }
-
-  return (
-    <Animated.View style={iconAnimatedStyle}>
-      <IconComponent color={color} width={size} height={size} />
-    </Animated.View>
-  );
+  return <Animated.View style={iconAnimatedStyle}>{IconComponent}</Animated.View>;
 };
 
 export default TabBarIcon;

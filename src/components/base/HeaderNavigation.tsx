@@ -21,6 +21,7 @@ export { BaseHeaderNavigation };
 type HeaderNavigationProps = {
   title?: string;
   color?: string;
+  showBackButton?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 };
@@ -29,6 +30,7 @@ const HeaderNavigation = ({
   leftIcon,
   rightIcon,
   color = '#000000',
+  showBackButton = true,
 }: HeaderNavigationProps) => {
   /*** Constants ***/
   const router = useRouter();
@@ -39,7 +41,7 @@ const HeaderNavigation = ({
         activeOpacity={0.8}
         style={styles.iconContainer}
         onPress={() => router.back()}>
-        {leftIcon ?? <ArrowLeftIcon />}
+        {leftIcon ?? (showBackButton ? <ArrowLeftIcon /> : null)}
       </TouchableOpacity>
 
       <Text numberOfLines={1} style={[styles.title, { color }]}>
@@ -69,8 +71,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: '400',
-    fontFamily: 'Montserrat-Regular',
+    fontSize: 18,
+    fontWeight: '500',
+    fontFamily: 'Montserrat-Medium',
   },
 });

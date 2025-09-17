@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { theme } from '../../constants/theme';
-import { type Location } from '~/src/services/locations/types';
+import { type Location } from '~/src/services/locations/types'; //TODO: This needs to be imported from the services index
 import { FavoritesServices } from '~/src/services';
 
 import { Text, Icon } from '../base';
@@ -23,7 +23,7 @@ type StoreCardProps = {
   onPress?: () => void;
   animatedStyle?: 'slideUp' | 'slideLeft' | 'none';
 };
-
+//TODO: This needs fixing
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 const StoreCard = ({
   data,
@@ -104,10 +104,10 @@ const StoreCard = ({
 
         <View style={styles.favoriteButton}>
           <Icon
-            name={isFavorite ? 'heart' : 'heart-outline'}
             size={28}
-            color={isFavorite ? '#FF6B6B' : '#FFFFFF'}
             onPress={handleFavoritePress}
+            color={isFavorite ? '#FF6B6B' : '#FFFFFF'}
+            name={isFavorite ? 'heart' : 'heart-outline'}
           />
         </View>
       </View>
