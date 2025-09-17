@@ -1,78 +1,89 @@
-import { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Modal,
-  TextInput,
-  Dimensions,
-} from 'react-native';
-import { theme } from '../../constants/theme';
-import { useAppSafeAreaInsets } from '../../hooks/useAppSafeAreaInsets';
+import { View, TouchableOpacity, StyleSheet, TextInput, useWindowDimensions } from 'react-native';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
-import { Icon } from '../base';
 
-export interface FilterState {
+import { useAppSafeAreaInsets } from '../../hooks/useAppSafeAreaInsets';
+import { theme } from '../../constants/theme';
+
+import ModalWrapper, { type ModalWrapperRef } from './ModalWrapper';
+import { Icon, Text } from '../base';
+
+export type FilterState = {
   location: string;
-  priceRange: [number, number];
   minimumRating: number;
   maximumDistance: number;
-}
+  priceRange: [number, number];
+};
+export type FilterModalRef = {
+  present: () => void;
+  dismiss: () => void;
+};
 
-interface FilterModalProps {
-  visible: boolean;
+type FilterModalProps = {
   onClose: () => void;
-  onApply: (filters: FilterState) => void;
   initialFilters?: FilterState;
-}
+  onApply: (filters: FilterState) => void;
+};
 
 const defaultFilters: FilterState = {
   location: '',
-  priceRange: [0, 300],
   minimumRating: 0,
   maximumDistance: 30,
+  priceRange: [0, 300],
 };
 
-export default function FilterModal({
-  visible,
-  onClose,
-  onApply,
-  initialFilters = defaultFilters,
-}: FilterModalProps) {
-  const insets = useAppSafeAreaInsets();
-  const [filters, setFilters] = useState<FilterState>(initialFilters);
+const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
+  ({ onClose, onApply, initialFilters = defaultFilters }, ref) => {
+    /*** Refs ***/
+    const modalRef = useRef<ModalWrapperRef>(null);
 
-  const screenWidth = Dimensions.get('window').width;
+    /*** States ***/
+    const [filters, setFilters] = useState<FilterState>(initialFilters);
 
-  const handleApply = () => {
-    onApply(filters);
-    onClose();
-  };
+    /*** Constants ***/
+    const insets = useAppSafeAreaInsets();
+    const { width: screenWidth } = useWindowDimensions();
 
-  const handleReset = () => {
-    setFilters(defaultFilters);
-  };
+    /*** Expose methods ***/
+    useImperativeHandle(ref, () => ({
+      present: () => {
+        modalRef.current?.present();
+      },
+      dismiss: () => {
+        modalRef.current?.dismiss();
+      },
+    }));
 
-  const updatePriceRange = (values: number[]) => {
-    setFilters({ ...filters, priceRange: [values[0], values[1]] });
-  };
+    /*** Handlers ***/
+    const handleApply = () => {
+      modalRef.current?.dismiss();
+      onApply(filters);
+      onClose();
+    };
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>FILTER</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Icon name="close" size={24} color={theme.colors.darkText[100]} />
-          </TouchableOpacity>
-        </View>
+    const handleReset = () => {
+      setFilters(defaultFilters);
+    };
 
+    const handleClose = () => {
+      modalRef.current?.dismiss();
+      onClose();
+    };
+
+    const updatePriceRange = (values: number[]) => {
+      setFilters({ ...filters, priceRange: [values[0], values[1]] });
+    };
+
+    return (
+      <ModalWrapper
+        ref={modalRef}
+        title="FILTER"
+        snapPoints={['90%']}
+        onDismiss={handleClose}
+        contentContainerStyle={[styles.container, { paddingBottom: insets.bottom }]}
+        trailingIcon={
+          <Icon name="close" size={24} color={theme.colors.darkText[100]} onPress={handleClose} />
+        }>
         {/* Filter Content */}
         <View style={styles.content}>
           {/* Location Filter */}
@@ -172,7 +183,7 @@ export default function FilterModal({
         </View>
 
         {/* Footer Buttons */}
-        <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
+        <View style={styles.footer}>
           <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
             <Text style={styles.resetButtonText}>Reset</Text>
           </TouchableOpacity>
@@ -180,36 +191,24 @@ export default function FilterModal({
             <Text style={styles.applyButtonText}>Apply</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </Modal>
-  );
-}
+      </ModalWrapper>
+    );
+  }
+);
+
+FilterModal.displayName = 'FilterModal';
+
+export default FilterModal;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.white.DEFAULT,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingTop: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  title: {
-    ...theme.typography.textVariants.headline,
-    color: theme.colors.darkText[100],
-    fontWeight: theme.typography.fontWeights.bold,
-  },
-  closeButton: {
-    padding: theme.spacing.sm,
   },
   content: {
     flex: 1,
-    paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.xl,
   },
   filterSection: {

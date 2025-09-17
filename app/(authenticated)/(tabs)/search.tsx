@@ -17,20 +17,23 @@ import { Text } from '~/src/components/base';
 const Search = () => {
   /*** Refs ***/
   const searchModalRef = useRef<ModalWrapperRef>(null);
+  const filterModalRef = useRef<ModalWrapperRef>(null);
 
   /*** Constants ***/
   const router = useRouter();
   const { top, bottom } = useAppSafeAreaInsets();
   const { filter } = useLocalSearchParams<{ filter?: string }>();
+
+  /*** States ***/
+  const [selectedFilter, setSelectedFilter] = useState<string>(filter || '');
+
+  /*** API ***/
   const {
     data: locationsData,
     hasNextPage: hasNextPage,
     fetchNextPage: fetchNextPage,
     isFetchingNextPage: isFetchingNextPage,
-  } = LocationServices.useGetLocationsCategorized();
-
-  /*** States ***/
-  const [selectedFilter, setSelectedFilter] = useState<string>(filter || '');
+  } = LocationServices.useGetLocationsCategorized({ category: selectedFilter });
 
   useEffect(() => {
     if (filter) {
@@ -99,7 +102,12 @@ const Search = () => {
         <View style={styles.searchContainer}>
           <SearchInput onPress={() => searchModalRef.current?.present()} />
 
-          <TouchableOpacity activeOpacity={0.8} style={styles.filterButton} onPress={() => {}}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.filterButton}
+            onPress={() => {
+              filterModalRef.current?.present();
+            }}>
             <FilterIcon />
           </TouchableOpacity>
         </View>
@@ -123,16 +131,9 @@ const Search = () => {
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
       />
 
-      {/* <FilterModal
-        visible={showFilterModal}
-        initialFilters={selectedFilter}
-        onClose={() => setShowFilterModal(false)}
-        onApply={(filters) => {
-          setSelectedFilter(filters.location);
-        }}
-      /> */}
-
       <SearchModal ref={searchModalRef} />
+
+      <FilterModal ref={filterModalRef} onClose={() => {}} onApply={() => {}} />
     </>
   );
 };
