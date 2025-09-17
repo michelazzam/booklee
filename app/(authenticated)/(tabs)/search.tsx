@@ -9,10 +9,9 @@ import { FilterIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants/theme';
 
 import { FilterModal, SearchModal, ModalWrapperRef } from '~/src/components/modals';
+import { LocationCard, LocationCardSkeleton } from '~/src/components/preview';
 import { SearchInput } from '~/src/components/textInputs';
 import { FilterContainer } from '~/src/components/utils';
-import { LocationCard } from '~/src/components/preview';
-import { Text } from '~/src/components/base';
 
 const Search = () => {
   /*** Refs ***/
@@ -33,7 +32,7 @@ const Search = () => {
     hasNextPage: hasNextPage,
     fetchNextPage: fetchNextPage,
     isFetchingNextPage: isFetchingNextPage,
-  } = LocationServices.useGetLocationsCategorized({ category: selectedFilter });
+  } = LocationServices.useGetLocationsCategorized();
 
   useEffect(() => {
     if (filter) {
@@ -65,13 +64,9 @@ const Search = () => {
   }, [locationsData, selectedFilter]);
 
   const RenderEmptyComponent = useCallback(() => {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text color={theme.colors.darkText[100]} weight="medium">
-          No salons found
-        </Text>
-      </View>
-    );
+    return Array.from({ length: 10 }).map((_, index) => (
+      <LocationCardSkeleton key={index} minWidth={230} />
+    ));
   }, []);
   const RenderFooter = useCallback(() => {
     if (!isFetchingNextPage) return null;

@@ -3,9 +3,18 @@ import { AxiosError } from 'axios';
 import { withErrorCatch } from '../axios/error';
 import { apiClient } from '../axios/interceptor';
 
-import { GetUserMeResType, UpdateUserReqType, UpdateUserResType } from './types';
+import {
+  RemoveFromFavoritesReqType,
+  RemoveFromFavoritesResType,
+  AddToFavoritesReqType,
+  AddToFavoritesResType,
+  GetFavoritesResType,
+  UpdateUserReqType,
+  UpdateUserResType,
+  GetUserMeResType,
+} from './types';
 
-/*** API for get user/me ***/
+/*** API for get user ***/
 export const getUserMeApi = async () => {
   const [response, error] = await withErrorCatch(apiClient.get<GetUserMeResType>(`/user/me`));
 
@@ -21,10 +30,64 @@ export const getUserMeApi = async () => {
   return response?.data;
 };
 
-/*** API for update user/me ***/
+/*** API for update user ***/
 export const updateUserMeApi = async (data: UpdateUserReqType) => {
   const [response, error] = await withErrorCatch(
     apiClient.post<UpdateUserResType>(`/user/me`, data)
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API for add to favorites ***/
+export const addToFavoritesApi = async (data: AddToFavoritesReqType) => {
+  const [response, error] = await withErrorCatch(
+    apiClient.post<AddToFavoritesResType>('/user/favorites', data)
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API for remove from favorites ***/
+export const removeFromFavoritesApi = async (data: RemoveFromFavoritesReqType) => {
+  const [response, error] = await withErrorCatch(
+    apiClient.delete<RemoveFromFavoritesResType>('/user/favorites', { data })
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API for get favorites ***/
+export const getFavoritesApi = async () => {
+  const [response, error] = await withErrorCatch(
+    apiClient.get<GetFavoritesResType>('/user/favorites')
   );
 
   if (error instanceof AxiosError) {

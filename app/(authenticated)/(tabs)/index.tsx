@@ -7,7 +7,7 @@ import { LocationServices, type LocationCategoryType, UserServices } from '~/src
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { LocationCard } from '~/src/components/preview';
+import { LocationCard, HomePageSkeleton } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
@@ -76,6 +76,9 @@ const HomePage = () => {
       fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const RenderListEmptyComponent = useCallback(() => {
+    return <HomePageSkeleton />;
+  }, []);
 
   return (
     <>
@@ -100,6 +103,7 @@ const HomePage = () => {
         keyExtractor={(item) => item._id}
         ListFooterComponent={renderFooter}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={RenderListEmptyComponent}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
       />
     </>

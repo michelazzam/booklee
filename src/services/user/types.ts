@@ -36,3 +36,37 @@ export type UpdateUserReqType = {
 export type UpdateUserResType = {
   user: UserType;
 };
+
+/*** User favorites type ***/
+export type FavoriteType = {
+  _id: string;
+  slug: string;
+  name: string;
+  logo: string;
+  city: string;
+  tags: string[];
+};
+
+/*** Get user favorites type ***/
+export type GetFavoritesResType = {
+  ok: boolean;
+  favorites: FavoriteType[];
+};
+
+/*** Add to user favorites type ***/
+export type AddToFavoritesReqType = {
+  locationId: string;
+};
+export type AddToFavoritesResType = {
+  ok: boolean;
+  message?: string;
+};
+
+/*** Remove from user favorites type ***/
+export type RemoveFromFavoritesReqType = {
+  locationId: string;
+};
+export type RemoveFromFavoritesResType = {
+  ok: boolean;
+  message?: string;
+};

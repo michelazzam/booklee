@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useCallback, useState, useMemo } from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
+import { View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { LocationServices, type SearchItemType } from '~/src/services';
@@ -22,8 +22,9 @@ const SearchModal = forwardRef<ModalWrapperRef, object>((_, ref) => {
   const { bottom } = useAppSafeAreaInsets();
   const modalRef = useRef<ModalWrapperRef>(null);
   const { data: searchHistory } = LocationServices.useGetSearchHistory();
-  const { mutate: deleteSearchHistory } = LocationServices.useDeleteSearchHistory();
   const { mutate: searchLocations, isPending: isSearching } = LocationServices.useSearchLocations();
+  const { mutate: deleteSearchHistory, isPending: isDeletingSearchHistory } =
+    LocationServices.useDeleteSearchHistory();
 
   /*** Memoization ***/
   const searchResults = useMemo(() => {
@@ -59,12 +60,16 @@ const SearchModal = forwardRef<ModalWrapperRef, object>((_, ref) => {
             Your Recent Searches
           </Text>
 
-          <Text
-            weight="medium"
-            color={theme.colors.lightText}
-            onPress={() => deleteSearchHistory()}>
-            Clear All
-          </Text>
+          {!isDeletingSearchHistory && searchHistory.length ? (
+            <Text
+              weight="medium"
+              color={theme.colors.lightText}
+              onPress={() => deleteSearchHistory()}>
+              Clear All
+            </Text>
+          ) : (
+            <ActivityIndicator color={theme.colors.lightText} />
+          )}
         </View>
 
         <View style={{ gap: theme.spacing.xl }}>

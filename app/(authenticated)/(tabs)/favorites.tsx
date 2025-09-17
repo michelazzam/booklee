@@ -2,22 +2,25 @@ import { View, StyleSheet, Image, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
+import { UserServices, type LocationType } from '~/src/services';
+
+import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
 
-import { FavoritesServices } from '~/src/services';
-import { useAppSafeAreaInsets } from '~/src/hooks';
-
 import { Text, HeaderNavigation } from '~/src/components/base';
-import { StoreCard } from '~/src/components/preview';
+import { LocationCard } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 
 const FavoritesPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
-  const { data: favorites } = FavoritesServices.useGetFavorites();
+  const { data: favorites } = UserServices.useGetFavorites();
 
-  const RenderItem = useCallback(({ item }: { item: any }) => <StoreCard data={item} />, []);
+  const RenderItem = useCallback(
+    ({ item }: { item: LocationType }) => <LocationCard data={item} minWidth={'48%'} />,
+    []
+  );
   const RenderListEmptyComponent = useCallback(
     () => (
       <View style={styles.emptyStateContent}>
@@ -60,6 +63,7 @@ const FavoritesPage = () => {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={RenderListEmptyComponent}
         keyExtractor={(_, index) => index.toString()}
+        columnWrapperStyle={{ gap: theme.spacing.lg }}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
       />
     </>
@@ -72,24 +76,23 @@ const styles = StyleSheet.create({
   emptyStateContent: {
     flex: 1,
     alignItems: 'center',
+    gap: theme.spacing.lg,
     justifyContent: 'center',
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.md,
   },
   emptyStateImage: {
     width: 200,
     height: 200,
     alignSelf: 'center',
+    marginBottom: theme.spacing.xl,
   },
   emptyStateDescription: {
     lineHeight: 20,
-    marginBottom: theme.spacing.xl,
-  },
-  cardWrapper: {
-    width: '48%',
-    marginBottom: theme.spacing.md,
+    textAlign: 'center',
   },
   listContent: {
     flexGrow: 1,
     gap: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
   },
 });
