@@ -6,6 +6,6 @@ export const useAppSafeAreaInsets = () => {
     left: insets.left,
     right: insets.right,
     bottom: insets.bottom || 20,
-    top: insets.top,
+    top: insets.top * 2.5,
   };
 };
