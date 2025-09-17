@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { AuthServices, UserServices, type FavoriteType } from '~/src/services';
+import { UserServices, type FavoriteType } from '~/src/services';
 
 export const useHandleFavorites = (_id: string) => {
   /***** Constants *****/
