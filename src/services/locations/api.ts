@@ -5,11 +5,15 @@ import { withErrorCatch } from '../axios/error';
 
 import type {
   GetLocationsCategorizedResType,
+  GetSearchHistoryResType,
   GetLocationsReqType,
   GetLocationsResType,
+  SearchReqType,
+  SearchResType,
+  DeleteSearchHistoryResType,
 } from './types';
 
-/*** API for get locations ***/
+/*** API for get locations categorized ***/
 export const getLocationsCategorizedApi = async (page: number, filters?: GetLocationsReqType) => {
   let url = `locations?page=${page}`;
 
@@ -34,6 +38,7 @@ export const getLocationsCategorizedApi = async (page: number, filters?: GetLoca
   return response?.data;
 };
 
+/*** API for get locations ***/
 export const getLocationsApi = async (page: number, filters?: GetLocationsReqType) => {
   let url = `locations?page=${page}`;
 
@@ -53,5 +58,59 @@ export const getLocationsApi = async (page: number, filters?: GetLocationsReqTyp
   } else if (error) {
     throw error;
   }
+  return response?.data;
+};
+
+/*** API to get location search history ***/
+export const getSearchHistoryApi = async () => {
+  const [response, error] = await withErrorCatch(
+    apiClient.get<GetSearchHistoryResType>('user/searchHistory')
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API to search for locations ***/
+export const searchLocationsApi = async (params: SearchReqType) => {
+  const [response, error] = await withErrorCatch(
+    apiClient.get<SearchResType>('locations/search', { params })
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API to delete search history ***/
+export const deleteSearchHistoryApi = async () => {
+  const [response, error] = await withErrorCatch(
+    apiClient.delete<DeleteSearchHistoryResType>(`user/searchHistory`)
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
   return response?.data;
 };

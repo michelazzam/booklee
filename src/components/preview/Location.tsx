@@ -16,7 +16,7 @@ import { FavoritesServices, Location } from '~/src/services';
 
 import { Text, Icon } from '../base';
 
-type StoreCardProps = {
+type LocationCardProps = {
   data: Location;
   delay?: number;
   duration?: number;
@@ -26,14 +26,14 @@ type StoreCardProps = {
 };
 //TODO: This needs fixing
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
-const StoreCard = ({
+const LocationCard = ({
   data,
   onPress,
   delay = 0,
   duration = 300,
   animatedStyle = 'none',
   showMapButton = true,
-}: StoreCardProps) => {
+}: LocationCardProps) => {
   /***** Constants *****/
   const { _id, name = '', city = 'Unknown', logo, rating: locationRating, category } = data;
   const image =
@@ -156,7 +156,7 @@ const StoreCard = ({
   );
 };
 
-export default StoreCard;
+export default LocationCard;
 
 const styles = StyleSheet.create({
   container: {

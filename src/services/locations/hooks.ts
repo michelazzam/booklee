@@ -1,12 +1,22 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { getLocationsCategorizedApi } from './api';
+import {
+  getLocationsCategorizedApi,
+  deleteSearchHistoryApi,
+  getSearchHistoryApi,
+  searchLocationsApi,
+} from './api';
 
 import type { ResErrorType } from '../axios/types';
 import type {
   GetLocationsCategorizedResType,
-  GetLocationsReqType,
+  DeleteSearchHistoryResType,
+  GetSearchHistoryResType,
   LocationCategoryType,
+  GetLocationsReqType,
+  SearchHistoryType,
+  SearchReqType,
+  SearchResType,
 } from './types';
 
 const useGetLocationsCategorized = (filters?: GetLocationsReqType) => {
@@ -24,6 +34,54 @@ const useGetLocationsCategorized = (filters?: GetLocationsReqType) => {
   });
 };
 
+const useGetLocations = (filters?: GetLocationsReqType) => {
+  return useInfiniteQuery<GetLocationsCategorizedResType, ResErrorType, LocationCategoryType[]>({
+    initialPageParam: 1,
+    queryKey: ['getLocationsCategorized', filters],
+    select: ({ pages }) => pages.flatMap((page) => page.categories),
+    queryFn: ({ pageParam = 1 }) => getLocationsCategorizedApi(pageParam as number, filters),
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.categories.length > 0 ? allPages.length + 1 : undefined;
+    },
+  });
+};
+
+const useGetSearchHistory = () => {
+  return useQuery<GetSearchHistoryResType, ResErrorType, SearchHistoryType[]>({
+    queryKey: ['searchHistory'],
+    queryFn: getSearchHistoryApi,
+    select: ({ history }) => history,
+  });
+};
+
+const useSearchLocations = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation<SearchResType, ResErrorType, SearchReqType>({
+    mutationFn: (params) => searchLocationsApi(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
+    },
+  });
+};
+
+const useDeleteSearchHistory = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation<DeleteSearchHistoryResType, ResErrorType, void>({
+    mutationFn: deleteSearchHistoryApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
+    },
+  });
+};
+
 export const LocationServices = {
   useGetLocationsCategorized,
+  useDeleteSearchHistory,
+  useGetSearchHistory,
+  useSearchLocations,
+  useGetLocations,
 };

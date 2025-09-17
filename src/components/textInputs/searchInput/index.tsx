@@ -1,72 +1,88 @@
+import { TextInput, Keyboard, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { TextInput, View, Keyboard } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 
 import { useDebouncing } from '~/src/hooks';
 
 import { searchInputStyles, searchInputConfig } from './config';
+import { SearchIcon } from '~/src/assets/icons';
 import { SearchInputProps } from './types';
 
-// SearchInput component with enhanced props
-
 const SearchInput = ({
+  value,
+  onPress,
+  onFocus,
   onSearch,
   containerStyle,
-  placeholder = searchInputConfig.placeholder,
-  onFocus,
-  value,
-  onChangeText,
-  onSubmitEditing,
   autoFocus = false,
+  placeholder = searchInputConfig.placeholder,
 }: SearchInputProps) => {
+  /***** Refs ******/
+  const inputRef = useRef<TextInput>(null);
+
   /***** States ******/
   const [internalSearchQuery, setInternalSearchQuery] = useState('');
 
   /***** Constants ******/
-  const searchQuery = value !== undefined ? value : internalSearchQuery;
-  const setSearchQuery = onChangeText || setInternalSearchQuery;
+  const searchQuery = internalSearchQuery;
 
   /***** Constants ******/
   const debouncedQuery = useDebouncing(searchQuery);
 
   useEffect(() => {
-    if (debouncedQuery.length > searchInputConfig.minQueryLength) {
+    if (value !== undefined) {
+      setInternalSearchQuery(value);
+    }
+  }, [value]);
+  useEffect(() => {
+    if (debouncedQuery.length > searchInputConfig.minQueryLength || debouncedQuery.length === 0) {
       Keyboard.dismiss();
-      onSearch(debouncedQuery);
+      onSearch?.(debouncedQuery);
     }
   }, [debouncedQuery, onSearch]);
 
+  const handleClear = useCallback(() => {
+    setInternalSearchQuery('');
+    inputRef.current?.clear();
+    onSearch?.('');
+  }, [onSearch]);
+
   return (
-    <View style={[searchInputStyles.container, containerStyle]}>
-      <MaterialCommunityIcons
-        name="magnify"
-        size={searchInputConfig.iconSize}
-        style={searchInputStyles.icon}
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
+      style={[searchInputStyles.container, containerStyle]}>
+      <SearchIcon
+        width={searchInputConfig.iconSize}
+        height={searchInputConfig.iconSize}
         color={searchInputConfig.iconColor}
       />
 
       <TextInput
-        value={searchQuery}
-        autoCapitalize="none"
-        placeholder={placeholder}
-        onChangeText={setSearchQuery}
+        ref={inputRef}
         onFocus={onFocus}
-        onSubmitEditing={onSubmitEditing}
+        value={searchQuery}
+        editable={!onPress}
+        autoCapitalize="none"
         autoFocus={autoFocus}
-        style={searchInputStyles.input}
+        placeholder={placeholder}
         placeholderTextColor={searchInputConfig.placeholderTextColor}
+        style={[searchInputStyles.input, { pointerEvents: !onPress ? 'auto' : 'none' }]}
+        onChangeText={(text) => {
+          setInternalSearchQuery(text);
+        }}
       />
 
       {searchQuery.length > 0 && (
         <MaterialCommunityIcons
           name="close"
+          onPress={handleClear}
           style={searchInputStyles.icon}
           size={searchInputConfig.iconSize}
           color={searchInputConfig.iconColor}
-          onPress={() => setSearchQuery('')}
         />
       )}
-    </View>
+    </TouchableOpacity>
   );
 };
 

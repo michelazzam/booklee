@@ -1,5 +1,4 @@
 import { StyleSheet, FlatList, View, ScrollView, ActivityIndicator } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
@@ -8,7 +7,7 @@ import { LocationServices, type LocationCategoryType, UserServices } from '~/src
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { StoreCard } from '~/src/components/preview';
+import { LocationCard } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
@@ -53,7 +52,7 @@ const HomePage = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.sectionContainer}>
             {item.locations.map((store, index) => (
-              <StoreCard
+              <LocationCard
                 data={store}
                 key={store._id}
                 delay={index * 150}
@@ -80,8 +79,6 @@ const HomePage = () => {
 
   return (
     <>
-      <StatusBar style="light" />
-
       <View style={[styles.headerContainer, { paddingTop: top }]}>
         <Text weight="bold" color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.xl}>
           Hello {userData?.user.name}!

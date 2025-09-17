@@ -3,6 +3,7 @@ export { default as QuestionMarkIcon } from './QuestionMarkIcon';
 export { default as ArrowLeftIcon } from './ArrowLeftIcon';
 export { default as FavoritesIcon } from './FavoritesIcon';
 export { default as UserInfoIcon } from './UserInfoIcon';
+export { default as BuildingIcon } from './BuildingIcon';
 export { default as EnvelopeIcon } from './EnvelopeIcon';
 export { default as BookingIcon } from './BookingIcon';
 export { default as AccountIcon } from './AccountIcon';
