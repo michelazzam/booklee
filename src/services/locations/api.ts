@@ -1,28 +1,26 @@
 import { AxiosError } from 'axios';
 
-import { withErrorCatch } from '../axios/error';
 import { apiClient } from '../axios/interceptor';
+import { withErrorCatch } from '../axios/error';
 
-import {
-  GetLocationsResType,
-  GetLocationsByCategoriesResType,
-  GetLocationByIdResType,
+import type {
+  GetLocationsCategorizedResType,
   GetLocationsReqType,
-  GetLocationByIdReqType,
-  DEFAULT_LOCATIONS_PARAMS,
-  isGroupedByCategories,
-  extractAllLocations,
+  GetLocationsResType,
 } from './types';
 
 /*** API for get locations ***/
-export const getLocationsApi = async (params?: GetLocationsReqType) => {
-  // Merge provided params with defaults
-  const mergedParams = { ...DEFAULT_LOCATIONS_PARAMS, ...params };
+export const getLocationsCategorizedApi = async (page: number, filters?: GetLocationsReqType) => {
+  let url = `locations?page=${page}`;
+
+  if (filters) {
+    url += `&${Object.entries(filters)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&')}`;
+  }
 
   const [response, error] = await withErrorCatch(
-    apiClient.get<GetLocationsResType | GetLocationsByCategoriesResType>('locations', {
-      params: mergedParams,
-    })
+    apiClient.get<GetLocationsCategorizedResType>(url)
   );
 
   if (error instanceof AxiosError) {
@@ -36,15 +34,16 @@ export const getLocationsApi = async (params?: GetLocationsReqType) => {
   return response?.data;
 };
 
-/*** API for get single location by ID ***/
-export const getLocationByIdApi = async (params: GetLocationByIdReqType) => {
-  const { id, byId = true } = params;
+export const getLocationsApi = async (page: number, filters?: GetLocationsReqType) => {
+  let url = `locations?page=${page}`;
 
-  const [response, error] = await withErrorCatch(
-    apiClient.get<GetLocationByIdResType>(`locations/${id}`, {
-      params: { byId },
-    })
-  );
+  if (filters) {
+    url += `&${Object.entries(filters)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&')}`;
+  }
+
+  const [response, error] = await withErrorCatch(apiClient.get<GetLocationsResType>(url));
 
   if (error instanceof AxiosError) {
     throw {
@@ -54,9 +53,5 @@ export const getLocationByIdApi = async (params: GetLocationByIdReqType) => {
   } else if (error) {
     throw error;
   }
-
   return response?.data;
 };
-
-// Export helper functions for working with the response
-export { isGroupedByCategories, extractAllLocations };

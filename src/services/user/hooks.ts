@@ -4,8 +4,8 @@ import { authClient } from '../auth/auth-client';
 
 import { getUserMeApi, updateUserMeApi } from './api';
 
-import type { GetUserMeResType } from './types';
 import type { ResErrorType } from '../axios/types';
+import type { GetUserMeResType } from './types';
 
 export const useGetUserMe = () => {
   /*** Constants ***/
@@ -14,9 +14,9 @@ export const useGetUserMe = () => {
   return useQuery<GetUserMeResType, ResErrorType>({
     retry: 1,
     gcTime: Infinity,
-    queryFn: getUserMeApi,
-    queryKey: ['getUserMe'],
+    queryKey: ['getMe'],
     staleTime: Infinity,
+    queryFn: getUserMeApi,
     refetchOnMount: false,
     refetchInterval: false,
     refetchOnWindowFocus: false,
@@ -60,8 +60,8 @@ export const useUpdateUser = () => {
 };
 
 export const UserServices = {
-  useGetUserMe,
-  useGetUser,
   useGetOrganization,
   useUpdateUser,
+  useGetUserMe,
+  useGetUser,
 };

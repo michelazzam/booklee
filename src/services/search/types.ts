@@ -1,23 +1,22 @@
-/*** Search History Types ***/
+import type { DetailedLocation } from '../locations/types';
 
-export type SearchHistoryItem = {
+/*** Search History Types ***/
+export type SearchHistoryItemType = {
   query: string;
   at: string;
 };
-
 export type GetSearchHistoryResType = {
   ok: boolean;
-  history: SearchHistoryItem[];
+  history: SearchHistoryItemType[];
 };
 
 /*** Search API Types ***/
 export type SearchReqType = {
-  query: string; // Free text to match against name, address, city, and tags
-  limit?: number; // Max number of items to return (default: 20)
-  page?: number; // Page number (1-based)
+  query: string;
+  page?: number;
+  limit?: number;
 };
-
 export type SearchResType = {
   ok: boolean;
-  locations: import('../locations/types').DetailedLocation[];
+  locations: DetailedLocation[];
 };

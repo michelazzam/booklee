@@ -1,5 +1,5 @@
 /*** Better Auth types ***/
-export type BetterAuthUser = {
+export type BetterAuthUserType = {
   id: string;
   name: string;
   email: string;
@@ -8,7 +8,7 @@ export type BetterAuthUser = {
   updatedAt: Date;
   emailVerified: boolean;
 };
-export type Session = {
+export type SessionType = {
   id: string;
   token: string;
   userId: string;
@@ -78,7 +78,7 @@ export type SignUpResType = {
 };
 
 /*** Auth error types ***/
-export type AuthError = {
+export type AuthErrorType = {
   code: string;
   message: string;
 };
