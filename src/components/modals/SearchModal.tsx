@@ -83,7 +83,7 @@ const SearchModal = forwardRef<ModalWrapperRef, object>((_, ref) => {
         </View>
       </View>
     );
-  }, [searchHistory, deleteSearchHistory, setDebouncedQuery]);
+  }, [searchHistory, deleteSearchHistory, setDebouncedQuery, isDeletingSearchHistory]);
   const RenderSearchEmpty = useCallback(() => {
     if (isSearching) {
       return (
