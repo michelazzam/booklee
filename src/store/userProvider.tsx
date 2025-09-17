@@ -8,6 +8,7 @@ type UserProviderType = {
   isInitialized: boolean;
   isOnboardingCompleted: boolean;
   handleOnboardingCompleted: (isOnboardingCompleted: boolean) => void;
+  resetOnboarding: () => Promise<void>;
 };
 const STORAGE_KEY = {
   onboardingCompleted: 'onboardingCompleted',
@@ -17,6 +18,7 @@ const UserProviderContext = createContext<UserProviderType>({
   isInitialized: true,
   isOnboardingCompleted: false,
   handleOnboardingCompleted: () => {},
+  resetOnboarding: async () => {},
 });
 
 export const useUserProvider = () => useContext(UserProviderContext);
@@ -52,12 +54,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     await AsyncStorage.setItem(STORAGE_KEY.onboardingCompleted, isOnboardingCompleted.toString());
   };
 
+  const resetOnboarding = async () => {
+    setIsOnboardingCompleted(false);
+    await AsyncStorage.removeItem(STORAGE_KEY.onboardingCompleted);
+  };
+
   return (
     <UserProviderContext.Provider
       value={{
         isInitialized,
         isOnboardingCompleted,
         handleOnboardingCompleted,
+        resetOnboarding,
       }}>
       {children}
     </UserProviderContext.Provider>

@@ -43,7 +43,7 @@ const config: ExpoConfig = {
       ITSAppUsesNonExemptEncryption: false,
     },
     config: {
-      googleMapsApiKey: 'AIzaSyDi3ThssKE50XbMAoGCY_WB7kB2bgAOYOE',
+      googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
     },
   },
   android: {
@@ -56,7 +56,7 @@ const config: ExpoConfig = {
     },
     config: {
       googleMaps: {
-        apiKey: 'AIzaSyDi3ThssKE50XbMAoGCY_WB7kB2bgAOYOE',
+        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
       },
     },
   },

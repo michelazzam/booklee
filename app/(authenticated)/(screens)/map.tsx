@@ -1,16 +1,22 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import { theme } from '~/src/constants/theme';
-import { useAppSafeAreaInsets, useDebouncing, useLocationFilters } from '~/src/hooks';
+import {
+  useAppSafeAreaInsets,
+  useDebouncing,
+  useLocationFilters,
+  usePermissions,
+} from '~/src/hooks';
 import { FilterModal, SearchModal } from '~/src/components/modals';
 import { StoreCard } from '~/src/components/preview';
 import { Icon, Text } from '~/src/components/base';
 import { Location, LocationServices } from '~/src/services';
+import * as LocationService from 'expo-location';
 
 type MapParams = {
   focusId?: string;
@@ -75,7 +81,21 @@ export default function LocationsMapScreen() {
   /*** Selection ***/
   const [selected, setSelected] = useState<Location | null>(null);
 
+  /*** User location ***/
+  const [userLocation, setUserLocation] = useState<LocationService.LocationObject | null>(null);
+  const { permissions, requestLocationPermission, checkPermissions } = usePermissions();
+
   const initialRegion = useMemo(() => {
+    // Prioritize user location if available
+    if (userLocation) {
+      return {
+        latitude: userLocation.coords.latitude,
+        longitude: userLocation.coords.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+    }
+
     const base = selected || allLocations[0];
     if (base?.geo) {
       return {
@@ -86,7 +106,7 @@ export default function LocationsMapScreen() {
       };
     }
     return DEFAULT_REGION;
-  }, [selected, allLocations]);
+  }, [selected, allLocations, userLocation]);
 
   const handleMarkerPress = useCallback((loc: Location) => {
     setSelected(loc);
@@ -100,7 +120,19 @@ export default function LocationsMapScreen() {
     () => allLocations.find((l) => l._id === focusOnId),
     [allLocations, focusOnId]
   );
-
+  const getCurrentLocation = useCallback(async () => {
+    try {
+      console.log('Getting current location...');
+      const location = await LocationService.getCurrentPositionAsync({
+        accuracy: LocationService.Accuracy.Balanced,
+      });
+      console.log('Location received:', location);
+      setUserLocation(location);
+      console.log('User location state set');
+    } catch (error) {
+      console.error('Error getting current location:', error);
+    }
+  }, []);
   const onMapReady = useCallback(() => {
     if (focusLocation?.geo && mapRef.current) {
       const { lat, lng } = focusLocation.geo;
@@ -113,6 +145,20 @@ export default function LocationsMapScreen() {
     }
   }, [focusLocation]);
 
+  /*** Location permission and user location ***/
+  useEffect(() => {
+    checkPermissions();
+  }, [checkPermissions]);
+
+  useEffect(() => {
+    console.log('Location permission status:', permissions.location);
+    if (permissions.location === 'granted') {
+      getCurrentLocation();
+    } else if (permissions.location === 'undetermined') {
+      requestLocationPermission();
+    }
+  }, [permissions.location, requestLocationPermission, getCurrentLocation]);
+
   return (
     <View style={{ flex: 1 }}>
       <MapView
@@ -124,6 +170,20 @@ export default function LocationsMapScreen() {
         {filteredLocations.map((loc) => (
           <BlinkFreeMarker key={loc._id} loc={loc} onPress={() => handleMarkerPress(loc)} />
         ))}
+
+        {/* User location marker */}
+        {userLocation && (
+          <Marker
+            coordinate={{
+              latitude: userLocation.coords.latitude,
+              longitude: userLocation.coords.longitude,
+            }}
+            style={styles.userLocationPin}
+            anchor={{ x: 0.5, y: 0.5 }}
+            tracksViewChanges={false}
+            onPress={() => console.log('User location marker pressed')}
+          />
+        )}
       </MapView>
 
       <View style={[styles.header, { paddingTop: top }]}>
@@ -350,5 +410,29 @@ const styles = StyleSheet.create({
   sheetEmpty: {
     padding: theme.spacing.lg,
     alignItems: 'center',
+  },
+  userLocationPin: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: theme.colors.red[100],
+    borderWidth: 4,
+    borderColor: theme.colors.white.DEFAULT,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  userLocationInner: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: theme.colors.white.DEFAULT,
   },
 });
