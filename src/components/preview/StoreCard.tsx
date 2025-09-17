@@ -1,4 +1,5 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { useRouter, type RelativePathString } from 'expo-router';
 import { Image } from 'expo-image';
 import { useMemo } from 'react';
 import Animated, {
@@ -19,8 +20,9 @@ type StoreCardProps = {
   data: Location;
   delay?: number;
   duration?: number;
-  onPress?: () => void;
   animatedStyle?: 'slideUp' | 'slideLeft' | 'none';
+  onPress?: () => void;
+  showMapButton?: boolean;
 };
 //TODO: This needs fixing
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
@@ -30,6 +32,7 @@ const StoreCard = ({
   delay = 0,
   duration = 300,
   animatedStyle = 'none',
+  showMapButton = true,
 }: StoreCardProps) => {
   /***** Constants *****/
   const { _id, name = '', city = 'Unknown', logo, rating: locationRating, category } = data;
@@ -39,6 +42,7 @@ const StoreCard = ({
   const tag = category?.title ?? '';
 
   /***** Hooks *****/
+  const router = useRouter();
   const { data: favorites } = FavoritesServices.useGetFavorites();
   const { toggleFavorite } = FavoritesServices.useToggleFavorite();
 
@@ -109,6 +113,19 @@ const StoreCard = ({
             name={isFavorite ? 'heart' : 'heart-outline'}
           />
         </View>
+
+        {showMapButton && (
+          <View style={styles.mapButton}>
+            <Icon
+              size={28}
+              name="map-marker"
+              color={'#FFFFFF'}
+              onPress={() =>
+                router.push(`/(authenticated)/(screens)/map?focusId=${_id}` as RelativePathString)
+              }
+            />
+          </View>
+        )}
       </View>
 
       <View style={styles.infoContainer}>
@@ -167,6 +184,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     top: theme.spacing.sm,
     right: theme.spacing.sm,
+    justifyContent: 'center',
+    borderRadius: theme.radii.full,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  mapButton: {
+    width: 42,
+    height: 42,
+    position: 'absolute',
+    alignItems: 'center',
+    top: theme.spacing.sm,
+    left: theme.spacing.sm,
     justifyContent: 'center',
     borderRadius: theme.radii.full,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',

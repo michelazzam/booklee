@@ -1,71 +1,79 @@
-import { type AppVariantType } from "~/src/constants";
-import { type ExpoConfig } from "expo/config";
+import { type AppVariantType } from '~/src/constants';
+import { type ExpoConfig } from 'expo/config';
 
 const appVariant = process.env.APP_VARIANT as AppVariantType;
 
 const getAppName = () => {
-  if (appVariant === "development") {
-    return "Booklee (Dev)";
+  if (appVariant === 'development') {
+    return 'Booklee (Dev)';
   }
 
-  if (appVariant === "preview") {
-    return "Booklee (Preview)";
+  if (appVariant === 'preview') {
+    return 'Booklee (Preview)';
   }
 
-  return "Booklee";
+  return 'Booklee';
 };
 const getAppUniqueIdentifier = () => {
-  if (appVariant === "development") {
-    return "app.booklee.dev";
+  if (appVariant === 'development') {
+    return 'app.booklee.dev';
   }
 
-  if (appVariant === "preview") {
-    return "app.booklee.preview";
+  if (appVariant === 'preview') {
+    return 'app.booklee.preview';
   }
 
-  return "app.booklee";
+  return 'app.booklee';
 };
 
 const config: ExpoConfig = {
-  slug: "booklee",
-  version: "1.0.0",
-  scheme: "booklee",
+  slug: 'booklee',
+  version: '1.0.0',
+  scheme: 'booklee',
   name: getAppName(),
   newArchEnabled: true,
-  owner: "michel.azzam",
-  orientation: "portrait",
-  userInterfaceStyle: "automatic",
+  owner: 'michel.azzam',
+  orientation: 'portrait',
+  userInterfaceStyle: 'automatic',
   ios: {
     supportsTablet: true,
-    icon: "./src/assets/images/appImages/icon.png",
+    icon: './src/assets/images/appImages/icon.png',
     bundleIdentifier: getAppUniqueIdentifier(),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+    },
+    config: {
+      googleMapsApiKey: 'AIzaSyDi3ThssKE50XbMAoGCY_WB7kB2bgAOYOE',
     },
   },
   android: {
     edgeToEdgeEnabled: true,
     package: getAppUniqueIdentifier(),
-    icon: "./src/assets/images/appImages/icon.png",
+    icon: './src/assets/images/appImages/icon.png',
     adaptiveIcon: {
-      backgroundColor: "#ffffff",
-      foregroundImage: "./src/assets/images/appImages/icon.png",
+      backgroundColor: '#ffffff',
+      foregroundImage: './src/assets/images/appImages/icon.png',
+    },
+    config: {
+      googleMaps: {
+        apiKey: 'AIzaSyDi3ThssKE50XbMAoGCY_WB7kB2bgAOYOE',
+      },
     },
   },
   web: {
-    bundler: "metro",
-    output: "static",
-    favicon: "./src/assets/images/appImages/icon.png",
+    bundler: 'metro',
+    output: 'static',
+    favicon: './src/assets/images/appImages/icon.png',
   },
   plugins: [
-    "expo-router",
+    'expo-router',
     [
-      "expo-splash-screen",
+      'expo-splash-screen',
       {
         imageWidth: 200,
-        resizeMode: "contain",
-        backgroundColor: "#ffffff",
-        image: "./src/assets/images/appImages/icon.png",
+        resizeMode: 'contain',
+        backgroundColor: '#ffffff',
+        image: './src/assets/images/appImages/icon.png',
       },
     ],
   ],
