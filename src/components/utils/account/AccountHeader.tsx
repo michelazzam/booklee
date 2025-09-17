@@ -13,12 +13,12 @@ export default function AccountHeader({ onNotificationPress }: AccountHeaderProp
   return (
     <View style={[styles.container, { paddingTop: top * 2 }]}>
       <View style={styles.headerContent}>
-        <Text style={styles.appTitle}>booklee</Text>
+        <Text style={styles.appTitle}>Booklee</Text>
         <TouchableOpacity
           style={styles.notificationButton}
           onPress={onNotificationPress}
           activeOpacity={0.7}>
-          <BellIcon size={24} color={theme.colors.white.DEFAULT} />
+          <BellIcon width={24} height={24} color={theme.colors.white.DEFAULT} />
         </TouchableOpacity>
       </View>
     </View>

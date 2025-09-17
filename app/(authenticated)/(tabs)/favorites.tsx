@@ -1,13 +1,13 @@
-import { View, StyleSheet, FlatList, Image } from 'react-native';
+import { View, StyleSheet, Image, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
-import { FavoritesServices } from '~/src/services';
-
-import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
 
-import { HeaderNavigation, Text } from '~/src/components/base';
+import { FavoritesServices } from '~/src/services';
+import { useAppSafeAreaInsets } from '~/src/hooks';
+
+import { Text, HeaderNavigation } from '~/src/components/base';
 import { StoreCard } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 
@@ -71,8 +71,8 @@ export default FavoritesPage;
 const styles = StyleSheet.create({
   emptyStateContent: {
     flex: 1,
-    gap: theme.spacing.xl,
-    marginTop: theme.spacing.xl + 20,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: theme.spacing.xl,
   },
   emptyStateImage: {
@@ -82,7 +82,11 @@ const styles = StyleSheet.create({
   },
   emptyStateDescription: {
     lineHeight: 20,
-    textAlign: 'center',
+    marginBottom: theme.spacing.xl,
+  },
+  cardWrapper: {
+    width: '48%',
+    marginBottom: theme.spacing.md,
   },
   listContent: {
     flexGrow: 1,

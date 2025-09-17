@@ -4,16 +4,16 @@ import { StatusBar } from 'expo-status-bar';
 
 import { useAppSafeAreaInsets, useLocationFilters, useInfiniteLocations } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
-import { type Store } from '~/src/mock'; //TODO: This needs to be removed
 
 import { StoreCard } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
+import { Location } from '~/src/services';
 
 //TODO: This needs fixing
 type SectionProps = {
   title: string;
-  data: Store[];
+  data: Location[];
   index?: number;
   categoryId: string;
 };
@@ -50,13 +50,13 @@ const SectionCategory = ({ title, data, index = 0, categoryId }: SectionProps) =
           contentContainerStyle={styles.sectionContainer}>
           {data.map((store, dataIndex) => (
             <StoreCard
-              data={store} //TODO: This needs fixing
-              key={store.id}
+              data={store}
+              key={`${categoryId}-${store._id}-${dataIndex}`}
               animatedStyle="slideLeft"
               delay={dataIndex * 150 + index * 150}
               onPress={() =>
                 router.navigate(
-                  `/(authenticated)/(screens)/store/${store.id}` as RelativePathString
+                  `/(authenticated)/(screens)/store/${store._id}` as RelativePathString
                 )
               }
             />
@@ -130,6 +130,7 @@ const HomePage = () => {
   const renderCategory = ({ item: category, index }: { item: any; index: number }) => {
     // Convert locations to Store format for StoreCard
     const storeData = category.locations.map((location: any) => ({
+      _id: location._id, // Keep the original _id for the key prop
       id: location._id,
       tag: category.title,
       name: location.name,

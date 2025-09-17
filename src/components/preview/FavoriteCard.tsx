@@ -15,22 +15,23 @@ import { FavoritesServices, Location } from '~/src/services';
 
 import { Text, Icon } from '../base';
 
-type StoreCardProps = {
+type FavoriteCardProps = {
   data: Location;
   delay?: number;
   duration?: number;
   onPress?: () => void;
   animatedStyle?: 'slideUp' | 'slideLeft' | 'none';
 };
-//TODO: This needs fixing
+
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
-const StoreCard = ({
+
+const FavoriteCard = ({
   data,
   onPress,
   delay = 0,
   duration = 300,
   animatedStyle = 'none',
-}: StoreCardProps) => {
+}: FavoriteCardProps) => {
   /***** Constants *****/
   const { _id, name = '', city = 'Unknown', logo, rating: locationRating, category } = data;
   const image =
@@ -39,11 +40,7 @@ const StoreCard = ({
   const tag = category?.title ?? '';
 
   /***** Hooks *****/
-  const { data: favorites } = FavoritesServices.useGetFavorites();
   const { toggleFavorite } = FavoritesServices.useToggleFavorite();
-
-  /***** Computed values *****/
-  const isFavorite = favorites?.some((fav) => fav._id === _id) || false;
 
   /***** Memoization *****/
   const getEnteringAnimation = useMemo(() => {
@@ -71,6 +68,7 @@ const StoreCard = ({
           .mass(1);
     }
   }, [animatedStyle, delay, duration]);
+
   const getExitingAnimation = useMemo(() => {
     switch (animatedStyle) {
       case 'slideUp':
@@ -102,36 +100,36 @@ const StoreCard = ({
         <Image source={{ uri: image }} style={styles.image} contentFit="cover" />
 
         <View style={styles.favoriteButton}>
-          <Icon
-            size={28}
-            onPress={handleFavoritePress}
-            color={isFavorite ? '#FF6B6B' : '#FFFFFF'}
-            name={isFavorite ? 'heart' : 'heart-outline'}
-          />
+          <Icon size={28} onPress={handleFavoritePress} color="#FF6B6B" name="heart" />
         </View>
       </View>
 
       <View style={styles.infoContainer}>
         <View>
           <View style={styles.topContainer}>
-            <Text size={theme.typography.fontSizes.sm} numberOfLines={1}>
+            <Text size={theme.typography.fontSizes.sm} numberOfLines={1} weight="medium">
               {name}
             </Text>
 
             <View style={styles.ratingContainer}>
-              <Icon name="star" size={18} color="#FFD700" />
-
-              <Text size={theme.typography.fontSizes.sm}>{rating}</Text>
+              <Icon name="star" size={14} color="#FFD700" />
+              <Text size={theme.typography.fontSizes.xs}>{rating}</Text>
             </View>
           </View>
 
-          <Text size={theme.typography.fontSizes.xs} numberOfLines={1}>
+          <Text
+            size={theme.typography.fontSizes.xs}
+            numberOfLines={1}
+            color={theme.colors.lightText}>
             {city}
           </Text>
         </View>
+
         {tag && (
           <View style={styles.tagContainer}>
-            <Text size={theme.typography.fontSizes.xs}>{tag}</Text>
+            <Text size={theme.typography.fontSizes.xs} weight="medium">
+              {tag}
+            </Text>
           </View>
         )}
       </View>
@@ -139,22 +137,22 @@ const StoreCard = ({
   );
 };
 
-export default StoreCard;
+export default FavoriteCard;
 
 const styles = StyleSheet.create({
   container: {
-    height: 300,
-    minWidth: 230,
-
+    height: 240,
+    width: '100%',
     ...theme.shadows.soft,
     borderRadius: theme.radii.md,
     backgroundColor: theme.colors.white.DEFAULT,
   },
   imageContainer: {
-    height: 200,
+    height: 150,
     width: '100%',
     overflow: 'hidden',
-    borderRadius: theme.radii.md,
+    borderTopLeftRadius: theme.radii.md,
+    borderTopRightRadius: theme.radii.md,
   },
   image: {
     width: '100%',
@@ -174,24 +172,26 @@ const styles = StyleSheet.create({
   infoContainer: {
     flex: 1,
     gap: theme.spacing.xs,
-    padding: theme.spacing.md,
+    padding: theme.spacing.sm,
     justifyContent: 'space-between',
   },
   topContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: theme.spacing.xs / 2,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 2,
   },
   tagContainer: {
-    height: 20,
+    height: 18,
     alignSelf: 'flex-start',
     justifyContent: 'center',
     borderRadius: theme.radii.xs,
-    paddingHorizontal: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xs,
     backgroundColor: theme.colors.primaryBlue[50],
   },
 });

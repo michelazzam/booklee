@@ -7,6 +7,7 @@ export { LocationServices } from './locations/hooks';
 export { CategoryServices } from './categories/hooks';
 export { SearchServices } from './search/hooks';
 export { FavoritesServices } from './favorites/hooks';
+export { UserServices } from './user/hooks';
 
 /*** Types ***/
 export type { ResErrorType } from './axios/types';
@@ -41,3 +42,10 @@ export type {
   RemoveFromFavoritesReqType,
   RemoveFromFavoritesResType,
 } from './favorites/types';
+export type {
+  User,
+  Organization,
+  GetUserMeResType,
+  UpdateUserReqType,
+  UpdateUserResType,
+} from './user/types';

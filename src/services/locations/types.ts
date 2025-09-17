@@ -53,6 +53,7 @@ export type Location = {
   name: string;
   city?: string;
   logo?: string;
+  rating: number;
   tags?: string[];
   // Fields that are present when defaults: 'full'
   operatingHours: WeeklyOperatingHours;

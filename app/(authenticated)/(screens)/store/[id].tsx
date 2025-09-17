@@ -2,9 +2,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useMemo, useState } from 'react';
 
+import { LocationServices } from '~/src/services';
+
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
-import { LocationServices } from '~/src/services';
 
 import { ImageCarousel, TabMenu } from '~/src/components/utils';
 import { Services } from '~/src/components/preview';
@@ -27,6 +28,20 @@ const SalonDetailPage = () => {
     isLoading,
     error,
   } = LocationServices.useGetLocationById({ id: id || '', byId: true });
+
+  /***** Memoized values *****/
+  const operatingHoursText = useMemo(() => {
+    if (!location?.operatingHours) return 'Hours not available';
+
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const todayHours = location.operatingHours[today as keyof typeof location.operatingHours];
+
+    if (todayHours?.closed) {
+      return 'Closed today';
+    }
+
+    return `Open ${todayHours?.open} - ${todayHours?.close}`;
+  }, [location]);
 
   const handleServiceToggle = (serviceId: string) => {
     setSelectedServices((prev) =>
@@ -55,18 +70,7 @@ const SalonDetailPage = () => {
     );
   }
 
-  const {
-    operatingHours,
-    photos,
-    name,
-    address,
-    category,
-    rating,
-    phone,
-    teamSize,
-    bookable,
-    price: _price,
-  } = location;
+  const { photos, name, address, category, rating, phone, teamSize, bookable } = location;
 
   const RenderServices = () => {
     return (
@@ -128,17 +132,6 @@ const SalonDetailPage = () => {
       </View>
     );
   };
-
-  const operatingHoursText = useMemo(() => {
-    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const todayHours = operatingHours[today as keyof typeof operatingHours];
-
-    if (todayHours?.closed) {
-      return 'Closed today';
-    }
-
-    return `Open ${todayHours?.open} - ${todayHours?.close}`;
-  }, [operatingHours]);
 
   return (
     <ScrollView

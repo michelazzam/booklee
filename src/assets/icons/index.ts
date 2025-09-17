@@ -6,6 +6,7 @@ export { default as UserInfoIcon } from './UserInfoIcon';
 export { default as EnvelopeIcon } from './EnvelopeIcon';
 export { default as BookingIcon } from './BookingIcon';
 export { default as AccountIcon } from './AccountIcon';
+export { default as FilterIcon } from './FilterIcon';
 export { default as SearchIcon } from './SearchIcon';
 export { default as GoogleIcon } from './GoogleIcon';
 export { default as LogoutIcon } from './LogoutIcon';

@@ -1,5 +1,4 @@
 /*** Category types ***/
-
 export type Category = {
   _id: string;
   title: string;
@@ -14,5 +13,5 @@ export type GetCategoriesResType = {
 
 /*** Request types ***/
 export type GetCategoriesReqType = {
-  // Add any query parameters if needed
+  //TODO: Needs to be populated
 };
