@@ -1,15 +1,39 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
+import { useEffect } from 'react';
 
+import { AuthServices } from '~/src/services';
+
+import { useTimer } from '~/src/hooks/useTimer';
 import { theme } from '~/src/constants/theme';
 
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
+type LocalSearchParamsType = {
+  email: string;
+  fromLogin: string;
+};
+
 const EmailVerificationPage = () => {
   /*** Constants ***/
   const router = useRouter();
-  const { email } = useLocalSearchParams<{ email: string }>();
+  const { formattedTokenExpiry, resendEmailTimer, resetTimer } = useTimer(10, 10);
+  const { email, fromLogin } = useLocalSearchParams<LocalSearchParamsType>();
+  const { mutate: resendEmailVerification, isPending: isResendEmailVerificationPending } =
+    AuthServices.useResendEmailVerification();
+
+  useEffect(() => {
+    if (Boolean(fromLogin)) {
+      resendEmailVerification(email, {
+        onSuccess: () => {
+          resetTimer();
+        },
+      });
+    }
+
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -50,6 +74,14 @@ const EmailVerificationPage = () => {
         title="Back to Login"
         onPress={() => router.back()}
         containerStyle={styles.buttonContainer}
+      />
+
+      <Button
+        variant="outline"
+        isLoading={isResendEmailVerificationPending}
+        onPress={() => resendEmailVerification(email)}
+        disabled={isResendEmailVerificationPending || resendEmailTimer > 0}
+        title={resendEmailTimer > 0 ? `Resend Email in ${formattedTokenExpiry}` : 'Resend Email'}
       />
     </View>
   );

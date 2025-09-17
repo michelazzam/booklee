@@ -2,9 +2,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useMemo, useState } from 'react';
 
+import { LocationServices } from '~/src/services';
+
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
-import { LocationServices } from '~/src/services';
 
 import { ImageCarousel, TabMenu } from '~/src/components/utils';
 import { Services } from '~/src/components/preview';
@@ -40,7 +41,7 @@ const SalonDetailPage = () => {
     }
 
     return `Open ${todayHours?.open} - ${todayHours?.close}`;
-  }, [location?.operatingHours]);
+  }, [location]);
 
   const handleServiceToggle = (serviceId: string) => {
     setSelectedServices((prev) =>
@@ -69,17 +70,7 @@ const SalonDetailPage = () => {
     );
   }
 
-  const {
-    photos,
-    name,
-    address,
-    category,
-    rating,
-    phone,
-    teamSize,
-    bookable,
-    price: _price,
-  } = location;
+  const { photos, name, address, category, rating, phone, teamSize, bookable } = location;
 
   const RenderServices = () => {
     return (

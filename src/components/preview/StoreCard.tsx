@@ -22,7 +22,7 @@ type StoreCardProps = {
   onPress?: () => void;
   animatedStyle?: 'slideUp' | 'slideLeft' | 'none';
 };
-
+//TODO: This needs fixing
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 const StoreCard = ({
   data,
@@ -103,10 +103,10 @@ const StoreCard = ({
 
         <View style={styles.favoriteButton}>
           <Icon
-            name={isFavorite ? 'heart' : 'heart-outline'}
             size={28}
-            color={isFavorite ? '#FF6B6B' : '#FFFFFF'}
             onPress={handleFavoritePress}
+            color={isFavorite ? '#FF6B6B' : '#FFFFFF'}
+            name={isFavorite ? 'heart' : 'heart-outline'}
           />
         </View>
       </View>

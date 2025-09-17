@@ -4,7 +4,7 @@ import { authClient } from '../auth/auth-client';
 
 import { getUserMeApi, updateUserMeApi } from './api';
 
-import type { GetUserMeResType, User, Organization, UpdateUserReqType } from './types';
+import type { GetUserMeResType } from './types';
 import type { ResErrorType } from '../axios/types';
 
 export const useGetUserMe = () => {

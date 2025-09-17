@@ -2,7 +2,6 @@ import { type RelativePathString, useRouter } from 'expo-router';
 import { StyleSheet, FlatList, View, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
-import { type Store } from '~/src/mock';
 import { useAppSafeAreaInsets, useLocationFilters, useInfiniteLocations } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
@@ -11,6 +10,7 @@ import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 import { Location } from '~/src/services';
 
+//TODO: This needs fixing
 type SectionProps = {
   title: string;
   data: Location[];
@@ -97,7 +97,6 @@ const HomePage = () => {
       </View>
     );
   }
-
   if (hasError) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -108,7 +107,6 @@ const HomePage = () => {
     );
   }
 
-  // If no data is available, show a message
   if (!locationsData || locationsData.length === 0) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -117,7 +115,6 @@ const HomePage = () => {
     );
   }
 
-  // Render functions for FlatList
   const renderHeader = () => (
     <View style={[styles.headerContainer, { paddingTop: top * 2 }]}>
       <Text weight="bold" color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.xl}>

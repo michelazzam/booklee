@@ -73,7 +73,6 @@ export const signupSchema: z.ZodType<SignUpReqType> = z
     phone: phoneNumberValidation(),
     salonName: z.string().optional(),
     invitationKey: z.string().optional(),
-    role: z.enum(['owner', 'manager', 'stylist', 'receptionist']),
     confirmPassword: z.string().min(1, { message: 'Confirm password is required' }),
     email: z
       .email({ message: 'Please enter a valid email address' })

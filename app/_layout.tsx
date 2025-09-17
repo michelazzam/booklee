@@ -55,7 +55,7 @@ const Navigation = () => {
   /*** Constants ***/
   const { isInitialized } = useUserProvider();
   const { isFetched: isUserFetched } = AuthServices.useGetMe();
-  const { isAuthenticated, isLoading } = AuthServices.useGetBetterAuthUser();
+  const { isAuthenticated, isLoading: isAuthLoading } = AuthServices.useGetBetterAuthUser();
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../src/assets/fonts/Montserrat-Regular.ttf'),
     'Montserrat-Medium': require('../src/assets/fonts/Montserrat-Medium.ttf'),
@@ -64,25 +64,35 @@ const Navigation = () => {
   });
 
   /*** Memoization ***/
+  const appInitialized = useMemo(() => {
+    return fontsLoaded && isInitialized;
+  }, [fontsLoaded, isInitialized]);
   const isAppReady = useMemo(() => {
-    if (isAuthenticated) {
-      return isUserFetched && fontsLoaded && isInitialized;
+    // Wait for fonts and user provider to initialize
+    if (!appInitialized) {
+      return false;
     }
 
-    return fontsLoaded && isInitialized;
-  }, [fontsLoaded, isInitialized, isUserFetched, isAuthenticated]);
+    // If user is authenticated, wait for user data to be fetched
+    if (isAuthenticated) {
+      return isUserFetched;
+    }
+
+    // If not authenticated, wait for auth check to complete
+    return !isAuthLoading;
+  }, [appInitialized, isUserFetched, isAuthenticated, isAuthLoading]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
       NavigationBar.setVisibilityAsync('hidden');
     }
 
-    if (isAppReady && !isLoading) {
+    if (isAppReady) {
       SplashScreen.hideAsync();
     }
-  }, [isAppReady, isLoading]);
+  }, [isAppReady]);
 
-  if (!isAppReady) {
+  if (!appInitialized) {
     return null;
   }
 

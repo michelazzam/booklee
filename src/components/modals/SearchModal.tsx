@@ -184,7 +184,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
             ) : !isSearching && debouncedQuery.length >= 2 ? (
               <View style={styles.emptyContainer}>
                 <Text color={theme.colors.lightText} weight="medium">
-                  No results found for "{debouncedQuery}"
+                  No results found for &quot;{debouncedQuery}&quot;
                 </Text>
               </View>
             ) : null}

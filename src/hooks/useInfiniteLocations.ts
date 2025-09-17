@@ -15,8 +15,10 @@ interface UseInfiniteLocationsParams extends Omit<GetLocationsReqType, 'page'> {
 export const useInfiniteLocations = (params?: UseInfiniteLocationsParams) => {
   const { enabled = true, ...apiParams } = params || {};
 
+  //TODO: add the select function to flat the data
   const query = useInfiniteQuery<GetLocationsByCategoriesResType, ResErrorType>({
     queryKey: ['infiniteLocations', apiParams],
+    //TODO: Abstract this into an API file
     queryFn: async ({ pageParam = 1 }) => {
       const result = await getLocationsApi({
         ...apiParams,

@@ -40,11 +40,7 @@ const FavoriteCard = ({
   const tag = category?.title ?? '';
 
   /***** Hooks *****/
-  const { data: favorites } = FavoritesServices.useGetFavorites();
   const { toggleFavorite } = FavoritesServices.useToggleFavorite();
-
-  /***** Computed values *****/
-  const isFavorite = favorites?.some((fav) => fav._id === _id) || false;
 
   /***** Memoization *****/
   const getEnteringAnimation = useMemo(() => {

@@ -1,19 +1,23 @@
 import { useLocalSearchParams, useRouter, type RelativePathString } from 'expo-router';
 import { View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useDebouncing, useLocationFilters, useInfiniteLocations } from '~/src/hooks';
-
-import { useAppSafeAreaInsets } from '~/src/hooks';
-import { theme } from '~/src/constants/theme';
-
-import { StoreCard } from '~/src/components/preview';
-import { FilterModal, SearchModal } from '~/src/components/modals';
-import { Icon, Text } from '~/src/components/base';
-import FilterIcon from '~/src/assets/icons/FilterIcon';
-import { SearchIcon } from '~/src/assets/icons';
 import { StatusBar } from 'expo-status-bar';
-import { Wrapper } from '~/src/components/utils/UI';
+
+import { SearchIcon, FilterIcon } from '~/src/assets/icons';
+import { theme } from '~/src/constants/theme';
+import {
+  useAppSafeAreaInsets,
+  useInfiniteLocations,
+  useLocationFilters,
+  useDebouncing,
+} from '~/src/hooks';
+
 import { Location } from '~/src/services';
+
+import { FilterModal, SearchModal } from '~/src/components/modals';
+import { StoreCard } from '~/src/components/preview';
+import { Wrapper } from '~/src/components/utils/UI';
+import { Icon, Text } from '~/src/components/base';
 
 const Search = () => {
   /*** Constants ***/
