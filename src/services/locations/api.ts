@@ -11,6 +11,7 @@ import type {
   SearchReqType,
   SearchResType,
   DeleteSearchHistoryResType,
+  GetLocationByIdResType,
 } from './types';
 
 /*** API for get locations categorized ***/
@@ -58,6 +59,24 @@ export const getLocationsApi = async (page: number, filters?: GetLocationsReqTyp
   } else if (error) {
     throw error;
   }
+  return response?.data;
+};
+
+/*** API for get location by id ***/
+export const getLocationByIdApi = async (id: string) => {
+  const [response, error] = await withErrorCatch(
+    apiClient.get<GetLocationByIdResType>(`locations/${id}`, { params: { byId: true } })
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
   return response?.data;
 };
 

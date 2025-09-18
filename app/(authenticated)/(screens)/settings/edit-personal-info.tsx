@@ -49,8 +49,6 @@ export const EditPersonalInfoPage = () => {
     setValidationErrors({ success: true });
 
     const { success, errors } = await validateUpdateUser(data.current);
-    console.log('data.current', data.current);
-    console.log('errors', errors);
     if (!success && errors) {
       setValidationErrors({ success: false, errors });
       return;

@@ -2,7 +2,7 @@ import { forwardRef, useImperativeHandle, useRef, useCallback, useState, useMemo
 import { View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { LocationServices, type SearchItemType } from '~/src/services';
+import { LocationServices, type DetailedLocationType } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
@@ -45,7 +45,7 @@ const SearchModal = forwardRef<ModalWrapperRef, object>((_, ref) => {
   }));
 
   const RenderSearchResult = useCallback(
-    ({ item }: { item: SearchItemType }) => <SearchItem data={item} />,
+    ({ item }: { item: DetailedLocationType }) => <SearchItem data={item} />,
     []
   );
   const RenderRecentSearches = useCallback(() => {

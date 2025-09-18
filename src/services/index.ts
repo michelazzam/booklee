@@ -21,7 +21,7 @@ export type {
   LocationCategoryType,
   GetLocationsReqType,
   SearchHistoryType,
-  SearchItemType,
+  DetailedLocationType,
   LocationType,
 } from './locations/types';
 export type {

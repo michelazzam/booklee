@@ -6,6 +6,7 @@ import {
   getSearchHistoryApi,
   searchLocationsApi,
   getLocationsApi,
+  getLocationByIdApi,
 } from './api';
 
 import type { ResErrorType } from '../axios/types';
@@ -13,7 +14,9 @@ import type {
   GetLocationsCategorizedResType,
   DeleteSearchHistoryResType,
   GetSearchHistoryResType,
+  GetLocationByIdResType,
   LocationCategoryType,
+  DetailedLocationType,
   GetLocationsReqType,
   GetLocationsResType,
   SearchHistoryType,
@@ -46,6 +49,14 @@ const useGetLocations = (filters?: GetLocationsReqType) => {
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.locations.length > 0 ? allPages.length + 1 : undefined;
     },
+  });
+};
+
+const useGetLocationById = (id: string) => {
+  return useQuery<GetLocationByIdResType, ResErrorType, DetailedLocationType>({
+    queryKey: ['getLocationById', id],
+    queryFn: () => getLocationByIdApi(id),
+    select: ({ location }) => location,
   });
 };
 
@@ -86,5 +97,6 @@ export const LocationServices = {
   useDeleteSearchHistory,
   useGetSearchHistory,
   useSearchLocations,
+  useGetLocationById,
   useGetLocations,
 };

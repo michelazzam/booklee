@@ -1,14 +1,14 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 
-import { type SearchItemType } from '~/src/services';
+import { type DetailedLocationType } from '~/src/services';
 
 import { theme } from '../../constants/theme';
 
 import { Text, Icon } from '../base';
 
 type SearchItemProps = {
-  data: SearchItemType;
+  data: DetailedLocationType;
   onPress?: () => void;
 };
 

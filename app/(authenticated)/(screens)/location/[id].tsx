@@ -17,17 +17,12 @@ const SalonDetailPage = () => {
   const router = useRouter();
   const { top, bottom } = useAppSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { data: location } = LocationServices.useGetLocationById(id || '');
+  const { photos, name, address, category, rating, phone, teamSize, bookable } = location || {};
 
   /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'services' | 'about'>('services');
-
-  /***** API *****/
-  const {
-    data: location,
-    isLoading,
-    error,
-  } = LocationServices.useGetLocationById({ id: id || '', byId: true });
 
   /***** Memoized values *****/
   const operatingHoursText = useMemo(() => {
@@ -49,29 +44,6 @@ const SalonDetailPage = () => {
     );
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <View style={[styles.loadingContainer, { paddingTop: top, paddingBottom: bottom }]}>
-        <Text size={theme.typography.fontSizes.md}>Loading salon details...</Text>
-      </View>
-    );
-  }
-
-  // Error state
-  if (error || !location) {
-    return (
-      <View style={[styles.errorContainer, { paddingTop: top, paddingBottom: bottom }]}>
-        <Text size={theme.typography.fontSizes.md} color={theme.colors.red[100]}>
-          Error loading salon details. Please try again.
-        </Text>
-        <Button title="Go Back" onPress={() => router.back()} />
-      </View>
-    );
-  }
-
-  const { photos, name, address, category, rating, phone, teamSize, bookable } = location;
-
   const RenderServices = () => {
     return (
       <View style={{ gap: theme.spacing.md }}>
@@ -80,19 +52,18 @@ const SalonDetailPage = () => {
         </Text>
 
         <View style={{ gap: theme.spacing.sm }}>
-          {location.locationServices.map((service) => (
+          {location?.locationServices?.map((service) => (
             <Services
+              key={service}
               data={service}
-              key={service.id}
               onPress={handleServiceToggle}
-              isActive={selectedServices.includes(service.id)}
+              isActive={selectedServices.includes(service)}
             />
           ))}
         </View>
       </View>
     );
   };
-
   const RenderAbout = () => {
     return (
       <View style={{ gap: theme.spacing.md }}>
@@ -149,43 +120,39 @@ const SalonDetailPage = () => {
           </TouchableOpacity>
         </View>
 
-        <ImageCarousel
-          images={
-            photos.length > 0
-              ? photos
-              : ['https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop']
-          }
-        />
+        <ImageCarousel images={photos || []} />
       </View>
 
       <View style={styles.storeContentContainer}>
-        <Text size={theme.typography.fontSizes.xl} weight={'bold'}>
-          {name}
-        </Text>
+        <View style={{ gap: theme.spacing.sm }}>
+          <Text size={theme.typography.fontSizes.xl} weight={'bold'}>
+            {name}
+          </Text>
 
-        <View style={styles.storeInfoContainer}>
-          <View style={styles.ratingContainer}>
-            <Icon name="star" size={16} color="#FFD700" />
+          <View style={styles.storeInfoContainer}>
+            <View style={styles.ratingContainer}>
+              <Icon name="star" size={16} color="#FFD700" />
 
-            <Text
-              weight={'bold'}
-              size={theme.typography.fontSizes.xs}
-              style={{ textDecorationLine: 'underline' }}>
-              {rating}
-            </Text>
+              <Text
+                weight={'bold'}
+                size={theme.typography.fontSizes.xs}
+                style={{ textDecorationLine: 'underline' }}>
+                {rating}
+              </Text>
+            </View>
+
+            <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
           </View>
-
-          <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
         </View>
 
-        <View style={styles.locationContainer}>
+        <View style={{ gap: theme.spacing.sm }}>
           <Text size={theme.typography.fontSizes.md}>{address}</Text>
-
           <View style={styles.tagContainer}>
             <Text size={theme.typography.fontSizes.xs} weight={'bold'}>
-              {category.title}
+              {category?.title}
             </Text>
           </View>
+          V
         </View>
 
         <TabMenu
@@ -225,7 +192,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   storeContentContainer: {
-    gap: theme.spacing.sm,
+    gap: theme.spacing.xl,
     padding: theme.spacing.lg,
   },
   storeInfoContainer: {
@@ -238,14 +205,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: theme.spacing.xs,
   },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.xl,
-  },
   tagContainer: {
     height: 30,
+    alignSelf: 'flex-start',
     justifyContent: 'center',
     borderRadius: theme.radii.xs,
     paddingHorizontal: theme.spacing.sm,

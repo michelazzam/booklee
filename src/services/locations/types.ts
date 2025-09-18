@@ -24,6 +24,29 @@ export type LocationCategoryType = {
   slug: string;
   locations: LocationType[];
 };
+export type DetailedLocationType = {
+  _id: string;
+  slug: string;
+  name: string;
+  city: string;
+  logo?: string;
+  price: string;
+  main: boolean;
+  phone?: string;
+  rating: number;
+  tags: string[];
+  address: string;
+  teamSize: number;
+  photos: string[];
+  bookable: boolean;
+  categoryId: string;
+  locationServices: string[];
+  geo: LocationGeolocationType;
+  category: LocationCategoryType;
+  operatingHours: LocationOperatingHoursType;
+};
+
+/*** Get Locations API Types ***/
 export type GetLocationsReqType = {
   city?: string;
   geo?: boolean;
@@ -42,6 +65,10 @@ export type GetLocationsResType = {
 export type GetLocationsCategorizedResType = {
   categories: LocationCategoryType[];
 };
+export type GetLocationByIdResType = {
+  ok: boolean;
+  location: DetailedLocationType;
+};
 
 /*** Search History Types ***/
 export type SearchHistoryType = {
@@ -59,30 +86,9 @@ export type SearchReqType = {
   page?: number;
   limit?: number;
 };
-export type SearchItemType = {
-  _id: string;
-  slug: string;
-  name: string;
-  city: string;
-  logo?: string;
-  price: string;
-  main: boolean;
-  phone?: string;
-  rating: number;
-  tags: string[];
-  address: string;
-  teamSize: number;
-  photos: string[];
-  category: string;
-  bookable: boolean;
-  categoryId: string;
-  locationServices: string[];
-  geo: LocationGeolocationType;
-  operatingHours: LocationOperatingHoursType;
-};
 export type SearchResType = {
   ok: boolean;
-  locations: SearchItemType[];
+  locations: DetailedLocationType[];
 };
 
 /*** Delete Search History API Types ***/
