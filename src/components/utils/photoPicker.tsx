@@ -68,7 +68,13 @@ const PhotoPicker = ({ style, error, onSelect, initialImage }: PhotoPickerProps)
       activeOpacity={0.8}
       style={[styles.container, style, { borderColor: error ? 'red' : '#E2E8F0' }]}>
       {image?.uri ? (
-        <Image contentFit="cover" style={styles.image} source={{ uri: image.uri }} />
+        <Image
+          transition={100}
+          contentFit="cover"
+          style={styles.image}
+          cachePolicy="memory-disk"
+          source={{ uri: image.uri }}
+        />
       ) : (
         <MaterialIcons size={42} color="black" name="person" />
       )}

@@ -90,7 +90,13 @@ const LocationCard = ({
       style={[styles.container, { minWidth }]}>
       <View style={styles.imageContainer}>
         {logo ? (
-          <Image source={{ uri: logo }} style={styles.image} contentFit="cover" />
+          <Image
+            transition={100}
+            contentFit="cover"
+            style={styles.image}
+            source={{ uri: logo }}
+            cachePolicy="memory-disk"
+          />
         ) : (
           <View style={styles.image} />
         )}

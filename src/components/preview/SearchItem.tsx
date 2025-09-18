@@ -19,7 +19,13 @@ const SearchItem = ({ data, onPress }: SearchItemProps) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       {photos[0] || logo ? (
-        <Image source={{ uri: photos[0] || logo }} style={styles.image} contentFit="cover" />
+        <Image
+          transition={100}
+          contentFit="cover"
+          style={styles.image}
+          cachePolicy="memory-disk"
+          source={{ uri: photos[0] || logo }}
+        />
       ) : (
         <View style={styles.image} />
       )}

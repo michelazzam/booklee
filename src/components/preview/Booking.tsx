@@ -69,7 +69,14 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
     <>
       <View style={styles.container}>
         <View style={[styles.headerContainer, styles.borderStyle]}>
-          <Image source={image} style={styles.imageStyle} />
+          <Image
+            source={image}
+            priority="high"
+            transition={100}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            style={styles.imageStyle}
+          />
 
           <View style={styles.infoContainer}>
             <View style={{ gap: theme.spacing.md }}>
