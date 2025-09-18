@@ -1,5 +1,6 @@
-import { View, Image, StyleSheet, FlatList, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, FlatList, useWindowDimensions } from 'react-native';
 import { useState, useRef, useCallback } from 'react';
+import { Image } from 'expo-image';
 
 import { theme } from '~/src/constants/theme';
 
@@ -25,7 +26,14 @@ const ImageCarousel = ({ images }: ImageCarouselProps) => {
 
   const renderImage = useCallback(
     ({ item }: { item: string }) => (
-      <Image resizeMode="cover" source={{ uri: item }} style={{ width: screenWidth }} />
+      <Image
+        priority="high"
+        transition={100}
+        contentFit="cover"
+        source={{ uri: item }}
+        cachePolicy="memory-disk"
+        style={{ width: screenWidth }}
+      />
     ),
     [screenWidth]
   );

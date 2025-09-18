@@ -147,12 +147,12 @@ const SalonDetailPage = () => {
 
         <View style={{ gap: theme.spacing.sm }}>
           <Text size={theme.typography.fontSizes.md}>{address}</Text>
+
           <View style={styles.tagContainer}>
             <Text size={theme.typography.fontSizes.xs} weight={'bold'}>
               {category?.title}
             </Text>
           </View>
-          V
         </View>
 
         <TabMenu
