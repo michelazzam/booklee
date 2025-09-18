@@ -1,9 +1,7 @@
 import { StyleSheet, View, Keyboard } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { Toast } from 'toastify-react-native';
 import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Image } from 'expo-image';
 
 import { UserServices, type UpdateUserReqType } from '~/src/services';
 
@@ -11,9 +9,10 @@ import { validateUpdateUser, ValidationResultType } from '~/src/helper/validatio
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { AwareScrollView, HeaderNavigation, Icon } from '~/src/components/base';
+import { AwareScrollView, HeaderNavigation } from '~/src/components/base';
 import { Input } from '~/src/components/textInputs';
 import { Button } from '~/src/components/buttons';
+import { PhotoPicker } from '~/src/components/utils';
 
 export const EditPersonalInfoPage = () => {
   /*** Constants ***/
@@ -45,30 +44,13 @@ export const EditPersonalInfoPage = () => {
       errors: { ...prev.errors, [field]: undefined },
     }));
   };
-  const handleImagePicker = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        const imageUri = result.assets[0].uri;
-        setSelectedImage(imageUri);
-        data.current.image = imageUri;
-      }
-    } catch (error) {
-      console.error('Error picking image:', error);
-      Toast.error('Failed to pick image');
-    }
-  };
   const handleSave = async () => {
     Keyboard.dismiss();
     setValidationErrors({ success: true });
 
     const { success, errors } = await validateUpdateUser(data.current);
+    console.log('data.current', data.current);
+    console.log('errors', errors);
     if (!success && errors) {
       setValidationErrors({ success: false, errors });
       return;
@@ -90,16 +72,15 @@ export const EditPersonalInfoPage = () => {
       <HeaderNavigation title="Edit Personal Info" />
 
       <AwareScrollView contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
-        <View style={styles.imageSection}>
-          {data.current.image ? (
-            <Image source={{ uri: data.current.image }} style={styles.imageContainer} />
-          ) : (
-            <View style={styles.imageIcon}>
-              <Icon name="account" size={48} color={theme.colors.darkText[100]} />
-            </View>
-          )}
-        </View>
-
+        <PhotoPicker
+          style={{ alignSelf: 'center' }}
+          onSelect={(image) => setSelectedImage(image.uri)}
+          initialImage={
+            selectedImage
+              ? { uri: selectedImage, name: 'image.jpg', type: 'image/jpeg' }
+              : undefined
+          }
+        />
         <View style={styles.formSection}>
           <Input
             label="First Name*"
@@ -118,12 +99,7 @@ export const EditPersonalInfoPage = () => {
           />
         </View>
 
-        <Button
-          title="Save Changes"
-          onPress={handleSave}
-          isLoading={isUpdatePending}
-          containerStyle={styles.saveButton}
-        />
+        <Button title="Save Changes" onPress={handleSave} isLoading={isUpdatePending} />
       </AwareScrollView>
     </>
   );
@@ -139,32 +115,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.white[100],
   },
-  imageSection: {
-    alignItems: 'center',
-    gap: theme.spacing.lg,
-  },
-  imageIcon: {
-    width: 120,
-    height: 120,
-    borderWidth: 1,
-    borderRadius: 60,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderColor: theme.colors.border,
-  },
-  imageContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    overflow: 'hidden',
-    backgroundColor: theme.colors.border,
-  },
   formSection: {
     flex: 1,
     gap: theme.spacing.xl,
-  },
-  saveButton: {
-    marginTop: theme.spacing.xl,
   },
 });

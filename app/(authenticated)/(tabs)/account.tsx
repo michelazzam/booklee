@@ -110,7 +110,7 @@ const AccountPage = () => {
       <AwareScrollView contentContainerStyle={styles.scrollContent}>
         <SettingsCard data={personalInformationData} title="PERSONAL INFORMATION" />
 
-        <SettingsCard data={openBusinessData} />
+        <SettingsCard data={openBusinessData} title="SETTINGS" />
 
         <SettingsCard data={appSettingsData} />
       </AwareScrollView>

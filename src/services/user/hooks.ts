@@ -39,17 +39,6 @@ const useGetMe = () => {
   });
 };
 
-const useGetOrganization = () => {
-  /*** Constants ***/
-  const { data, isLoading, error } = useGetMe();
-
-  return {
-    organization: data?.organization ?? null,
-    isLoading,
-    error,
-  };
-};
-
 const useUpdateUser = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
@@ -96,7 +85,6 @@ const useRemoveFromFavorites = () => {
 
 export const UserServices = {
   useRemoveFromFavorites,
-  useGetOrganization,
   useAddToFavorites,
   useGetFavorites,
   useUpdateUser,
