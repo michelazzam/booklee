@@ -1,22 +1,19 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
-import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
+import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
 import { View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as LocationService from 'expo-location';
 import { StatusBar } from 'expo-status-bar';
 
+import { LocationServices, type DetailedLocationType } from '~/src/services';
+
+import { useAppSafeAreaInsets, usePermissions } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
-import {
-  useAppSafeAreaInsets,
-  useDebouncing,
-  useLocationFilters,
-  usePermissions,
-} from '~/src/hooks';
-import { FilterModal, SearchModal } from '~/src/components/modals';
-import { StoreCard } from '~/src/components/preview';
+
+import { FilterModal, SearchModal, type ModalWrapperRef } from '~/src/components/modals';
+import { LocationCard } from '~/src/components/preview';
 import { Icon, Text } from '~/src/components/base';
-import { Location, LocationServices } from '~/src/services';
-import * as LocationService from 'expo-location';
 
 type MapParams = {
   focusId?: string;
@@ -36,24 +33,21 @@ export default function LocationsMapScreen() {
   const { focusId } = useLocalSearchParams<MapParams>();
 
   /*** Filters/Search state ***/
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [showSearchModal, setShowSearchModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<string>('');
-  const debouncedSearchQuery = useDebouncing(searchQuery, 150);
-  const { appliedFilters, setAppliedFilters, getApiParams } = useLocationFilters();
 
   /*** API params and data ***/
   const apiParams = useMemo(() => {
-    const params = getApiParams({ limit: 50, categories: false, defaults: 'full' });
-    if (debouncedSearchQuery.trim()) params.title = debouncedSearchQuery.trim();
+    const params = getApiParams({ categories: false, defaults: 'full' });
     return params;
-  }, [getApiParams, debouncedSearchQuery]);
+  }, [getApiParams]);
 
-  const { data: locations = [] } = LocationServices.useGetAllLocations(apiParams);
+  const { data: locations = [] } = LocationServices.useGetLocations(apiParams);
 
   /*** Derived values ***/
-  const allLocations: Location[] = useMemo(() => locations, [locations]);
+  const allLocations: DetailedLocationType[] = useMemo(() => {
+    // Type assertion - in a real app, you'd want to ensure the API returns DetailedLocationType
+    return locations as DetailedLocationType[];
+  }, [locations]);
 
   const filters = useMemo(() => {
     if (!allLocations || allLocations.length === 0) return [{ id: '', label: 'All' }];
@@ -77,9 +71,11 @@ export default function LocationsMapScreen() {
   /*** Map/Sheet refs ***/
   const mapRef = useRef<MapView | null>(null);
   const sheetRef = useRef<BottomSheet | null>(null);
+  const searchModalRef = useRef<ModalWrapperRef>(null);
+  const filterModalRef = useRef<ModalWrapperRef>(null);
 
   /*** Selection ***/
-  const [selected, setSelected] = useState<Location | null>(null);
+  const [selected, setSelected] = useState<DetailedLocationType | null>(null);
 
   /*** User location ***/
   const [userLocation, setUserLocation] = useState<LocationService.LocationObject | null>(null);
@@ -108,7 +104,7 @@ export default function LocationsMapScreen() {
     return DEFAULT_REGION;
   }, [selected, allLocations, userLocation]);
 
-  const handleMarkerPress = useCallback((loc: Location) => {
+  const handleMarkerPress = useCallback((loc: DetailedLocationType) => {
     setSelected(loc);
     sheetRef.current?.expand?.();
   }, []);
@@ -189,34 +185,21 @@ export default function LocationsMapScreen() {
       <View style={[styles.header, { paddingTop: top }]}>
         <View style={styles.searchRow}>
           <TouchableOpacity
-            style={[styles.searchButton, searchQuery && styles.searchButtonActive]}
-            onPress={() => setShowSearchModal(true)}
+            style={styles.searchButton}
+            onPress={() => searchModalRef.current?.present()}
             activeOpacity={0.8}>
             <View style={styles.searchButtonContent}>
-              <Icon
-                name="magnify"
-                color={searchQuery ? theme.colors.primaryBlue[100] : theme.colors.lightText}
-              />
-              <Text
-                style={styles.searchButtonText}
-                color={searchQuery ? theme.colors.darkText[100] : theme.colors.lightText}>
-                {searchQuery ? `"${searchQuery}"` : 'Store, location, or service'}
+              <Icon name="magnify" color={theme.colors.lightText} />
+              <Text style={styles.searchButtonText} color={theme.colors.lightText}>
+                Store, location, or service
               </Text>
-              {searchQuery ? (
-                <Icon
-                  name="close"
-                  size={18}
-                  color={theme.colors.lightText}
-                  onPress={() => setSearchQuery('')}
-                />
-              ) : null}
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity
             activeOpacity={0.8}
             style={styles.filterButton}
-            onPress={() => setShowFilterModal(true)}>
+            onPress={() => filterModalRef.current?.present()}>
             <Icon name="tune-variant" />
           </TouchableOpacity>
         </View>
@@ -254,8 +237,15 @@ export default function LocationsMapScreen() {
         <BottomSheetScrollView contentContainerStyle={{ paddingBottom: bottom }}>
           {selected ? (
             <View style={{ paddingHorizontal: theme.spacing.lg }}>
-              <StoreCard
-                data={selected}
+              <LocationCard
+                data={{
+                  _id: selected._id,
+                  slug: selected.slug,
+                  name: selected.name,
+                  logo: selected.logo || '',
+                  city: selected.city,
+                  tags: selected.tags,
+                }}
                 animatedStyle="none"
                 onPress={() => router.push(`/(authenticated)/(screens)/location/${selected._id}`)}
               />
@@ -269,20 +259,14 @@ export default function LocationsMapScreen() {
       </BottomSheet>
 
       <FilterModal
-        visible={showFilterModal}
-        onClose={() => setShowFilterModal(false)}
+        ref={filterModalRef}
         onApply={(filters) => {
           setAppliedFilters(filters);
         }}
         initialFilters={appliedFilters}
       />
 
-      <SearchModal
-        visible={showSearchModal}
-        onClose={() => setShowSearchModal(false)}
-        onSearch={(q) => setSearchQuery(q)}
-        initialQuery={searchQuery}
-      />
+      <SearchModal ref={searchModalRef} />
 
       <StatusBar style="dark" />
     </View>
@@ -293,7 +277,7 @@ const BlinkFreeMarker = React.memo(function BlinkFreeMarker({
   loc,
   onPress,
 }: {
-  loc: Location;
+  loc: DetailedLocationType;
   onPress: () => void;
 }) {
   const [tracks, setTracks] = useState(true);
@@ -345,10 +329,6 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.md,
     backgroundColor: theme.colors.white.DEFAULT,
     padding: theme.spacing.md,
-  },
-  searchButtonActive: {
-    borderColor: theme.colors.primaryBlue[100],
-    backgroundColor: theme.colors.primaryBlue[10] || theme.colors.white.DEFAULT,
   },
   searchButtonContent: {
     flexDirection: 'row',
