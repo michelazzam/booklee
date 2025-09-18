@@ -59,6 +59,9 @@ const Search = () => {
       })),
     ];
   }, [filtersData]);
+  const isFilterApplied = useMemo(() => {
+    return Object.keys(selectedFilter || {}).length > 0;
+  }, [selectedFilter]);
 
   const RenderEmptyComponent = useCallback(() => {
     return isLoading || isFetchingNextPage ? (
@@ -101,11 +104,14 @@ const Search = () => {
 
           <TouchableOpacity
             activeOpacity={0.8}
-            style={styles.filterButton}
-            onPress={() => {
-              filterModalRef.current?.present();
-            }}>
-            <FilterIcon />
+            onPress={() => filterModalRef.current?.present()}
+            style={[
+              styles.filterButton,
+              isFilterApplied && { backgroundColor: theme.colors.primaryBlue[100] },
+            ]}>
+            <FilterIcon
+              color={isFilterApplied ? theme.colors.white.DEFAULT : theme.colors.darkText[100]}
+            />
           </TouchableOpacity>
         </View>
 
@@ -130,7 +136,7 @@ const Search = () => {
 
       <SearchModal ref={searchModalRef} />
 
-      <FilterModal ref={filterModalRef} onClose={() => {}} onApply={() => {}} />
+      <FilterModal ref={filterModalRef} onApply={(filters) => setSelectedFilter(filters)} />
     </>
   );
 };

@@ -25,12 +25,14 @@ export type LocationCategoryType = {
   locations: LocationType[];
 };
 export type GetLocationsReqType = {
+  city?: string;
   geo?: boolean;
   distance?: number;
   category?: string;
   bookable?: boolean;
   price_min?: number;
   price_max?: number;
+  rating_min?: number;
   operatingHours?: boolean;
   locationServices?: boolean;
 };
