@@ -60,7 +60,13 @@ const Search = () => {
     ];
   }, [filtersData]);
   const isFilterApplied = useMemo(() => {
-    return Object.keys(selectedFilter || {}).length > 0;
+    const keys = Object.keys(selectedFilter || {});
+
+    if (keys.includes('category') && keys.length === 1) {
+      return false;
+    }
+
+    return keys.length > 0;
   }, [selectedFilter]);
 
   const RenderEmptyComponent = useCallback(() => {
@@ -127,10 +133,10 @@ const Search = () => {
         renderItem={renderItem}
         onEndReachedThreshold={0.5}
         onEndReached={handleEndReached}
-        keyExtractor={(item) => item._id}
         ListFooterComponent={RenderFooter}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={RenderEmptyComponent}
+        keyExtractor={(item, index) => item._id + index}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
       />
 

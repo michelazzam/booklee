@@ -90,7 +90,7 @@ const HomePage = () => {
               weight="bold"
               color={theme.colors.white.DEFAULT}
               size={theme.typography.fontSizes.xl}>
-              Hello {userData?.user.name}!
+              Hello {`${userData?.user?.firstName || 'User'} ${userData?.user?.lastName || ''}`}!
             </Text>
 
             <Text
@@ -108,10 +108,10 @@ const HomePage = () => {
         renderItem={renderCategory}
         onEndReachedThreshold={0.5}
         onEndReached={handleEndReached}
-        keyExtractor={(item) => item._id}
         ListFooterComponent={renderFooter}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={RenderListEmptyComponent}
+        keyExtractor={(item, index) => item._id + index}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
       />
     </>

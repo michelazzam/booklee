@@ -33,7 +33,7 @@ const AccountPage = () => {
 
     return [
       {
-        label: `${userData?.user?.firstName} ${userData?.user?.lastName}` || '',
+        label: `${userData?.user?.firstName || 'User'} ${userData?.user?.lastName || ''}`,
         leadingIcon: <UserInfoIcon />,
         trailingIcon: <ChevronRightIcon />,
         onPress: () => {
@@ -46,7 +46,7 @@ const AccountPage = () => {
         trailingIcon: <ChevronRightIcon />,
       },
       {
-        label: userData?.user?.phone || '',
+        label: userData?.user?.phone || 'No phone number',
         leadingIcon: <PhoneIcon />,
         trailingIcon: <ChevronRightIcon />,
       },

@@ -62,8 +62,8 @@ const FavoritesPage = () => {
         renderItem={RenderItem}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={RenderListEmptyComponent}
-        keyExtractor={(_, index) => index.toString()}
         columnWrapperStyle={{ gap: theme.spacing.lg }}
+        keyExtractor={(item, index) => item._id + index}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
       />
     </>
