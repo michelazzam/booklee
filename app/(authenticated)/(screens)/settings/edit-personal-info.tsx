@@ -23,14 +23,14 @@ export const EditPersonalInfoPage = () => {
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
   const router = useRouter();
-  const { user } = UserServices.useGetUser();
+  const { data: userData } = UserServices.useGetMe();
   const { mutate: updateUser, isPending: isUpdatePending } = UserServices.useUpdateUser();
 
   /***** Refs *****/
   const data = useRef<UpdateUserReqType>({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    image: user?.image || null,
+    firstName: userData?.user?.firstName || '',
+    lastName: userData?.user?.lastName || '',
+    image: userData?.user?.image || null,
   });
 
   /*** States ***/
@@ -41,7 +41,7 @@ export const EditPersonalInfoPage = () => {
     success: false,
   });
 
-  const [selectedImage, setSelectedImage] = useState<string | null>(user?.image || null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(userData?.user?.image || null);
 
   const onTextChange = (text: string, field: keyof UpdateUserReqType) => {
     data.current[field] = text;
@@ -79,7 +79,7 @@ export const EditPersonalInfoPage = () => {
     // Basic validation - only validate name fields for users with role "user"
     const errors: Partial<UpdateUserReqType> = {};
 
-    if (user?.role === 'user') {
+    if (userData?.user?.role === 'user') {
       if (!data.current.firstName?.trim()) {
         errors.firstName = 'First name is required';
       }
@@ -134,7 +134,7 @@ export const EditPersonalInfoPage = () => {
         </View>
 
         {/* Form Fields - Only show for users with role "user" */}
-        {user?.role === 'user' && (
+        {userData?.user?.role === 'user' && (
           <View style={styles.formSection}>
             <Input
               label="First Name*"

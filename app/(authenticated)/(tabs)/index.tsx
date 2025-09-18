@@ -8,14 +8,15 @@ import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
 import { LocationCard, HomePageSkeleton } from '~/src/components/preview';
+import { ScreenHeader } from '~/src/components/utils';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
 const HomePage = () => {
   /*** Constants ***/
   const router = useRouter();
-  const { top, bottom } = useAppSafeAreaInsets();
-  const { data: userData } = UserServices.useGetUserMe();
+  const { bottom } = useAppSafeAreaInsets();
+  const { data: userData } = UserServices.useGetMe();
   const {
     hasNextPage,
     fetchNextPage,
@@ -82,18 +83,25 @@ const HomePage = () => {
 
   return (
     <>
-      <View style={[styles.headerContainer, { paddingTop: top }]}>
-        <Text weight="bold" color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.xl}>
-          Hello {userData?.user.name}!
-        </Text>
+      <ScreenHeader
+        title={
+          <View style={{ gap: theme.spacing.xs }}>
+            <Text
+              weight="bold"
+              color={theme.colors.white.DEFAULT}
+              size={theme.typography.fontSizes.xl}>
+              Hello {userData?.user.name}!
+            </Text>
 
-        <Text
-          weight="medium"
-          color={theme.colors.white.DEFAULT}
-          size={theme.typography.fontSizes.sm}>
-          What would you like to do today?
-        </Text>
-      </View>
+            <Text
+              weight="medium"
+              color={theme.colors.white.DEFAULT}
+              size={theme.typography.fontSizes.sm}>
+              What would you like to do today?
+            </Text>
+          </View>
+        }
+      />
 
       <FlatList
         data={locationsData}
@@ -113,12 +121,6 @@ const HomePage = () => {
 export default HomePage;
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    gap: theme.spacing.xs,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    backgroundColor: theme.colors.primaryBlue[100],
-  },
   container: {
     gap: 24,
     flexGrow: 1,

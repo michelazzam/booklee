@@ -21,7 +21,7 @@ import type {
   FavoriteType,
 } from './types';
 
-const useGetUserMe = () => {
+const useGetMe = () => {
   /*** Constants ***/
   const { data: session } = authClient.useSession();
 
@@ -39,20 +39,9 @@ const useGetUserMe = () => {
   });
 };
 
-const useGetUser = () => {
-  /*** Constants ***/
-  const { data, isLoading, error } = useGetUserMe();
-
-  return {
-    user: data?.user ?? null,
-    isLoading,
-    error,
-  };
-};
-
 const useGetOrganization = () => {
   /*** Constants ***/
-  const { data, isLoading, error } = useGetUserMe();
+  const { data, isLoading, error } = useGetMe();
 
   return {
     organization: data?.organization ?? null,
@@ -111,6 +100,5 @@ export const UserServices = {
   useAddToFavorites,
   useGetFavorites,
   useUpdateUser,
-  useGetUserMe,
-  useGetUser,
+  useGetMe,
 };
