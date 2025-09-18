@@ -5,6 +5,7 @@ import {
   deleteSearchHistoryApi,
   getSearchHistoryApi,
   searchLocationsApi,
+  getLocationsApi,
 } from './api';
 
 import type { ResErrorType } from '../axios/types';
@@ -14,9 +15,11 @@ import type {
   GetSearchHistoryResType,
   LocationCategoryType,
   GetLocationsReqType,
+  GetLocationsResType,
   SearchHistoryType,
   SearchReqType,
   SearchResType,
+  LocationType,
 } from './types';
 
 const useGetLocationsCategorized = (filters?: GetLocationsReqType) => {
@@ -35,13 +38,13 @@ const useGetLocationsCategorized = (filters?: GetLocationsReqType) => {
 };
 
 const useGetLocations = (filters?: GetLocationsReqType) => {
-  return useInfiniteQuery<GetLocationsCategorizedResType, ResErrorType, LocationCategoryType[]>({
+  return useInfiniteQuery<GetLocationsResType, ResErrorType, LocationType[]>({
     initialPageParam: 1,
-    queryKey: ['getLocationsCategorized', filters],
-    select: ({ pages }) => pages.flatMap((page) => page.categories),
-    queryFn: ({ pageParam = 1 }) => getLocationsCategorizedApi(pageParam as number, filters),
+    queryKey: ['getLocations', filters],
+    select: ({ pages }) => pages.flatMap((page) => page.locations),
+    queryFn: ({ pageParam = 1 }) => getLocationsApi(pageParam as number, filters),
     getNextPageParam: (lastPage, allPages) => {
-      return lastPage.categories.length > 0 ? allPages.length + 1 : undefined;
+      return lastPage.locations.length > 0 ? allPages.length + 1 : undefined;
     },
   });
 };

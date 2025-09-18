@@ -19,6 +19,7 @@ export type {
 } from './auth/types';
 export type {
   LocationCategoryType,
+  GetLocationsReqType,
   SearchHistoryType,
   SearchItemType,
   LocationType,

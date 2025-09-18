@@ -2,7 +2,7 @@ import { ActivityIndicator, TouchableOpacity, StyleSheet, FlatList, View } from 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { LocationServices, LocationType } from '~/src/services';
+import { LocationServices, type LocationType, type GetLocationsReqType } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { FilterIcon } from '~/src/assets/icons';
@@ -10,8 +10,13 @@ import { theme } from '~/src/constants/theme';
 
 import { FilterModal, SearchModal, ModalWrapperRef } from '~/src/components/modals';
 import { LocationCard, LocationCardSkeleton } from '~/src/components/preview';
+import { FilterContainer, type FilterType } from '~/src/components/utils';
 import { SearchInput } from '~/src/components/textInputs';
-import { FilterContainer } from '~/src/components/utils';
+import { Text } from '~/src/components/base';
+
+type LocalSearchParams = {
+  filterCategory: string;
+};
 
 const Search = () => {
   /*** Refs ***/
@@ -21,53 +26,51 @@ const Search = () => {
   /*** Constants ***/
   const router = useRouter();
   const { top, bottom } = useAppSafeAreaInsets();
-  const { filter } = useLocalSearchParams<{ filter?: string }>();
+  const { filterCategory } = useLocalSearchParams<LocalSearchParams>();
 
   /*** States ***/
-  const [selectedFilter, setSelectedFilter] = useState<string>(filter || '');
+  const [selectedFilter, setSelectedFilter] = useState<GetLocationsReqType>();
 
   /*** API ***/
   const {
+    isLoading,
     data: locationsData,
     hasNextPage: hasNextPage,
     fetchNextPage: fetchNextPage,
     isFetchingNextPage: isFetchingNextPage,
-  } = LocationServices.useGetLocationsCategorized();
+  } = LocationServices.useGetLocations(selectedFilter);
+  const { data: filtersData } = LocationServices.useGetLocationsCategorized();
 
   useEffect(() => {
-    if (filter) {
-      setSelectedFilter(filter);
+    if (filterCategory) {
+      setSelectedFilter({ category: filterCategory });
     }
-  }, [filter]);
+  }, [filterCategory]);
 
   /*** Memoization ***/
-  const filters = useMemo(() => {
-    if (!locationsData || locationsData.length === 0) return [{ id: '', label: 'All' }];
+  const filters: FilterType[] = useMemo(() => {
+    if (!filtersData || filtersData.length === 0) return [{ slug: '', label: 'All' }];
 
     return [
-      { id: '', label: 'All' },
-      ...locationsData.map((category) => ({
-        id: category._id,
+      { slug: '', label: 'All' },
+      ...filtersData.map((category) => ({
+        slug: category.slug,
         label: category.title,
       })),
     ];
-  }, [locationsData]);
-  const filteredCategories = useMemo(() => {
-    if (!locationsData || locationsData.length === 0) return [];
-
-    if (!selectedFilter) {
-      return locationsData.flatMap((category) => category.locations);
-    }
-
-    const filteredCategory = locationsData.find((category) => category._id === selectedFilter);
-    return filteredCategory ? filteredCategory.locations : [];
-  }, [locationsData, selectedFilter]);
+  }, [filtersData]);
 
   const RenderEmptyComponent = useCallback(() => {
-    return Array.from({ length: 10 }).map((_, index) => (
-      <LocationCardSkeleton key={index} minWidth={230} />
-    ));
-  }, []);
+    return isLoading || isFetchingNextPage ? (
+      Array.from({ length: 10 }).map((_, index) => (
+        <LocationCardSkeleton key={index} minWidth={230} />
+      ))
+    ) : (
+      <Text color={theme.colors.lightText} weight="medium" style={styles.emptyTextStyle}>
+        No locations found
+      </Text>
+    );
+  }, [isLoading, isFetchingNextPage]);
   const RenderFooter = useCallback(() => {
     if (!isFetchingNextPage) return null;
 
@@ -78,7 +81,6 @@ const Search = () => {
       <LocationCard
         data={category}
         delay={index * 100}
-        animatedStyle="slideUp"
         onPress={() => router.navigate(`/(authenticated)/(screens)/store/${category._id}`)}
       />
     ),
@@ -109,14 +111,14 @@ const Search = () => {
 
         <FilterContainer
           filters={filters}
-          selectedFilter={selectedFilter}
-          setSelectedFilter={setSelectedFilter}
+          selectedFilter={selectedFilter?.category || ''}
+          setSelectedFilter={(filter) => setSelectedFilter({ category: filter })}
         />
       </View>
 
       <FlatList
+        data={locationsData}
         renderItem={renderItem}
-        data={filteredCategories}
         onEndReachedThreshold={0.5}
         onEndReached={handleEndReached}
         keyExtractor={(item) => item._id}
@@ -154,10 +156,9 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.sm,
     borderColor: theme.colors.border,
   },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  emptyTextStyle: {
+    textAlign: 'center',
+    marginTop: theme.spacing.xl,
   },
   listContent: {
     flexGrow: 1,

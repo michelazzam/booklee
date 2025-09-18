@@ -4,7 +4,7 @@ import { theme } from '~/src/constants/theme';
 import { Text } from '../base';
 
 export type FilterType = {
-  id: string;
+  slug: string;
   label: string;
 };
 type FilterContainerProps = {
@@ -20,13 +20,13 @@ const FilterContainer = ({ filters, selectedFilter, setSelectedFilter }: FilterC
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.filterContainer}>
       {filters.map((filter) => {
-        const isSelected = selectedFilter === filter.id;
+        const isSelected = selectedFilter === filter.slug;
 
         return (
           <TouchableOpacity
-            key={filter.id}
+            key={filter.slug}
             activeOpacity={0.7}
-            onPress={() => setSelectedFilter(filter.id)}
+            onPress={() => setSelectedFilter(filter.slug)}
             style={[
               styles.tagContainer,
               isSelected && {

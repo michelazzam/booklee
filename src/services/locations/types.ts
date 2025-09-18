@@ -28,6 +28,9 @@ export type GetLocationsReqType = {
   geo?: boolean;
   distance?: number;
   category?: string;
+  bookable?: boolean;
+  price_min?: number;
+  price_max?: number;
   operatingHours?: boolean;
   locationServices?: boolean;
 };
