@@ -58,7 +58,7 @@ const HomePage = () => {
                 key={store._id}
                 delay={index * 150}
                 animatedStyle="slideLeft"
-                onPress={() => router.navigate(`/(authenticated)/(screens)/store/${store._id}`)}
+                onPress={() => router.navigate(`/(authenticated)/(screens)/location/${store._id}`)}
               />
             ))}
           </ScrollView>

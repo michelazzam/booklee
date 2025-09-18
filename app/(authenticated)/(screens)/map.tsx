@@ -257,7 +257,7 @@ export default function LocationsMapScreen() {
               <StoreCard
                 data={selected}
                 animatedStyle="none"
-                onPress={() => router.push(`/(authenticated)/(screens)/store/${selected._id}`)}
+                onPress={() => router.push(`/(authenticated)/(screens)/location/${selected._id}`)}
               />
             </View>
           ) : (

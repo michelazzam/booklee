@@ -84,7 +84,7 @@ const Search = () => {
       <LocationCard
         data={category}
         delay={index * 100}
-        onPress={() => router.navigate(`/(authenticated)/(screens)/store/${category._id}`)}
+        onPress={() => router.navigate(`/(authenticated)/(screens)/location/${category._id}`)}
       />
     ),
     [router]

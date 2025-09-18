@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 
 import { theme } from '~/src/constants/theme';
 import {
+  ChevronRightIcon,
+  QuestionMarkIcon,
   UserInfoIcon,
   EnvelopeIcon,
   LogoutIcon,
@@ -12,14 +14,11 @@ import {
   GearIcon,
   HomeIcon,
   BellIcon,
-  ChevronRightIcon,
-  QuestionMarkIcon,
 } from '~/src/assets/icons';
 
 import { AuthServices, UserServices } from '~/src/services';
 
 import { SettingsCard, ScreenHeader, type CardRowDataType } from '~/src/components/utils';
-import { AccountButton } from '~/src/components/utils/account';
 import { AwareScrollView, Text } from '~/src/components/base';
 
 const AccountPage = () => {
