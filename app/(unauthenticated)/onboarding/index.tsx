@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, ImageBackground, useWindowDimensions } from 're
 import { router } from 'expo-router';
 
 import { useUserProvider } from '~/src/store';
+import { usePermissions } from '~/src/hooks';
 
 import { IMAGES } from '~/src/constants/images';
 
@@ -11,6 +12,17 @@ const OnboardingStep1 = () => {
   /*** Constants ***/
   const { height: windowHeight } = useWindowDimensions();
   const { handleOnboardingCompleted } = useUserProvider();
+  const { requestLocationPermission, isLoading } = usePermissions();
+
+  const handleEnableLocation = async () => {
+    const granted = await requestLocationPermission();
+    if (granted) {
+      router.navigate('/(unauthenticated)/onboarding/step2');
+    } else {
+      // Still allow user to proceed even if permission is denied
+      router.navigate('/(unauthenticated)/onboarding/step2');
+    }
+  };
 
   const handleSkip = () => {
     router.replace('/(unauthenticated)/login');
@@ -36,8 +48,9 @@ const OnboardingStep1 = () => {
         </Text>
 
         <Button
-          title="Enable Location"
-          onPress={() => router.navigate('/(unauthenticated)/onboarding/step2')}
+          title={isLoading ? 'Requesting...' : 'Enable Location'}
+          onPress={handleEnableLocation}
+          disabled={isLoading}
         />
 
         <View style={styles.paginationContainer}>

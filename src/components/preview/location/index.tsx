@@ -1,4 +1,5 @@
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, type ViewStyle } from 'react-native';
+import { useRouter, type RelativePathString } from 'expo-router';
 import { Image } from 'expo-image';
 import { useMemo } from 'react';
 import Animated, {
@@ -10,37 +11,37 @@ import Animated, {
   FadeIn,
 } from 'react-native-reanimated';
 
-import { theme } from '../../constants/theme';
-import { FavoritesServices, Location } from '~/src/services';
+import { type LocationType } from '~/src/services';
 
-import { Text, Icon } from '../base';
+import { useHandleFavorites } from '~/src/hooks';
+import { theme } from '../../../constants/theme';
 
-type FavoriteCardProps = {
-  data: Location;
+import { Text, Icon } from '../../base';
+
+type LocationCardProps = {
   delay?: number;
   duration?: number;
+  data: LocationType;
   onPress?: () => void;
+  showMapButton?: boolean;
+  minWidth?: ViewStyle['minWidth'];
   animatedStyle?: 'slideUp' | 'slideLeft' | 'none';
 };
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
-
-const FavoriteCard = ({
+const LocationCard = ({
   data,
   onPress,
   delay = 0,
+  minWidth = 230,
   duration = 300,
   animatedStyle = 'none',
-}: FavoriteCardProps) => {
+  showMapButton = true,
+}: LocationCardProps) => {
   /***** Constants *****/
-  const { _id, name = '', city = 'Unknown', logo, rating: locationRating, category } = data;
-  const image =
-    logo || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop';
-  const rating = typeof locationRating === 'number' ? locationRating : 4.5;
-  const tag = category?.title ?? '';
-
-  /***** Hooks *****/
-  const { toggleFavorite } = FavoritesServices.useToggleFavorite();
+  const router = useRouter();
+  const { _id, name, city = 'Unknown', logo, tags } = data;
+  const { isInFavorites, handleToggleFavorites, isLoading } = useHandleFavorites(_id);
 
   /***** Memoization *****/
   const getEnteringAnimation = useMemo(() => {
@@ -68,7 +69,6 @@ const FavoriteCard = ({
           .mass(1);
     }
   }, [animatedStyle, delay, duration]);
-
   const getExitingAnimation = useMemo(() => {
     switch (animatedStyle) {
       case 'slideUp':
@@ -81,55 +81,72 @@ const FavoriteCard = ({
     }
   }, [animatedStyle, delay, duration]);
 
-  const handleFavoritePress = async () => {
-    try {
-      await toggleFavorite(_id);
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-    }
-  };
-
   return (
     <AnimatedTouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      style={styles.container}
+      exiting={getExitingAnimation}
       entering={getEnteringAnimation}
-      exiting={getExitingAnimation}>
+      style={[styles.container, { minWidth }]}>
       <View style={styles.imageContainer}>
-        <Image source={{ uri: image }} style={styles.image} contentFit="cover" />
+        {logo ? (
+          <Image
+            transition={100}
+            contentFit="cover"
+            style={styles.image}
+            source={{ uri: logo }}
+            cachePolicy="memory-disk"
+          />
+        ) : (
+          <View style={styles.image} />
+        )}
 
         <View style={styles.favoriteButton}>
-          <Icon size={28} onPress={handleFavoritePress} color="#FF6B6B" name="heart" />
+          <Icon
+            size={28}
+            color="#FFFFFF"
+            loading={isLoading}
+            onPress={handleToggleFavorites}
+            name={isInFavorites ? 'heart' : 'heart-outline'}
+          />
         </View>
+
+        {showMapButton && (
+          <View style={styles.mapButton}>
+            <Icon
+              size={28}
+              name="map-marker"
+              color={'#FFFFFF'}
+              onPress={() =>
+                router.push(`/(authenticated)/(screens)/map?focusId=${_id}` as RelativePathString)
+              }
+            />
+          </View>
+        )}
       </View>
 
       <View style={styles.infoContainer}>
         <View>
           <View style={styles.topContainer}>
-            <Text size={theme.typography.fontSizes.sm} numberOfLines={1} weight="medium">
+            <Text size={theme.typography.fontSizes.sm} numberOfLines={1}>
               {name}
             </Text>
 
-            <View style={styles.ratingContainer}>
-              <Icon name="star" size={14} color="#FFD700" />
-              <Text size={theme.typography.fontSizes.xs}>{rating}</Text>
-            </View>
+            {/* <View style={styles.ratingContainer}>
+              <Icon name="star" size={18} color="#FFD700" />
+
+              <Text size={theme.typography.fontSizes.sm}>{rating.toFixed(1)}</Text>
+            </View> */}
           </View>
 
-          <Text
-            size={theme.typography.fontSizes.xs}
-            numberOfLines={1}
-            color={theme.colors.lightText}>
+          <Text size={theme.typography.fontSizes.xs} numberOfLines={1}>
             {city}
           </Text>
         </View>
 
-        {tag && (
+        {tags.length > 0 && (
           <View style={styles.tagContainer}>
-            <Text size={theme.typography.fontSizes.xs} weight="medium">
-              {tag}
-            </Text>
+            <Text size={theme.typography.fontSizes.xs}>{tags.join(', ')}</Text>
           </View>
         )}
       </View>
@@ -137,26 +154,25 @@ const FavoriteCard = ({
   );
 };
 
-export default FavoriteCard;
+export default LocationCard;
 
 const styles = StyleSheet.create({
   container: {
-    height: 240,
-    width: '100%',
+    height: 300,
     ...theme.shadows.soft,
     borderRadius: theme.radii.md,
     backgroundColor: theme.colors.white.DEFAULT,
   },
   imageContainer: {
-    height: 150,
+    height: 200,
     width: '100%',
     overflow: 'hidden',
-    borderTopLeftRadius: theme.radii.md,
-    borderTopRightRadius: theme.radii.md,
+    borderRadius: theme.radii.md,
   },
   image: {
     width: '100%',
     height: '100%',
+    backgroundColor: theme.colors.lightText,
   },
   favoriteButton: {
     width: 42,
@@ -169,29 +185,38 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.full,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
+  mapButton: {
+    width: 42,
+    height: 42,
+    position: 'absolute',
+    alignItems: 'center',
+    top: theme.spacing.sm,
+    left: theme.spacing.sm,
+    justifyContent: 'center',
+    borderRadius: theme.radii.full,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
   infoContainer: {
     flex: 1,
     gap: theme.spacing.xs,
-    padding: theme.spacing.sm,
+    padding: theme.spacing.md,
     justifyContent: 'space-between',
   },
   topContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: theme.spacing.xs / 2,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
   },
   tagContainer: {
-    height: 18,
+    height: 20,
     alignSelf: 'flex-start',
     justifyContent: 'center',
     borderRadius: theme.radii.xs,
-    paddingHorizontal: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
     backgroundColor: theme.colors.primaryBlue[50],
   },
 });

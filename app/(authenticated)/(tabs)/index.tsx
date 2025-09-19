@@ -1,207 +1,130 @@
-import { type RelativePathString, useRouter } from 'expo-router';
-import { StyleSheet, FlatList, View, ScrollView } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, FlatList, View, ScrollView, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useCallback } from 'react';
 
-import { useAppSafeAreaInsets, useLocationFilters, useInfiniteLocations } from '~/src/hooks';
+import { LocationServices, type LocationCategoryType, UserServices } from '~/src/services';
+
+import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { StoreCard } from '~/src/components/preview';
+import { LocationCard, HomePageSkeleton } from '~/src/components/preview';
+import { ScreenHeader } from '~/src/components/utils';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
-import { Location } from '~/src/services';
-
-//TODO: This needs fixing
-type SectionProps = {
-  title: string;
-  data: Location[];
-  index?: number;
-  categoryId: string;
-};
-const SectionCategory = ({ title, data, index = 0, categoryId }: SectionProps) => {
-  /*** Constants ***/
-  const router = useRouter();
-
-  const handleSeeAllPress = () => {
-    router.navigate({
-      params: { filter: categoryId },
-      pathname: '/(authenticated)/(tabs)/search',
-    });
-  };
-
-  return (
-    <>
-      <StatusBar style="light" />
-
-      <View style={{ gap: theme.spacing.xs }}>
-        <View style={styles.sectionTitle}>
-          <Text
-            weight="medium"
-            color={theme.colors.darkText[100]}
-            size={theme.typography.fontSizes.md}>
-            {title}
-          </Text>
-
-          <Button title="See All" variant="ghost" onPress={handleSeeAllPress} />
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.sectionContainer}>
-          {data.map((store, dataIndex) => (
-            <StoreCard
-              data={store}
-              key={`${categoryId}-${store._id}-${dataIndex}`}
-              animatedStyle="slideLeft"
-              delay={dataIndex * 150 + index * 150}
-              onPress={() =>
-                router.navigate(
-                  `/(authenticated)/(screens)/store/${store._id}` as RelativePathString
-                )
-              }
-            />
-          ))}
-        </ScrollView>
-      </View>
-    </>
-  );
-};
 
 const HomePage = () => {
   /*** Constants ***/
-  const { top, bottom } = useAppSafeAreaInsets();
-
-  // Use the location filters hook
-  const { getApiParams } = useLocationFilters();
-
-  // Get API parameters based on current filters (home page shows fewer items per category)
-  const apiParams = getApiParams({ limit: 10 }); // Reduced limit for better pagination
-
-  // Fetch data from APIs - using infinite scroll for categories
+  const router = useRouter();
+  const { bottom } = useAppSafeAreaInsets();
+  const { data: userData } = UserServices.useGetMe();
   const {
-    data: locationsData,
-    isLoading: locationsLoading,
-    error: locationsError,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useInfiniteLocations(apiParams);
+    data: locationsData,
+  } = LocationServices.useGetLocationsCategorized();
 
-  const isLoading = locationsLoading;
-  const hasError = locationsError;
+  const renderCategory = useCallback(
+    ({ item }: { item: LocationCategoryType }) => {
+      const { title, _id } = item;
 
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text size={theme.typography.fontSizes.md}>Loading...</Text>
-      </View>
-    );
-  }
-  if (hasError) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text size={theme.typography.fontSizes.md} color={theme.colors.red[100]}>
-          Error loading data. Please try again.
-        </Text>
-      </View>
-    );
-  }
+      const handleSeeAllPress = () => {
+        router.navigate({
+          params: { filter: _id },
+          pathname: '/(authenticated)/(tabs)/search',
+        });
+      };
 
-  if (!locationsData || locationsData.length === 0) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text size={theme.typography.fontSizes.md}>No stores available at the moment.</Text>
-      </View>
-    );
-  }
+      return (
+        <View style={{ gap: theme.spacing.xs }}>
+          <View style={styles.sectionTitle}>
+            <Text
+              weight="semiBold"
+              color={theme.colors.darkText[100]}
+              size={theme.typography.fontSizes.xl}>
+              {title}
+            </Text>
 
-  const renderHeader = () => (
-    <View style={[styles.headerContainer, { paddingTop: top * 2 }]}>
-      <Text weight="bold" color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.xl}>
-        Hello Samir!
-      </Text>
+            <Button title="See All" variant="ghost" onPress={handleSeeAllPress} />
+          </View>
 
-      <Text weight="medium" color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.sm}>
-        What would you like to do today?
-      </Text>
-    </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.sectionContainer}>
+            {item.locations.map((store, index) => (
+              <LocationCard
+                data={store}
+                key={store._id}
+                delay={index * 150}
+                animatedStyle="slideLeft"
+                onPress={() => router.navigate(`/(authenticated)/(screens)/location/${store._id}`)}
+              />
+            ))}
+          </ScrollView>
+        </View>
+      );
+    },
+    [router]
   );
-
-  const renderCategory = ({ item: category, index }: { item: any; index: number }) => {
-    // Convert locations to Store format for StoreCard
-    const storeData = category.locations.map((location: any) => ({
-      _id: location._id, // Keep the original _id for the key prop
-      id: location._id,
-      tag: category.title,
-      name: location.name,
-      city: location.city || 'Unknown',
-      image:
-        location.logo ||
-        'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
-      rating: 4.5, // Default rating
-      about: 'Services available',
-      openingHours: 'Hours not available',
-      isFavorite: false,
-    }));
-
-    return (
-      <SectionCategory
-        index={index}
-        data={storeData}
-        title={category.title}
-        categoryId={category._id}
-      />
-    );
-  };
-
-  const renderFooter = () => {
+  const renderFooter = useCallback(() => {
     if (!isFetchingNextPage) return null;
 
-    return (
-      <View style={styles.footerContainer}>
-        <Text color={theme.colors.lightText} weight="medium">
-          Loading more categories...
-        </Text>
-      </View>
-    );
-  };
-
-  const handleEndReached = () => {
+    return <ActivityIndicator color={theme.colors.primaryBlue[100]} />;
+  }, [isFetchingNextPage]);
+  const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const RenderListEmptyComponent = useCallback(() => {
+    return <HomePageSkeleton />;
+  }, []);
 
   return (
-    <View style={{ flex: 1 }}>
+    <>
+      <ScreenHeader
+        title={
+          <View style={{ gap: theme.spacing.xs }}>
+            <Text
+              weight="bold"
+              color={theme.colors.white.DEFAULT}
+              size={theme.typography.fontSizes.xl}>
+              Hello {`${userData?.user?.firstName || 'User'} ${userData?.user?.lastName || ''}`}!
+            </Text>
+
+            <Text
+              weight="medium"
+              color={theme.colors.white.DEFAULT}
+              size={theme.typography.fontSizes.sm}>
+              What would you like to do today?
+            </Text>
+          </View>
+        }
+      />
+
       <FlatList
         data={locationsData}
         renderItem={renderCategory}
-        keyExtractor={(item, index) => `category-${item._id}-${index}`}
-        ListHeaderComponent={renderHeader}
-        ListFooterComponent={renderFooter}
-        onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
+        onEndReached={handleEndReached}
+        ListFooterComponent={renderFooter}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={RenderListEmptyComponent}
+        keyExtractor={(item, index) => item._id + index}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
-        bounces={false}
       />
-    </View>
+    </>
   );
 };
 
 export default HomePage;
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    gap: theme.spacing.xs,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    backgroundColor: theme.colors.primaryBlue[100],
-  },
   container: {
     gap: 24,
     flexGrow: 1,
+    paddingTop: theme.spacing.md,
   },
   sectionTitle: {
     alignItems: 'center',
@@ -213,9 +136,5 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xl,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.lg,
-  },
-  footerContainer: {
-    paddingVertical: theme.spacing.lg,
-    alignItems: 'center',
   },
 });

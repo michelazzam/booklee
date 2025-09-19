@@ -1,40 +1,72 @@
 /*** User types ***/
-export type User = {
+export type UserType = {
   id: string;
-  email: string;
   name: string;
   role: string;
+  email: string;
   phone?: string;
-  firstName?: string;
   lastName?: string;
+  firstName?: string;
   salonName?: string;
   image?: string | null;
   approvedByOwner?: boolean;
 };
-
-export type Organization = {
+export type OrganizationType = {
   _id: string;
   name: string;
-  address: string;
-  phone: string;
-  description: string;
   logo: string;
-  monthlyRevenueTarget: number;
-  geoLocation?: object | null;
+  phone: string;
+  address: string;
+  description: string;
   invitationKey: string;
+  geoLocation?: object | null;
+  monthlyRevenueTarget: number;
 };
-
 export type GetUserMeResType = {
-  user: User;
-  organization: Organization;
+  user: UserType;
+  organization: OrganizationType;
 };
 
+/*** Update user type ***/
 export type UpdateUserReqType = {
-  firstName?: string;
   lastName?: string;
+  firstName?: string;
   image?: string | null;
 };
-
 export type UpdateUserResType = {
-  user: User;
+  user: UserType;
+};
+
+/*** User favorites type ***/
+export type FavoriteType = {
+  _id: string;
+  slug: string;
+  name: string;
+  logo: string;
+  city: string;
+  tags: string[];
+};
+
+/*** Get user favorites type ***/
+export type GetFavoritesResType = {
+  ok: boolean;
+  favorites: FavoriteType[];
+};
+
+/*** Add to user favorites type ***/
+export type AddToFavoritesReqType = {
+  locationId: string;
+};
+export type AddToFavoritesResType = {
+  ok: boolean;
+  message?: string;
+};
+
+/*** Remove from user favorites type ***/
+export type RemoveFromFavoritesReqType = {
+  locationId: string;
+};
+export type RemoveFromFavoritesResType = {
+  ok: boolean;
+  message?: string;
 };

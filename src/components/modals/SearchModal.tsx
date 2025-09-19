@@ -1,283 +1,182 @@
-import React, { useRef, useCallback, useEffect, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { forwardRef, useImperativeHandle, useRef, useCallback, useState, useMemo } from 'react';
+import { View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { LocationServices, type DetailedLocationType } from '~/src/services';
+
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
-import { Icon, Text } from '~/src/components/base';
-import { SearchServices, type SearchHistoryItem } from '~/src/services';
-import CustomSearchInput from './CustomSearchInput';
+
 import ModalWrapper, { type ModalWrapperRef } from './ModalWrapper';
-import BuildingIcon from '~/src/assets/icons/BuildingIcon';
+import SearchHistory from '../preview/SearchHistory';
+import SearchItem from '../preview/SearchItem';
+import { SearchInput } from '../textInputs';
+import { Icon, Text } from '../base';
 
-interface SearchModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onSearch: (query: string) => void;
-  initialQuery?: string;
-}
-
-const SearchModal: React.FC<SearchModalProps> = ({
-  visible,
-  onClose,
-  onSearch,
-  initialQuery = '',
-}) => {
-  /*** Constants ***/
-  const { top, bottom } = useAppSafeAreaInsets();
-  const modalRef = useRef<ModalWrapperRef>(null);
-
+const SearchModal = forwardRef<ModalWrapperRef, object>((_, ref) => {
   /*** States ***/
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  /*** Data Fetching ***/
-  const { data: searchHistory } = SearchServices.useGetSearchHistory();
-  const { data: searchResults, isLoading: isSearching } = SearchServices.useSearchLocations(
-    { query: debouncedQuery, limit: 10 },
-    debouncedQuery.length >= 2
-  );
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+  const { bottom } = useAppSafeAreaInsets();
+  const modalRef = useRef<ModalWrapperRef>(null);
+  const { data: searchHistory } = LocationServices.useGetSearchHistory();
+  const { mutate: searchLocations, isPending: isSearching } = LocationServices.useSearchLocations();
+  const { mutate: deleteSearchHistory, isPending: isDeletingSearchHistory } =
+    LocationServices.useDeleteSearchHistory();
 
-  /*** Effects ***/
-  useEffect(() => {
-    if (visible) {
+  /*** Memoization ***/
+  const searchResults = useMemo(() => {
+    if (!debouncedQuery) return [];
+
+    const results = searchLocations({ query: debouncedQuery });
+
+    return results;
+  }, [searchLocations, debouncedQuery]);
+
+  useImperativeHandle(ref, () => ({
+    present: () => {
       modalRef.current?.present();
-      setSearchQuery(initialQuery);
-    } else {
+    },
+    dismiss: () => {
       modalRef.current?.dismiss();
-    }
-  }, [visible, initialQuery]);
-
-  /*** Handlers ***/
-  const handleDebouncedSearch = useCallback((query: string) => {
-    setDebouncedQuery(query);
-  }, []);
-
-  const handleHistoryItemPress = useCallback(
-    (item: SearchHistoryItem) => {
-      onSearch(item.query);
-      onClose();
     },
-    [onSearch, onClose]
-  );
+  }));
 
-  const handleSearchResultPress = useCallback(
-    (item: any) => {
-      onSearch(item.name);
-      onClose();
-    },
-    [onSearch, onClose]
-  );
-
-  // Updated handleClose to ensure modal dismisses properly
-  const handleClose = useCallback(() => {
-    modalRef.current?.dismiss();
-    onClose();
-  }, [onClose]);
-
-  /*** Render Functions ***/
-  const renderHistoryItem = useCallback(
-    ({ item }: { item: SearchHistoryItem }) => (
-      <TouchableOpacity
-        style={styles.historyItem}
-        onPress={() => handleHistoryItemPress(item)}
-        activeOpacity={0.7}>
-        <View style={styles.historyItemContent}>
-          <BuildingIcon />
-          <Text style={styles.historyItemText} color={theme.colors.darkText[100]} weight="medium">
-            {item.query}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    ),
-    [handleHistoryItemPress]
-  );
-
-  const renderEmptyHistory = useCallback(
-    () => (
-      <View style={styles.emptyContainer}>
-        <Text color={theme.colors.lightText} weight="medium">
-          No recent searches
-        </Text>
-      </View>
-    ),
+  const RenderSearchResult = useCallback(
+    ({ item }: { item: DetailedLocationType }) => <SearchItem data={item} />,
     []
   );
+  const RenderRecentSearches = useCallback(() => {
+    if (!searchHistory || searchHistory.length === 0) {
+      return null;
+    }
 
-  const renderSearchResult = useCallback(
-    ({ item }: { item: any }) => (
-      <TouchableOpacity
-        style={styles.historyItem}
-        onPress={() => handleSearchResultPress(item)}
-        activeOpacity={0.7}>
-        <View style={styles.historyItemContent}>
-          <BuildingIcon />
-          <View style={styles.searchResultTextContainer}>
-            <Text style={styles.historyItemText} color={theme.colors.darkText[100]} weight="medium">
-              {item.name}
+    return (
+      <View style={styles.recentSearchesContainer}>
+        <View style={styles.recentSearchesHeader}>
+          <Text color={theme.colors.darkText[100]} weight="medium">
+            Your Recent Searches
+          </Text>
+
+          {!isDeletingSearchHistory && searchHistory.length ? (
+            <Text
+              weight="medium"
+              color={theme.colors.lightText}
+              onPress={() => deleteSearchHistory()}>
+              Clear All
             </Text>
-            {item.city && (
-              <Text
-                style={styles.searchResultSubtext}
-                color={theme.colors.lightText}
-                weight="regular">
-                {item.city}
-              </Text>
-            )}
-          </View>
+          ) : (
+            <ActivityIndicator color={theme.colors.lightText} />
+          )}
         </View>
-      </TouchableOpacity>
-    ),
-    [handleSearchResultPress]
-  );
 
-  // Create the back button component separately for better control
-  const BackButton = useCallback(
-    () => (
-      <TouchableOpacity
-        onPress={handleClose}
-        style={styles.backButton}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} // Increase touch area
-      >
-        <Icon name="arrow-left" size={24} color={theme.colors.darkText[100]} />
-      </TouchableOpacity>
-    ),
-    [handleClose]
-  );
+        <View style={{ gap: theme.spacing.xl }}>
+          {searchHistory?.map((history) => (
+            <SearchHistory
+              data={history}
+              key={history.query}
+              onPress={() => setDebouncedQuery(history.query)}
+            />
+          ))}
+        </View>
+      </View>
+    );
+  }, [searchHistory, deleteSearchHistory, setDebouncedQuery, isDeletingSearchHistory]);
+  const RenderSearchEmpty = useCallback(() => {
+    if (isSearching) {
+      return (
+        <Text color={theme.colors.lightText} weight="medium">
+          Searching...
+        </Text>
+      );
+    }
+
+    if (debouncedQuery.length >= 2) {
+      return (
+        <Text color={theme.colors.lightText} weight="medium">
+          No results found for &quot;{debouncedQuery}&quot;
+        </Text>
+      );
+    }
+
+    return (
+      <View>
+        <RenderRecentSearches />
+      </View>
+    );
+  }, [debouncedQuery, isSearching, RenderRecentSearches]);
+
+  const handleClose = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['searchLocations'] });
+    await queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
+
+    setDebouncedQuery('');
+    modalRef.current?.dismiss();
+  }, [queryClient]);
+  const handleSearch = useCallback((query: string) => {
+    setDebouncedQuery(query);
+  }, []);
 
   return (
     <ModalWrapper
       ref={modalRef}
-      snapPoints={['100%']}
-      onDismiss={handleClose} // Make sure this calls handleClose
-      contentContainerStyle={styles.contentContainer}>
-      <View style={[styles.container, { paddingTop: top, paddingBottom: bottom }]}>
-        {/* Search Input */}
-        <View style={styles.searchContainer}>
-          <CustomSearchInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onDebouncedSearch={handleDebouncedSearch}
-            placeholder="Store, location, or service"
-            autoFocus
-            debounceTime={800}
-            backButton={<BackButton />}
-          />
-        </View>
+      snapPoints={['90%']}
+      onDismiss={handleClose}
+      contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
+      <View style={styles.searchInputContainer}>
+        <Icon
+          size={24}
+          name="arrow-left"
+          onPress={handleClose}
+          color={theme.colors.darkText[100]}
+        />
 
-        {/* Search Results Section */}
-        {searchQuery.length >= 2 && (
-          <View style={styles.section}>
-            <Text
-              style={styles.sectionTitle}
-              color={theme.colors.darkText[100]}
-              weight="medium"
-              size={theme.typography.fontSizes.lg}>
-              {isSearching ? 'Searching...' : 'Search Results'}
-            </Text>
-            {searchResults && searchResults.length > 0 ? (
-              <FlatList
-                data={searchResults}
-                renderItem={renderSearchResult}
-                keyExtractor={(item) => item._id}
-                showsVerticalScrollIndicator={false}
-                scrollEnabled={false}
-              />
-            ) : !isSearching && debouncedQuery.length >= 2 ? (
-              <View style={styles.emptyContainer}>
-                <Text color={theme.colors.lightText} weight="medium">
-                  No results found for &quot;{debouncedQuery}&quot;
-                </Text>
-              </View>
-            ) : null}
-          </View>
-        )}
-
-        {/* Recent Searches Section - Only show when no search query */}
-        {searchQuery.length < 2 && searchHistory && searchHistory.length > 0 && (
-          <View style={styles.section}>
-            <Text
-              style={styles.sectionTitle}
-              color={theme.colors.darkText[100]}
-              weight="medium"
-              size={theme.typography.fontSizes.lg}>
-              Your Recent Searches
-            </Text>
-            <FlatList
-              data={searchHistory}
-              renderItem={renderHistoryItem}
-              keyExtractor={(item, index) => `${item.query}-${index}`}
-              showsVerticalScrollIndicator={false}
-              scrollEnabled={false}
-            />
-          </View>
-        )}
-
-        {/* Empty State for History - Only show when no search query */}
-        {searchQuery.length < 2 && searchHistory && searchHistory.length === 0 && (
-          <View style={styles.section}>
-            <Text
-              style={styles.sectionTitle}
-              color={theme.colors.darkText[100]}
-              weight="medium"
-              size={theme.typography.fontSizes.lg}>
-              Your Recent Searches
-            </Text>
-            {renderEmptyHistory()}
-          </View>
-        )}
+        <SearchInput
+          autoFocus
+          value={debouncedQuery}
+          onSearch={handleSearch}
+          placeholder="Store, location, or service"
+        />
       </View>
+
+      <FlatList
+        scrollEnabled={false}
+        data={searchResults || []}
+        renderItem={RenderSearchResult}
+        keyExtractor={(item) => item._id}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={RenderSearchEmpty}
+      />
     </ModalWrapper>
   );
-};
+});
+
+SearchModal.displayName = 'SearchModal';
 
 export default SearchModal;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    gap: theme.spacing.xl,
+    paddingTop: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.white.DEFAULT,
   },
-  contentContainer: {
-    paddingHorizontal: theme.spacing.lg,
-  },
-  backButton: {
-    padding: theme.spacing.sm,
-    // Add some additional styling to ensure proper touch handling
-    minWidth: 44,
-    minHeight: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchContainer: {
-    marginBottom: theme.spacing.xl,
-  },
-  section: {
-    marginBottom: theme.spacing.xl,
-  },
-  sectionTitle: {
-    marginBottom: theme.spacing.md,
-    paddingHorizontal: theme.spacing.sm,
-  },
-  historyItem: {
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.sm,
-  },
-  historyItemContent: {
+  searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.md,
+    gap: theme.spacing.sm,
   },
-  historyItemText: {
+  recentSearchesContainer: {
     flex: 1,
+    gap: theme.spacing.xl,
   },
-  searchResultTextContainer: {
-    flex: 1,
-  },
-  searchResultSubtext: {
-    fontSize: theme.typography.fontSizes.sm,
-    marginTop: 2,
-  },
-  emptyContainer: {
-    paddingVertical: theme.spacing.xl,
+  recentSearchesHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
 });

@@ -3,15 +3,23 @@ import { router } from 'expo-router';
 import { IMAGES } from '~/src/constants/images';
 import { Button } from '~/src/components/buttons';
 import { useUserProvider } from '~/src/store';
+import { usePermissions } from '~/src/hooks';
 
 const { height } = Dimensions.get('window');
 
 const OnboardingStep2 = () => {
   /*** Constants ***/
   const { handleOnboardingCompleted } = useUserProvider();
+  const { requestNotificationPermission, isLoading } = usePermissions();
 
-  const handleNext = () => {
-    router.push('/(unauthenticated)/onboarding/step3');
+  const handleEnableNotifications = async () => {
+    const granted = await requestNotificationPermission();
+    if (granted) {
+      router.push('/(unauthenticated)/onboarding/step3');
+    } else {
+      // Still allow user to proceed even if permission is denied
+      router.push('/(unauthenticated)/onboarding/step3');
+    }
   };
 
   const handleSkip = () => {
@@ -36,7 +44,11 @@ const OnboardingStep2 = () => {
           We&apos;ll send you gentle reminders so you never miss an appointment.
         </Text>
 
-        <Button title="Enable Notifications" onPress={handleNext} />
+        <Button
+          title={isLoading ? 'Requesting...' : 'Enable Notifications'}
+          onPress={handleEnableNotifications}
+          disabled={isLoading}
+        />
 
         <View style={styles.paginationContainer}>
           <View style={[styles.paginationDot, styles.inactiveDot]} />

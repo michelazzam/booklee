@@ -1,70 +1,102 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { getLocationsApi, getLocationByIdApi, extractAllLocations } from './api';
+import {
+  getLocationsCategorizedApi,
+  deleteSearchHistoryApi,
+  getSearchHistoryApi,
+  searchLocationsApi,
+  getLocationsApi,
+  getLocationByIdApi,
+} from './api';
 
-import type {
-  GetLocationsResType,
-  GetLocationsByCategoriesResType,
-  GetLocationByIdResType,
-  GetLocationsReqType,
-  GetLocationByIdReqType,
-  Location,
-  DetailedLocation,
-} from './types';
 import type { ResErrorType } from '../axios/types';
+import type {
+  GetLocationsCategorizedResType,
+  DeleteSearchHistoryResType,
+  GetSearchHistoryResType,
+  GetLocationByIdResType,
+  LocationCategoryType,
+  DetailedLocationType,
+  GetLocationsReqType,
+  GetLocationsResType,
+  SearchHistoryType,
+  SearchReqType,
+  SearchResType,
+  LocationType,
+} from './types';
 
-// Hook for getting locations grouped by categories (default behavior)
-export const useGetLocationsByCategories = (params?: GetLocationsReqType) => {
-  return useQuery<GetLocationsByCategoriesResType, ResErrorType, GetLocationsByCategoriesResType>({
-    queryKey: ['getLocationsByCategories', params],
+const useGetLocationsCategorized = (filters?: GetLocationsReqType) => {
+  const categoriesFilters = { ...filters, categories: true };
 
-    queryFn: async () => {
-      const result = await getLocationsApi(params);
-      if ('categories' in result) {
-        return result as GetLocationsByCategoriesResType;
-      }
-      throw new Error('Expected categories response but got flat list');
+  return useInfiniteQuery<GetLocationsCategorizedResType, ResErrorType, LocationCategoryType[]>({
+    initialPageParam: 1,
+    queryKey: ['getLocationsCategorized', categoriesFilters],
+    select: ({ pages }) => pages.flatMap((page) => page.categories),
+    queryFn: ({ pageParam = 1 }) =>
+      getLocationsCategorizedApi(pageParam as number, categoriesFilters),
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.categories.length > 0 ? allPages.length + 1 : undefined;
     },
   });
 };
 
-// Hook for getting locations as a flat list (when categories: false)
-export const useGetLocations = (params?: GetLocationsReqType) => {
-  return useQuery<GetLocationsResType, ResErrorType, Location[]>({
-    queryKey: ['getLocations', { ...params, categories: false }],
-    select: ({ locations }) => locations,
-    queryFn: async () => {
-      const result = await getLocationsApi({ ...params, categories: false });
-      if ('locations' in result) {
-        return result as GetLocationsResType;
-      }
-      throw new Error('Expected flat list response but got categories');
+const useGetLocations = (filters?: GetLocationsReqType) => {
+  return useInfiniteQuery<GetLocationsResType, ResErrorType, LocationType[]>({
+    initialPageParam: 1,
+    queryKey: ['getLocations', filters],
+    select: ({ pages }) => pages.flatMap((page) => page.locations),
+    queryFn: ({ pageParam = 1 }) => getLocationsApi(pageParam as number, filters),
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.locations.length > 0 ? allPages.length + 1 : undefined;
     },
   });
 };
 
-// Hook that returns all locations as a flat list regardless of grouping
-export const useGetAllLocations = (params?: GetLocationsReqType) => {
-  return useQuery<GetLocationsResType | GetLocationsByCategoriesResType, ResErrorType, Location[]>({
-    queryKey: ['getAllLocations', params],
-    select: (data) => extractAllLocations(data),
-    queryFn: () => getLocationsApi(params),
-  });
-};
-
-// Hook for getting a single location by ID
-export const useGetLocationById = (params: GetLocationByIdReqType) => {
-  return useQuery<GetLocationByIdResType, ResErrorType, DetailedLocation>({
-    queryKey: ['getLocationById', params.id],
+const useGetLocationById = (id: string) => {
+  return useQuery<GetLocationByIdResType, ResErrorType, DetailedLocationType>({
+    queryKey: ['getLocationById', id],
+    queryFn: () => getLocationByIdApi(id),
     select: ({ location }) => location,
-    queryFn: () => getLocationByIdApi(params),
-    enabled: !!params.id, // Only run query if ID is provided
+  });
+};
+
+const useGetSearchHistory = () => {
+  return useQuery<GetSearchHistoryResType, ResErrorType, SearchHistoryType[]>({
+    queryKey: ['searchHistory'],
+    queryFn: getSearchHistoryApi,
+    select: ({ history }) => history,
+  });
+};
+
+const useSearchLocations = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation<SearchResType, ResErrorType, SearchReqType>({
+    mutationFn: (params) => searchLocationsApi(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
+    },
+  });
+};
+
+const useDeleteSearchHistory = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation<DeleteSearchHistoryResType, ResErrorType, void>({
+    mutationFn: deleteSearchHistoryApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
+    },
   });
 };
 
 export const LocationServices = {
-  useGetLocations,
-  useGetLocationsByCategories,
-  useGetAllLocations,
+  useGetLocationsCategorized,
+  useDeleteSearchHistory,
+  useGetSearchHistory,
+  useSearchLocations,
   useGetLocationById,
+  useGetLocations,
 };

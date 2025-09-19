@@ -1,323 +1,288 @@
-import { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Modal,
-  TextInput,
-  Dimensions,
-} from 'react-native';
-import { theme } from '../../constants/theme';
-import { useAppSafeAreaInsets } from '../../hooks/useAppSafeAreaInsets';
+import { View, StyleSheet, TextInput, useWindowDimensions } from 'react-native';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
-import { Icon } from '../base';
 
-export interface FilterState {
-  location: string;
-  priceRange: [number, number];
-  minimumRating: number;
-  maximumDistance: number;
-}
+import { type GetLocationsReqType } from '~/src/services';
 
-interface FilterModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onApply: (filters: FilterState) => void;
-  initialFilters?: FilterState;
-}
+import { useAppSafeAreaInsets } from '../../hooks/useAppSafeAreaInsets';
+import { theme } from '../../constants/theme';
 
-const defaultFilters: FilterState = {
-  location: '',
-  priceRange: [0, 300],
-  minimumRating: 0,
-  maximumDistance: 30,
+import ModalWrapper, { type ModalWrapperRef } from './ModalWrapper';
+import { Icon, Text } from '../base';
+import { Button } from '../buttons';
+
+export type FilterModalRef = {
+  present: () => void;
+  dismiss: () => void;
 };
 
-export default function FilterModal({
-  visible,
-  onClose,
-  onApply,
-  initialFilters = defaultFilters,
-}: FilterModalProps) {
-  const insets = useAppSafeAreaInsets();
-  const [filters, setFilters] = useState<FilterState>(initialFilters);
+type FilterModalProps = {
+  initialFilters?: GetLocationsReqType;
+  onApply: (filters: GetLocationsReqType) => void;
+};
 
-  const screenWidth = Dimensions.get('window').width;
+const defaultFilters: GetLocationsReqType = {
+  distance: 30,
+  price_min: 0,
+  rating_min: 0,
+  price_max: 1000,
+};
 
-  const handleApply = () => {
-    onApply(filters);
-    onClose();
-  };
+const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
+  ({ onApply, initialFilters = defaultFilters }, ref) => {
+    /*** Constants ***/
+    const { bottom } = useAppSafeAreaInsets();
+    const { width: screenWidth } = useWindowDimensions();
 
-  const handleReset = () => {
-    setFilters(defaultFilters);
-  };
+    /*** Refs ***/
+    const modalRef = useRef<ModalWrapperRef>(null);
 
-  const updatePriceRange = (values: number[]) => {
-    setFilters({ ...filters, priceRange: [values[0], values[1]] });
-  };
+    /*** States ***/
+    const [isSliderActive, setIsSliderActive] = useState(false);
+    const [filters, setFilters] = useState<GetLocationsReqType>(initialFilters);
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>FILTER</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Icon name="close" size={24} color={theme.colors.darkText[100]} />
-          </TouchableOpacity>
-        </View>
+    useImperativeHandle(ref, () => ({
+      present: () => {
+        modalRef.current?.present();
+      },
+      dismiss: () => {
+        modalRef.current?.dismiss();
+      },
+    }));
 
-        {/* Filter Content */}
-        <View style={styles.content}>
-          {/* Location Filter */}
-          <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>Location</Text>
-            <View style={styles.locationContainer}>
-              <View style={styles.locationInputContainer}>
-                <Icon name="map-marker" size={20} color={theme.colors.lightText} />
-                <TextInput
-                  style={styles.locationInput}
-                  placeholder="Filter by City"
-                  placeholderTextColor={theme.colors.lightText}
-                  value={filters.location}
-                  onChangeText={(text) => setFilters({ ...filters, location: text })}
-                />
-              </View>
+    const handleApply = () => {
+      modalRef.current?.dismiss();
+      const appliedFilters = Object.fromEntries(
+        Object.entries(filters).filter(
+          ([key, value]) => value !== defaultFilters[key as keyof GetLocationsReqType]
+        )
+      );
+
+      onApply(appliedFilters);
+    };
+    const handleReset = () => {
+      setFilters(defaultFilters);
+      onApply({});
+
+      modalRef.current?.dismiss();
+    };
+    const handleClose = () => {
+      modalRef.current?.dismiss();
+    };
+
+    /*** Slider Handlers ***/
+    const handleSliderStart = () => {
+      setIsSliderActive(true);
+    };
+    const handleSliderEnd = () => {
+      setIsSliderActive(false);
+    };
+
+    return (
+      <ModalWrapper
+        ref={modalRef}
+        title="FILTER"
+        snapPoints={['90%']}
+        onDismiss={handleClose}
+        disable={isSliderActive}
+        contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
+        trailingIcon={
+          <Icon name="close" size={24} color={theme.colors.darkText[100]} onPress={handleClose} />
+        }>
+        <View style={styles.filterContainer}>
+          <View style={{ gap: theme.spacing.md }}>
+            <Text weight="bold" color={theme.colors.darkText[100]}>
+              Location
+            </Text>
+
+            <View style={styles.locationInputContainer}>
+              <Icon name="map-marker" size={24} color={theme.colors.lightText} />
+
+              <TextInput
+                value={filters.city}
+                style={styles.locationInput}
+                placeholder="Filter by City"
+                placeholderTextColor={theme.colors.lightText}
+                onChangeText={(text) => setFilters({ ...filters, city: text })}
+              />
             </View>
           </View>
 
-          {/* Price Range Filter */}
-          <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>Price Range ($)</Text>
-            <View style={styles.sliderContainer}>
-              <MultiSlider
-                values={filters.priceRange}
-                sliderLength={screenWidth - 48}
-                onValuesChange={updatePriceRange}
-                min={0}
-                max={500}
-                step={5}
-                allowOverlap={false}
-                snapped
-                selectedStyle={styles.selectedTrack}
-                unselectedStyle={styles.unselectedTrack}
-                containerStyle={styles.multiSliderContainer}
-                markerStyle={styles.markerStyle}
-                pressedMarkerStyle={styles.pressedMarkerStyle}
-              />
-              <View style={styles.sliderValues}>
-                <Text style={styles.sliderValue}>${filters.priceRange[0]}</Text>
-                <Text style={styles.sliderValue}>${filters.priceRange[1]}</Text>
-              </View>
-            </View>
-          </View>
+          <View style={{ gap: theme.spacing.md }}>
+            <Text weight="bold" color={theme.colors.darkText[100]}>
+              Price Range ($)
+            </Text>
 
-          {/* Minimum Rating Filter */}
-          <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>Minimum Rating</Text>
-            <View style={styles.sliderContainer}>
+            <View style={{ paddingHorizontal: theme.spacing.sm }}>
               <MultiSlider
-                values={[filters.minimumRating]}
-                sliderLength={screenWidth - 48}
-                onValuesChange={(values) => setFilters({ ...filters, minimumRating: values[0] })}
-                min={0}
-                max={5}
-                step={0.1}
-                allowOverlap={false}
                 snapped
-                selectedStyle={styles.selectedTrack}
-                unselectedStyle={styles.unselectedTrack}
-                containerStyle={styles.multiSliderContainer}
+                min={0}
+                step={10}
+                max={1000}
+                allowOverlap={false}
+                sliderLength={screenWidth - 48}
                 markerStyle={styles.markerStyle}
+                selectedStyle={styles.selectedTrack}
+                onValuesChangeFinish={handleSliderEnd}
+                onValuesChangeStart={handleSliderStart}
+                unselectedStyle={styles.unselectedTrack}
                 pressedMarkerStyle={styles.pressedMarkerStyle}
+                values={[filters.price_min || 0, filters.price_max || 1000]}
+                onValuesChange={(values) =>
+                  setFilters({ ...filters, price_min: values[0], price_max: values[1] })
+                }
               />
-              <View style={styles.sliderValues}>
-                <Text style={styles.sliderValue}>
-                  {Math.round(filters.minimumRating * 10) / 10}
+
+              <View style={styles.sliderValueContainer}>
+                <Text weight="medium" color={theme.colors.darkText[100]}>
+                  ${filters.price_min || 0}
+                </Text>
+
+                <Text weight="medium" color={theme.colors.darkText[100]}>
+                  ${filters.price_max || 1000}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* Maximum Distance Filter */}
-          <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>Maximum Distance (km)</Text>
-            <View style={styles.sliderContainer}>
+          <View style={{ gap: theme.spacing.md }}>
+            <Text weight="bold" color={theme.colors.darkText[100]}>
+              Minimum Rating
+            </Text>
+
+            <View style={{ paddingHorizontal: theme.spacing.xs }}>
               <MultiSlider
-                values={[filters.maximumDistance]}
-                sliderLength={screenWidth - 48}
-                onValuesChange={(values) => setFilters({ ...filters, maximumDistance: values[0] })}
                 min={0}
+                max={5}
+                snapped
+                step={0.1}
+                allowOverlap={false}
+                sliderLength={screenWidth - 48}
+                markerStyle={styles.markerStyle}
+                values={[filters.rating_min || 0]}
+                selectedStyle={styles.selectedTrack}
+                onValuesChangeFinish={handleSliderEnd}
+                onValuesChangeStart={handleSliderStart}
+                unselectedStyle={styles.unselectedTrack}
+                pressedMarkerStyle={styles.pressedMarkerStyle}
+                onValuesChange={(values) => setFilters({ ...filters, rating_min: values[0] })}
+              />
+
+              <Text weight="medium" color={theme.colors.darkText[100]}>
+                {Math.round((filters.rating_min || 0) * 10) / 10} ⭐
+              </Text>
+            </View>
+          </View>
+
+          <View style={{ gap: theme.spacing.md }}>
+            <Text weight="bold" color={theme.colors.darkText[100]}>
+              Maximum Distance (km)
+            </Text>
+
+            <View style={{ paddingHorizontal: theme.spacing.xs }}>
+              <MultiSlider
+                min={0}
+                snapped
                 max={50}
                 step={1}
                 allowOverlap={false}
-                snapped
-                selectedStyle={styles.selectedTrack}
-                unselectedStyle={styles.unselectedTrack}
-                containerStyle={styles.multiSliderContainer}
+                sliderLength={screenWidth - 48}
                 markerStyle={styles.markerStyle}
+                values={[filters.distance || 30]}
+                selectedStyle={styles.selectedTrack}
+                onValuesChangeFinish={handleSliderEnd}
+                onValuesChangeStart={handleSliderStart}
+                unselectedStyle={styles.unselectedTrack}
                 pressedMarkerStyle={styles.pressedMarkerStyle}
+                onValuesChange={(values) => setFilters({ ...filters, distance: values[0] })}
               />
-              <View style={styles.sliderValues}>
-                <Text style={styles.sliderValue}>{Math.round(filters.maximumDistance)}</Text>
-              </View>
+
+              <Text weight="medium" color={theme.colors.darkText[100]}>
+                {Math.round(filters.distance || 30)} km
+              </Text>
             </View>
           </View>
         </View>
 
-        {/* Footer Buttons */}
-        <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
-          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-            <Text style={styles.resetButtonText}>Reset</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-            <Text style={styles.applyButtonText}>Apply</Text>
-          </TouchableOpacity>
+        <View style={styles.footer}>
+          <Button title="Apply" onPress={handleApply} containerStyle={{ flex: 1 }} />
+
+          <Button
+            title="Reset"
+            variant="outline"
+            onPress={handleReset}
+            containerStyle={{ flex: 1 }}
+          />
         </View>
-      </View>
-    </Modal>
-  );
-}
+      </ModalWrapper>
+    );
+  }
+);
+
+FilterModal.displayName = 'FilterModal';
+export default FilterModal;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: theme.spacing.md,
+    paddingHorizontal: theme.spacing.xl,
     backgroundColor: theme.colors.white.DEFAULT,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  title: {
-    ...theme.typography.textVariants.headline,
-    color: theme.colors.darkText[100],
-    fontWeight: theme.typography.fontWeights.bold,
-  },
-  closeButton: {
-    padding: theme.spacing.sm,
-  },
-  content: {
+  filterContainer: {
     flex: 1,
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.xl,
-  },
-  filterSection: {
-    marginBottom: theme.spacing.xl,
-  },
-  filterLabel: {
-    ...theme.typography.textVariants.bodyPrimaryBold,
-    color: theme.colors.darkText[100],
-    marginBottom: theme.spacing.md,
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
+    gap: theme.spacing.xl,
   },
   locationInputContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    height: 60,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: theme.spacing.md,
     borderRadius: theme.radii.md,
+    borderColor: theme.colors.border,
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
     backgroundColor: theme.colors.white.DEFAULT,
-  },
-  locationIcon: {
-    marginRight: theme.spacing.sm,
   },
   locationInput: {
     flex: 1,
+    paddingBottom: theme.spacing.xs,
+    color: theme.colors.darkText[100],
     ...theme.typography.textVariants.bodyPrimaryRegular,
-    color: theme.colors.darkText[100],
   },
-
-  sliderContainer: {
-    gap: theme.spacing.sm,
-  },
-  sliderValues: {
+  sliderValueContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.sm,
-  },
-  sliderValue: {
-    ...theme.typography.textVariants.bodyPrimaryBold,
-    color: theme.colors.darkText[100],
-    fontSize: 16,
-  },
-  multiSliderContainer: {
-    height: 10,
-    justifyContent: 'center',
-    marginVertical: theme.spacing.sm,
-    width: '100%',
+    justifyContent: 'space-between',
   },
   selectedTrack: {
     backgroundColor: theme.colors.darkText[100],
     height: 4,
   },
   unselectedTrack: {
-    backgroundColor: theme.colors.border,
     height: 4,
+    backgroundColor: theme.colors.border,
   },
-
   markerStyle: {
-    backgroundColor: theme.colors.darkText[100],
     width: 20,
     height: 20,
-    borderRadius: 10,
     borderWidth: 2,
+    borderRadius: 10,
     borderColor: theme.colors.white.DEFAULT,
+    backgroundColor: theme.colors.darkText[100],
   },
   pressedMarkerStyle: {
-    backgroundColor: theme.colors.darkText[100],
     width: 24,
     height: 24,
-    borderRadius: 12,
     borderWidth: 2,
+    borderRadius: 12,
     borderColor: theme.colors.white.DEFAULT,
+    backgroundColor: theme.colors.darkText[100],
   },
   footer: {
     flexDirection: 'row',
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
+    alignItems: 'center',
     gap: theme.spacing.md,
-  },
-  resetButton: {
-    flex: 1,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white.DEFAULT,
-    alignItems: 'center',
-  },
-  resetButtonText: {
-    ...theme.typography.textVariants.bodyPrimaryBold,
-    color: theme.colors.darkText[100],
-  },
-  applyButton: {
-    flex: 1,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.md,
-    backgroundColor: theme.colors.darkText[100],
-    alignItems: 'center',
-  },
-  applyButtonText: {
-    ...theme.typography.textVariants.bodyPrimaryBold,
-    color: theme.colors.white.DEFAULT,
   },
 });
