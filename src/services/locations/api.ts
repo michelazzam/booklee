@@ -5,13 +5,13 @@ import { withErrorCatch } from '../axios/error';
 
 import type {
   GetLocationsCategorizedResType,
+  DeleteSearchHistoryResType,
   GetSearchHistoryResType,
+  GetLocationByIdResType,
   GetLocationsReqType,
   GetLocationsResType,
   SearchReqType,
   SearchResType,
-  DeleteSearchHistoryResType,
-  GetLocationByIdResType,
 } from './types';
 
 /*** API for get locations categorized ***/

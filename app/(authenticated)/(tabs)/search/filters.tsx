@@ -12,7 +12,7 @@ import { FilterModal, SearchModal, ModalWrapperRef } from '~/src/components/moda
 import { LocationCard, LocationCardSkeleton } from '~/src/components/preview';
 import { FilterContainer, type FilterType } from '~/src/components/utils';
 import { SearchInput } from '~/src/components/textInputs';
-import { Text } from '~/src/components/base';
+import { Icon, Text } from '~/src/components/base';
 
 type LocalSearchParams = {
   filterCategory: string;
@@ -106,6 +106,13 @@ const Search = () => {
     <>
       <View style={[styles.headerContainer, { paddingTop: top }]}>
         <View style={styles.searchContainer}>
+          <Icon
+            size={24}
+            name="arrow-left"
+            onPress={() => router.back()}
+            color={theme.colors.darkText[100]}
+          />
+
           <SearchInput onPress={() => searchModalRef.current?.present()} />
 
           <TouchableOpacity

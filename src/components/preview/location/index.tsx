@@ -1,5 +1,4 @@
 import { View, TouchableOpacity, StyleSheet, type ViewStyle } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { useMemo } from 'react';
 import Animated, {
