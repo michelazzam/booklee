@@ -1,5 +1,5 @@
 import { View, TouchableOpacity, StyleSheet, type ViewStyle } from 'react-native';
-import { useRouter, type RelativePathString } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { useMemo } from 'react';
 import Animated, {
@@ -23,7 +23,6 @@ type LocationCardProps = {
   duration?: number;
   data: LocationType;
   onPress?: () => void;
-  showMapButton?: boolean;
   minWidth?: ViewStyle['minWidth'];
   animatedStyle?: 'slideUp' | 'slideLeft' | 'none';
 };
@@ -36,7 +35,6 @@ const LocationCard = ({
   minWidth = 230,
   duration = 300,
   animatedStyle = 'none',
-  showMapButton = true,
 }: LocationCardProps) => {
   /***** Constants *****/
   const router = useRouter();
@@ -110,25 +108,12 @@ const LocationCard = ({
             name={isInFavorites ? 'heart' : 'heart-outline'}
           />
         </View>
-
-        {showMapButton && (
-          <View style={styles.mapButton}>
-            <Icon
-              size={28}
-              name="map-marker"
-              color={'#FFFFFF'}
-              onPress={() =>
-                router.push(`/(authenticated)/(screens)/map?focusId=${_id}` as RelativePathString)
-              }
-            />
-          </View>
-        )}
       </View>
 
       <View style={styles.infoContainer}>
-        <View>
+        <View style={{ gap: theme.spacing.md }}>
           <View style={styles.topContainer}>
-            <Text size={theme.typography.fontSizes.sm} numberOfLines={1}>
+            <Text size={theme.typography.fontSizes.md} numberOfLines={1} weight="medium">
               {name}
             </Text>
 
@@ -139,7 +124,10 @@ const LocationCard = ({
             </View> */}
           </View>
 
-          <Text size={theme.typography.fontSizes.xs} numberOfLines={1}>
+          <Text
+            size={theme.typography.fontSizes.sm}
+            numberOfLines={1}
+            color={theme.colors.lightText}>
             {city}
           </Text>
         </View>
