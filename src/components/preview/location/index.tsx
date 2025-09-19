@@ -37,7 +37,6 @@ const LocationCard = ({
   animatedStyle = 'none',
 }: LocationCardProps) => {
   /***** Constants *****/
-  const router = useRouter();
   const { _id, name, city = 'Unknown', logo, tags } = data;
   const { isInFavorites, handleToggleFavorites, isLoading } = useHandleFavorites(_id);
 
