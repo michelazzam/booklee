@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef, useCallback, useState, useMemo } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useCallback, useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -16,6 +16,7 @@ import { Icon, Text } from '../base';
 const SearchModal = forwardRef<ModalWrapperRef, object>((_, ref) => {
   /*** States ***/
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<DetailedLocationType[]>([]);
 
   /*** Constants ***/
   const queryClient = useQueryClient();
@@ -26,14 +27,23 @@ const SearchModal = forwardRef<ModalWrapperRef, object>((_, ref) => {
   const { mutate: deleteSearchHistory, isPending: isDeletingSearchHistory } =
     LocationServices.useDeleteSearchHistory();
 
-  /*** Memoization ***/
-  const searchResults = useMemo(() => {
-    if (!debouncedQuery) return [];
-
-    const results = searchLocations({ query: debouncedQuery });
-
-    return results;
-  }, [searchLocations, debouncedQuery]);
+  useEffect(() => {
+    if (debouncedQuery.trim().length >= 2) {
+      searchLocations(
+        { query: debouncedQuery },
+        {
+          onSuccess: (data) => {
+            setSearchResults(data.locations);
+          },
+          onError: () => {
+            setSearchResults([]);
+          },
+        }
+      );
+    } else {
+      setSearchResults([]);
+    }
+  }, [debouncedQuery, searchLocations]);
 
   useImperativeHandle(ref, () => ({
     present: () => {
@@ -142,8 +152,8 @@ const SearchModal = forwardRef<ModalWrapperRef, object>((_, ref) => {
       </View>
 
       <FlatList
+        data={searchResults}
         scrollEnabled={false}
-        data={searchResults || []}
         renderItem={RenderSearchResult}
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
