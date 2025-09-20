@@ -14,15 +14,10 @@ import { useAppSafeAreaInsets } from '~/src/hooks';
 import { FilterIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants/theme';
 
+import { LocationCardSkeleton, SearchHistory, LocationCard } from '~/src/components/preview';
 import { FilterModal, ModalWrapperRef } from '~/src/components/modals';
 import { SearchInput } from '~/src/components/textInputs';
 import { Icon, Text } from '~/src/components/base';
-import {
-  LocationCardSkeleton,
-  SearchHistory,
-  LocationCard,
-  SearchItem,
-} from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 
 type LocalSearchParams = {
@@ -98,7 +93,6 @@ const Search = () => {
   }, []);
   const handleClearSearchInput = useCallback(async () => {
     setSearchQuery('');
-    setSearchResults([]);
     setIsSearchMode(false);
 
     await queryClient.invalidateQueries({ queryKey: ['searchLocations'] });
@@ -115,37 +109,6 @@ const Search = () => {
     deleteSearchHistory();
   }, [deleteSearchHistory, setIsSearchMode]);
 
-  const RenderSearchResults = useCallback(() => {
-    if (isSearching) {
-      return (
-        <View style={{ gap: theme.spacing.lg }}>
-          {Array.from({ length: 5 }).map((_, index) => (
-            <LocationCardSkeleton key={index} minWidth={230} />
-          ))}
-        </View>
-      );
-    }
-
-    if (searchQuery.length >= 2) {
-      if (searchResults.length === 0) {
-        return (
-          <Text color={theme.colors.lightText} weight="medium" style={styles.emptyTextStyle}>
-            No results found for &quot;{searchQuery}&quot;
-          </Text>
-        );
-      }
-
-      return (
-        <View style={{ gap: theme.spacing.lg }}>
-          {searchResults.map((item) => (
-            <SearchItem key={item._id} data={item} />
-          ))}
-        </View>
-      );
-    }
-
-    return null;
-  }, [isSearching, searchQuery, searchResults]);
   const RenderRecentSearches = useCallback(() => {
     if (!searchHistory || searchHistory.length === 0) {
       return null;
@@ -182,36 +145,28 @@ const Search = () => {
     );
   }, [searchHistory, handleClearSearchHistory, isDeletingSearchHistory]);
   const RenderEmptyComponent = useCallback(() => {
-    if (isSearchMode) {
-      if (searchQuery.length >= 2) {
-        return <RenderSearchResults />;
-      }
+    if (isSearchMode && searchQuery.length === 0) {
       return <RenderRecentSearches />;
     }
 
-    return isLoading || isFetchingNextPage ? (
-      Array.from({ length: 10 }).map((_, index) => (
+    if (isLoading || isFetchingNextPage || isSearching) {
+      return Array.from({ length: 10 }).map((_, index) => (
         <LocationCardSkeleton key={index} minWidth={230} />
-      ))
-    ) : (
+      ));
+    }
+
+    return (
       <Text color={theme.colors.lightText} weight="medium" style={styles.emptyTextStyle}>
         No locations found
       </Text>
     );
-  }, [
-    isLoading,
-    searchQuery,
-    isSearchMode,
-    RenderSearchResults,
-    isFetchingNextPage,
-    RenderRecentSearches,
-  ]);
+  }, [isSearchMode, isLoading, isFetchingNextPage, RenderRecentSearches, isSearching, searchQuery]);
   const RenderFooter = useCallback(() => {
     if (!isFetchingNextPage) return null;
 
     return <ActivityIndicator color={theme.colors.primaryBlue[100]} />;
   }, [isFetchingNextPage]);
-  const renderItem = useCallback(
+  const RenderItem = useCallback(
     ({ item: category, index }: { item: LocationType; index: number }) => (
       <LocationCard
         data={category}
@@ -258,14 +213,14 @@ const Search = () => {
       </View>
 
       <FlatList
-        renderItem={renderItem}
+        renderItem={RenderItem}
         onEndReachedThreshold={0.5}
         onEndReached={handleEndReached}
         ListFooterComponent={RenderFooter}
         showsVerticalScrollIndicator={false}
-        data={isSearchMode ? [] : locationsData}
         ListEmptyComponent={RenderEmptyComponent}
         keyExtractor={(item, index) => item._id + index}
+        data={isSearchMode ? searchResults : locationsData}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
       />
 

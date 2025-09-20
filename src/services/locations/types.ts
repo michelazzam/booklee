@@ -43,23 +43,13 @@ export type LocationServiceType = {
     value: number;
   };
 };
-export type DetailedLocationType = {
-  _id: string;
-  slug: string;
-  name: string;
-  city: string;
-  logo?: string;
-  price: string;
+export type DetailedLocationType = LocationType & {
   main: boolean;
   phone?: string;
-  rating: number;
-  tags: string[];
   address: string;
   teamSize: number;
-  photos: string[];
   bookable: boolean;
   categoryId: string;
-  geo: LocationGeolocationType;
   category: LocationCategoryType;
   locationServices: LocationServiceType[];
   operatingHours: LocationOperatingHoursType;
