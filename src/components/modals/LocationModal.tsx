@@ -198,15 +198,12 @@ const LocationModal = forwardRef<LocationModalRef, LocationModalProps>(({ onDism
 
       <RenderOperatingHours />
 
-      <View style={styles.actionsContainer}>
-        <Button title="See More" onPress={handleNavigateToLocation} variant="outline" />
-      </View>
+      <Button title="See More" onPress={handleNavigateToLocation} variant="outline" />
     </ModalWrapper>
   );
 });
 
 LocationModal.displayName = 'LocationModal';
-
 export default LocationModal;
 
 const styles = StyleSheet.create({
