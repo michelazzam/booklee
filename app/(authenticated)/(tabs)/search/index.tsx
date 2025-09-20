@@ -38,7 +38,7 @@ const MapScreen = () => {
 
   /*** Constants ***/
   const { top } = useAppSafeAreaInsets();
-  const { permissions, requestLocationPermission } = usePermissions();
+  const { locationPermission, requestLocationPermission } = usePermissions();
   const { data: filtersData } = LocationServices.useGetLocationsCategorized();
   const { data: locationsData } = LocationServices.useGetLocations(selectedFilter);
 
@@ -70,7 +70,7 @@ const MapScreen = () => {
   const handleLocationPress = async () => {
     try {
       // Check if location permission is granted
-      if (permissions.location !== 'granted') {
+      if (locationPermission !== 'granted') {
         const granted = await requestLocationPermission();
         if (!granted) return;
       }

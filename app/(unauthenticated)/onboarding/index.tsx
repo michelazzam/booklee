@@ -15,13 +15,9 @@ const OnboardingStep1 = () => {
   const { requestLocationPermission, isLoading } = usePermissions();
 
   const handleEnableLocation = async () => {
-    const granted = await requestLocationPermission();
-    if (granted) {
+    await requestLocationPermission().then(() => {
       router.navigate('/(unauthenticated)/onboarding/step2');
-    } else {
-      // Still allow user to proceed even if permission is denied
-      router.navigate('/(unauthenticated)/onboarding/step2');
-    }
+    });
   };
 
   const handleSkip = () => {
@@ -47,11 +43,7 @@ const OnboardingStep1 = () => {
           Turn on location to see services and offers near you.
         </Text>
 
-        <Button
-          title={isLoading ? 'Requesting...' : 'Enable Location'}
-          onPress={handleEnableLocation}
-          disabled={isLoading}
-        />
+        <Button disabled={isLoading} title="Enable Location" onPress={handleEnableLocation} />
 
         <View style={styles.paginationContainer}>
           <View style={[styles.paginationDot, styles.activeDot]} />
