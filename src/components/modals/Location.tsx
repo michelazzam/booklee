@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useState, useRef, useCallback } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { LocationServices } from '~/src/services';

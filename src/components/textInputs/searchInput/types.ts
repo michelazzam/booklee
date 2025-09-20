@@ -5,6 +5,7 @@ import { ViewStyle } from 'react-native';
 export type SearchInputProps = {
   value?: string;
   autoFocus?: boolean;
+  onClear?: () => void;
   placeholder?: string;
   onFocus?: () => void;
   onPress?: () => void;

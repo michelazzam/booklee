@@ -13,6 +13,7 @@ const SearchInput = ({
   onPress,
   onFocus,
   onSearch,
+  onClear,
   containerStyle,
   autoFocus = false,
   placeholder = searchInputConfig.placeholder,
@@ -45,7 +46,8 @@ const SearchInput = ({
     setInternalSearchQuery('');
     inputRef.current?.clear();
     onSearch?.('');
-  }, [onSearch]);
+    onClear?.();
+  }, [onSearch, onClear]);
 
   return (
     <TouchableOpacity
