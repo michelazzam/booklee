@@ -10,7 +10,6 @@ import { theme } from '~/src/constants/theme';
 
 import { FilterModal, SearchModal, ModalWrapperRef } from '~/src/components/modals';
 import { LocationCard, LocationCardSkeleton } from '~/src/components/preview';
-import { FilterContainer, type FilterType } from '~/src/components/utils';
 import { SearchInput } from '~/src/components/textInputs';
 import { Icon, Text } from '~/src/components/base';
 
@@ -23,15 +22,13 @@ const Search = () => {
   const searchModalRef = useRef<ModalWrapperRef>(null);
   const filterModalRef = useRef<ModalWrapperRef>(null);
 
+  /*** States ***/
+  const [selectedFilter, setSelectedFilter] = useState<GetLocationsReqType>();
+
   /*** Constants ***/
   const router = useRouter();
   const { top, bottom } = useAppSafeAreaInsets();
   const { filterCategory } = useLocalSearchParams<LocalSearchParams>();
-
-  /*** States ***/
-  const [selectedFilter, setSelectedFilter] = useState<GetLocationsReqType>();
-
-  /*** API ***/
   const {
     isLoading,
     data: locationsData,
@@ -39,7 +36,6 @@ const Search = () => {
     fetchNextPage: fetchNextPage,
     isFetchingNextPage: isFetchingNextPage,
   } = LocationServices.useGetLocations(selectedFilter);
-  const { data: filtersData } = LocationServices.useGetLocationsCategorized();
 
   useEffect(() => {
     if (filterCategory) {
@@ -48,17 +44,6 @@ const Search = () => {
   }, [filterCategory]);
 
   /*** Memoization ***/
-  const filters: FilterType[] = useMemo(() => {
-    if (!filtersData || filtersData.length === 0) return [{ slug: '', label: 'All' }];
-
-    return [
-      { slug: '', label: 'All' },
-      ...filtersData.map((category) => ({
-        slug: category.slug,
-        label: category.title,
-      })),
-    ];
-  }, [filtersData]);
   const isFilterApplied = useMemo(() => {
     const keys = Object.keys(selectedFilter || {});
 
@@ -127,12 +112,6 @@ const Search = () => {
             />
           </TouchableOpacity>
         </View>
-
-        <FilterContainer
-          filters={filters}
-          selectedFilter={selectedFilter?.category || ''}
-          setSelectedFilter={(filter) => setSelectedFilter({ category: filter })}
-        />
       </View>
 
       <FlatList

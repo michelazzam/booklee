@@ -1,13 +1,17 @@
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import { useRef, useMemo, useState } from 'react';
 import { Icon } from '~/src/components/base';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
-import { useRef } from 'react';
+
+import { LocationServices, type GetLocationsReqType } from '~/src/services';
 
 import { useAppSafeAreaInsets, usePermissions } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
+import { FilterContainer, type FilterType } from '~/src/components/utils';
+import { Marker as CustomMarker } from '~/src/components/utils';
 import { SearchInput } from '~/src/components/textInputs';
 
 /*** Beirut coordinates ***/
@@ -22,9 +26,37 @@ const MapScreen = () => {
   /*** Refs ***/
   const mapRef = useRef<MapView>(null);
 
+  /*** States ***/
+  const [selectedFilter, setSelectedFilter] = useState<GetLocationsReqType>();
+
   /*** Constants ***/
   const { top } = useAppSafeAreaInsets();
   const { permissions, requestLocationPermission } = usePermissions();
+  const { data: filtersData } = LocationServices.useGetLocationsCategorized();
+  const { data: locationsData } = LocationServices.useGetLocations(selectedFilter);
+
+  /*** Memoization ***/
+  const filters: FilterType[] = useMemo(() => {
+    if (!filtersData || filtersData.length === 0) return [{ slug: '', label: 'All' }];
+
+    return [
+      { slug: '', label: 'All' },
+      ...filtersData.map((category) => ({
+        slug: category.slug,
+        label: category.title,
+      })),
+    ];
+  }, [filtersData]);
+  const getMarkerDetails = useMemo(() => {
+    return locationsData
+      ?.map((location) => ({
+        id: location._id,
+        rating: location.rating || 0,
+        latitude: location.geo?.lat,
+        longitude: location.geo?.lng,
+      }))
+      .filter((marker) => marker.latitude && marker.longitude);
+  }, [locationsData]);
 
   const handleLocationPress = async () => {
     try {
@@ -61,14 +93,30 @@ const MapScreen = () => {
         showsUserLocation
         style={{ flex: 1 }}
         provider={PROVIDER_GOOGLE}
-        initialRegion={INITIAL_REGION}
-      />
+        initialRegion={INITIAL_REGION}>
+        {getMarkerDetails?.map((marker) => (
+          <Marker
+            key={marker.id}
+            coordinate={{
+              latitude: marker.latitude!,
+              longitude: marker.longitude!,
+            }}>
+            <CustomMarker rating={marker.rating} />
+          </Marker>
+        ))}
+      </MapView>
 
-      <View style={[styles.searchInputContainer, { top }]}>
+      <View style={[styles.headerContainer, { top }]}>
         <SearchInput
-          placeholder="Can't find what you're looking for?"
+          placeholder="Search for a location"
           containerStyle={{ backgroundColor: theme.colors.white.DEFAULT }}
-          onPress={() => router.navigate('/(authenticated)/(tabs)/search/filters')}
+          onPress={() => router.navigate('/(authenticated)/(tabs)/search/locationSearch')}
+        />
+
+        <FilterContainer
+          filters={filters}
+          selectedFilter={selectedFilter?.category || ''}
+          setSelectedFilter={(filter) => setSelectedFilter({ ...selectedFilter, category: filter })}
         />
       </View>
 
@@ -85,10 +133,12 @@ const MapScreen = () => {
 export default MapScreen;
 
 const styles = StyleSheet.create({
-  searchInputContainer: {
+  headerContainer: {
     left: 16,
     right: 16,
     position: 'absolute',
+    gap: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
   },
   locationButton: {
     right: 16,

@@ -54,6 +54,7 @@ const HomePage = () => {
             contentContainerStyle={styles.sectionContainer}>
             {item.locations.map((store, index) => (
               <LocationCard
+                width={230}
                 data={store}
                 key={store._id}
                 delay={index * 150}

@@ -18,7 +18,7 @@ const FavoritesPage = () => {
   const { data: favorites } = UserServices.useGetFavorites();
 
   const RenderItem = useCallback(
-    ({ item }: { item: LocationType }) => <LocationCard data={item} minWidth={'48%'} />,
+    ({ item }: { item: LocationType }) => <LocationCard data={item} width={'48%'} />,
     []
   );
   const RenderListEmptyComponent = useCallback(

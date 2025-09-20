@@ -14,9 +14,11 @@ import type {
   SearchResType,
 } from './types';
 
+export const DEFAULT_LOCATION_FIELDS = 'rating,price,geo,_id,slug,name,logo,city,tags,photos';
+
 /*** API for get locations categorized ***/
 export const getLocationsCategorizedApi = async (page: number, filters?: GetLocationsReqType) => {
-  let url = `locations?page=${page}`;
+  let url = `locations?page=${page}&fields=${DEFAULT_LOCATION_FIELDS}`;
 
   if (filters) {
     url += `&${Object.entries(filters)
@@ -41,7 +43,7 @@ export const getLocationsCategorizedApi = async (page: number, filters?: GetLoca
 
 /*** API for get locations ***/
 export const getLocationsApi = async (page: number, filters?: GetLocationsReqType) => {
-  let url = `locations?page=${page}`;
+  let url = `locations?page=${page}&fields=${DEFAULT_LOCATION_FIELDS}`;
 
   if (filters) {
     url += `&${Object.entries(filters)
