@@ -1,5 +1,5 @@
-import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { useRef, useMemo, useState } from 'react';
 import { Icon } from '~/src/components/base';
 import * as Location from 'expo-location';
@@ -10,9 +10,14 @@ import { LocationServices, type GetLocationsReqType } from '~/src/services';
 import { useAppSafeAreaInsets, usePermissions } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { FilterContainer, type FilterType } from '~/src/components/utils';
-import { Marker as CustomMarker } from '~/src/components/utils';
+import { type LocationModalRef, LocationModal } from '~/src/components/modals';
 import { SearchInput } from '~/src/components/textInputs';
+import {
+  type MarkerDataType,
+  FilterContainer,
+  type FilterType,
+  Marker,
+} from '~/src/components/utils';
 
 /*** Beirut coordinates ***/
 const INITIAL_REGION = {
@@ -25,8 +30,10 @@ const INITIAL_REGION = {
 const MapScreen = () => {
   /*** Refs ***/
   const mapRef = useRef<MapView>(null);
+  const locationModalRef = useRef<LocationModalRef>(null);
 
   /*** States ***/
+  const [selectedMarker, setSelectedMarker] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<GetLocationsReqType>();
 
   /*** Constants ***/
@@ -47,15 +54,17 @@ const MapScreen = () => {
       })),
     ];
   }, [filtersData]);
-  const getMarkerDetails = useMemo(() => {
+  const getMarkerDetails: MarkerDataType[] = useMemo(() => {
+    if (!locationsData) return [];
+
     return locationsData
-      ?.map((location) => ({
-        id: location._id,
+      .filter((marker) => marker.geo?.lat && marker.geo?.lng)
+      .map((location) => ({
+        _id: location._id,
         rating: location.rating || 0,
-        latitude: location.geo?.lat,
-        longitude: location.geo?.lng,
-      }))
-      .filter((marker) => marker.latitude && marker.longitude);
+        latitude: location.geo?.lat || 0,
+        longitude: location.geo?.lng || 0,
+      }));
   }, [locationsData]);
 
   const handleLocationPress = async () => {
@@ -85,6 +94,15 @@ const MapScreen = () => {
       console.error('Error getting location:', error);
     }
   };
+  const handleMarkerPress = (_id: string) => {
+    if (selectedMarker === _id) {
+      setSelectedMarker(null);
+      locationModalRef.current?.dismiss();
+    } else {
+      setSelectedMarker(_id);
+      locationModalRef.current?.present(_id);
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -96,13 +114,11 @@ const MapScreen = () => {
         initialRegion={INITIAL_REGION}>
         {getMarkerDetails?.map((marker) => (
           <Marker
-            key={marker.id}
-            coordinate={{
-              latitude: marker.latitude!,
-              longitude: marker.longitude!,
-            }}>
-            <CustomMarker rating={marker.rating} />
-          </Marker>
+            data={marker}
+            key={marker._id}
+            onPress={handleMarkerPress}
+            isActive={selectedMarker === marker._id}
+          />
         ))}
       </MapView>
 
@@ -126,6 +142,8 @@ const MapScreen = () => {
         style={styles.locationButton}>
         <Icon size={24} name="crosshairs-gps" color={theme.colors.primaryBlue[100]} />
       </TouchableOpacity>
+
+      <LocationModal ref={locationModalRef} onDismiss={() => setSelectedMarker(null)} />
     </View>
   );
 };

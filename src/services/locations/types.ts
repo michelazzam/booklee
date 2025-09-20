@@ -28,6 +28,21 @@ export type LocationCategoryType = {
   slug: string;
   locations: LocationType[];
 };
+export type LocationServiceType = {
+  _id: string;
+  duration: string;
+  service: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
+  price: {
+    min: number;
+    max: number;
+    type: string;
+    value: number;
+  };
+};
 export type DetailedLocationType = {
   _id: string;
   slug: string;
@@ -44,9 +59,9 @@ export type DetailedLocationType = {
   photos: string[];
   bookable: boolean;
   categoryId: string;
-  locationServices: string[];
   geo: LocationGeolocationType;
   category: LocationCategoryType;
+  locationServices: LocationServiceType[];
   operatingHours: LocationOperatingHoursType;
 };
 
