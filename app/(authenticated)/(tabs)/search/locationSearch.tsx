@@ -15,8 +15,8 @@ import { FilterIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants/theme';
 
 import { LocationCardSkeleton, SearchHistory, LocationCard } from '~/src/components/preview';
+import { SearchInput, type SearchInputRef } from '~/src/components/textInputs';
 import { FilterModal, ModalWrapperRef } from '~/src/components/modals';
-import { SearchInput } from '~/src/components/textInputs';
 import { Icon, Text } from '~/src/components/base';
 import { Button } from '~/src/components/buttons';
 
@@ -26,6 +26,7 @@ type LocalSearchParams = {
 
 const Search = () => {
   /*** Refs ***/
+  const searchInputRef = useRef<SearchInputRef>(null);
   const filterModalRef = useRef<ModalWrapperRef>(null);
 
   /*** States ***/
@@ -94,6 +95,7 @@ const Search = () => {
   const handleClearSearchInput = useCallback(async () => {
     setSearchQuery('');
     setIsSearchMode(false);
+    searchInputRef.current?.blur();
 
     await queryClient.invalidateQueries({ queryKey: ['searchLocations'] });
     await queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
@@ -111,7 +113,11 @@ const Search = () => {
 
   const RenderRecentSearches = useCallback(() => {
     if (!searchHistory || searchHistory.length === 0) {
-      return null;
+      return (
+        <Text color={theme.colors.lightText} weight="medium" style={styles.emptyTextStyle}>
+          You have not searched anything yet
+        </Text>
+      );
     }
 
     return (
@@ -139,14 +145,25 @@ const Search = () => {
             />
           ))}
         </View>
-
-        <Button variant="ghost" onPress={() => setIsSearchMode(false)} title="Show All Location" />
       </View>
     );
   }, [searchHistory, handleClearSearchHistory, isDeletingSearchHistory]);
   const RenderEmptyComponent = useCallback(() => {
     if (isSearchMode && searchQuery.length === 0) {
-      return <RenderRecentSearches />;
+      return (
+        <>
+          <RenderRecentSearches />
+
+          <Button
+            variant="ghost"
+            title="Show All Location"
+            onPress={() => {
+              setIsSearchMode(false);
+              searchInputRef.current?.blur();
+            }}
+          />
+        </>
+      );
     }
 
     if (isLoading || isFetchingNextPage || isSearching) {
@@ -190,6 +207,7 @@ const Search = () => {
 
           <SearchInput
             value={searchQuery}
+            ref={searchInputRef}
             onSearch={handleSearch}
             onFocus={handleSearchFocus}
             onClear={handleClearSearchInput}

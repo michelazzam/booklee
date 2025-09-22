@@ -12,3 +12,9 @@ export type SearchInputProps = {
   containerStyle?: ViewStyle;
   onSearch?: (query: string) => void;
 };
+
+export type SearchInputRef = {
+  focus: () => void;
+  blur: () => void;
+  clear: () => void;
+};
