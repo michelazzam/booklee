@@ -13,7 +13,8 @@ import Animated, {
 import { type LocationType } from '~/src/services';
 
 import { useHandleFavorites } from '~/src/hooks';
-import { theme } from '../../../constants/theme';
+import { theme } from '~/src/constants/theme';
+import { StarIcon } from '~/src/assets/icons';
 
 import { Text, Icon } from '../../base';
 
@@ -117,7 +118,7 @@ const LocationCard = ({
 
             {rating && (
               <View style={styles.ratingContainer}>
-                <Icon name="star" size={18} color="#FFD700" />
+                <StarIcon />
 
                 <Text size={theme.typography.fontSizes.sm}>{rating.toFixed(1)}</Text>
               </View>

@@ -29,7 +29,7 @@ export type LocationCategoryType = {
   locations: LocationType[];
 };
 export type LocationServiceType = {
-  _id: string;
+  id: string;
   duration: string;
   service: {
     _id: string;

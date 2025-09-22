@@ -1,5 +1,6 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 
 import { LocationServices } from '~/src/services';
@@ -18,11 +19,14 @@ const SalonDetailPage = () => {
   const { top, bottom } = useAppSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: location } = LocationServices.useGetLocationById(id || '');
-  const { photos, name, address, category, rating, phone, teamSize, bookable } = location || {};
+  const { photos, name, address, category, rating, phone, teamSize, bookable, tags } =
+    location || {};
 
   /***** States *****/
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedServices, setSelectedServices] = useState<string>('[]');
   const [activeTab, setActiveTab] = useState<'services' | 'about'>('services');
+
+  // console.log('selectedServices', selectedServices);
 
   /***** Memoized values *****/
   const operatingHoursText = useMemo(() => {
@@ -39,25 +43,27 @@ const SalonDetailPage = () => {
   }, [location]);
 
   const handleServiceToggle = (serviceId: string) => {
-    setSelectedServices((prev) =>
-      prev.includes(serviceId) ? prev.filter((id) => id !== serviceId) : [...prev, serviceId]
-    );
+    if (selectedServices.includes(serviceId)) {
+      setSelectedServices('');
+    } else {
+      setSelectedServices(serviceId);
+    }
   };
 
   const RenderServices = () => {
     return (
       <View style={{ gap: theme.spacing.md }}>
         <Text size={theme.typography.fontSizes.md} weight={'medium'}>
-          Services
+          {category?.title}
         </Text>
 
         <View style={{ gap: theme.spacing.sm }}>
           {location?.locationServices?.map((service) => (
             <Services
-              key={service}
               data={service}
+              key={service.id}
               onPress={handleServiceToggle}
-              isActive={selectedServices.includes(service)}
+              isActive={selectedServices.includes(service.id)}
             />
           ))}
         </View>
@@ -65,118 +71,117 @@ const SalonDetailPage = () => {
     );
   };
   const RenderAbout = () => {
+    const formatData = [
+      { title: 'Address', value: address },
+      { title: 'Phone', value: phone },
+      { title: 'Team Size', value: `${teamSize} professionals` },
+      { title: 'Bookable', value: bookable ? 'Yes' : 'No' },
+    ];
+
     return (
       <View style={{ gap: theme.spacing.md }}>
         <Text size={theme.typography.fontSizes.md} weight={'medium'}>
           About {name}
         </Text>
 
-        <View style={{ gap: theme.spacing.sm }}>
-          <View style={styles.infoRow}>
-            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
-              Address:
-            </Text>
-            <Text size={theme.typography.fontSizes.sm}>{address}</Text>
-          </View>
+        <View style={{ gap: theme.spacing.md }}>
+          {formatData.map((item, index) => (
+            <View style={styles.infoRow} key={index}>
+              <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
+                {item.title}:
+              </Text>
 
-          <View style={styles.infoRow}>
-            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
-              Phone:
-            </Text>
-            <Text size={theme.typography.fontSizes.sm}>{phone}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
-              Team Size:
-            </Text>
-            <Text size={theme.typography.fontSizes.sm}>{teamSize} professionals</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
-              Bookable:
-            </Text>
-            <Text size={theme.typography.fontSizes.sm}>{bookable ? 'Yes' : 'No'}</Text>
-          </View>
+              <Text
+                size={theme.typography.fontSizes.sm}
+                style={{ width: '75%', textAlign: 'right' }}>
+                {item.value}
+              </Text>
+            </View>
+          ))}
         </View>
       </View>
     );
   };
 
   return (
-    <ScrollView
-      bounces={false}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom }}>
-      <View>
-        <View style={[styles.headerComponent, { top }]}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Icon size={32} name="chevron-left" color={theme.colors.white.DEFAULT} />
-          </TouchableOpacity>
+    <>
+      <ScrollView
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom * 2 }}>
+        <View>
+          <View style={[styles.headerComponent, { top }]}>
+            <TouchableOpacity onPress={() => router.back()}>
+              <Icon size={32} name="chevron-left" color={theme.colors.white.DEFAULT} />
+            </TouchableOpacity>
 
-          <TouchableOpacity>
-            <Icon name="heart-outline" size={32} color={theme.colors.white.DEFAULT} />
-          </TouchableOpacity>
-        </View>
-
-        <ImageCarousel images={photos || []} />
-      </View>
-
-      <View style={styles.storeContentContainer}>
-        <View style={{ gap: theme.spacing.sm }}>
-          <Text size={theme.typography.fontSizes.xl} weight={'bold'}>
-            {name}
-          </Text>
-
-          <View style={styles.storeInfoContainer}>
-            <View style={styles.ratingContainer}>
-              <Icon name="star" size={16} color="#FFD700" />
-
-              <Text
-                weight={'bold'}
-                size={theme.typography.fontSizes.xs}
-                style={{ textDecorationLine: 'underline' }}>
-                {rating}
-              </Text>
-            </View>
-
-            <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
+            <TouchableOpacity>
+              <Icon name="heart-outline" size={32} color={theme.colors.white.DEFAULT} />
+            </TouchableOpacity>
           </View>
+
+          <ImageCarousel images={photos || []} />
         </View>
-
-        <View style={{ gap: theme.spacing.sm }}>
-          <Text size={theme.typography.fontSizes.md}>{address}</Text>
-
-          <View style={styles.tagContainer}>
-            <Text size={theme.typography.fontSizes.xs} weight={'bold'}>
-              {category?.title}
+        <View style={styles.storeContentContainer}>
+          <View style={{ gap: theme.spacing.sm }}>
+            <Text size={theme.typography.fontSizes.xl} weight={'bold'}>
+              {name}
             </Text>
+
+            <View style={styles.storeInfoContainer}>
+              <View style={styles.ratingContainer}>
+                <Icon name="star" size={16} color="#FFD700" />
+
+                <Text
+                  weight={'bold'}
+                  size={theme.typography.fontSizes.xs}
+                  style={{ textDecorationLine: 'underline' }}>
+                  {rating}
+                </Text>
+              </View>
+
+              <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
+            </View>
           </View>
+
+          <View style={{ gap: theme.spacing.sm }}>
+            <Text size={theme.typography.fontSizes.md}>{address}</Text>
+
+            {tags && tags.length > 0 && (
+              <View style={styles.tagContainer}>
+                <Text size={theme.typography.fontSizes.xs} weight={'bold'}>
+                  {tags.join(', ')}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <TabMenu
+            activeTab={activeTab}
+            onTabChange={(tab) => setActiveTab(tab as 'services' | 'about')}
+            tabs={[
+              { tabName: { name: 'Services', value: 'services' }, tabChildren: RenderServices() },
+              { tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() },
+            ]}
+          />
         </View>
+      </ScrollView>
 
-        <TabMenu
-          activeTab={activeTab}
-          onTabChange={(tab) => setActiveTab(tab as 'services' | 'about')}
-          tabs={[
-            { tabName: { name: 'Services', value: 'services' }, tabChildren: RenderServices() },
-            { tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() },
-          ]}
-        />
-
-        {selectedServices.length > 0 && (
-          <View style={styles.bookingContainer}>
-            <Button
-              title={`Book ${selectedServices.length} service${selectedServices.length > 1 ? 's' : ''}`}
-              onPress={() => {
-                // TODO: Implement booking flow
-                console.log('Selected services:', selectedServices);
-              }}
-            />
-          </View>
-        )}
-      </View>
-    </ScrollView>
+      {selectedServices.length > 0 && (
+        <Animated.View
+          style={[styles.bookingContainer, { bottom }]}
+          entering={FadeIn}
+          exiting={FadeOut}>
+          <Button
+            title={`Book now`}
+            onPress={() => {
+              // TODO: Implement booking flow
+              console.log('Selected services:', selectedServices);
+            }}
+          />
+        </Animated.View>
+      )}
+    </>
   );
 };
 
@@ -227,14 +232,17 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   infoRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
   bookingContainer: {
+    left: 16,
+    right: 16,
+    borderTopWidth: 1,
+    position: 'absolute',
     marginTop: theme.spacing.lg,
     paddingTop: theme.spacing.lg,
-    borderTopWidth: 1,
     borderTopColor: theme.colors.border,
   },
 });

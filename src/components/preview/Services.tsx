@@ -2,13 +2,13 @@ import { useMemo } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { theme } from '~/src/constants/theme';
-import { type LocationService } from '~/src/services/locations/types';
+import { type LocationServiceType } from '~/src/services/locations/types';
 
 import { Icon, Text } from '../base';
 
 type ServicesPreviewProps = {
-  data: LocationService;
   isActive: boolean;
+  data: LocationServiceType;
   onPress: (serviceId: string) => void;
 };
 const ServicesPreview = ({ data, onPress, isActive }: ServicesPreviewProps) => {
