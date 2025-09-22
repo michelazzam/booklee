@@ -58,7 +58,7 @@ const TabMenu = ({ tabs, activeTab, onTabChange }: TabMenuProps) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View>
       <View style={styles.tabHeader}>
         {tabs.map(({ tabName }) => (
           <TouchableOpacity
@@ -86,9 +86,9 @@ const TabMenu = ({ tabs, activeTab, onTabChange }: TabMenuProps) => {
 
       <Animated.View
         key={activeTab}
-        style={styles.tabContent}
+        style={styles.animatedContent}
         exiting={SlideOutLeft.duration(200)}
-        entering={SlideInRight.duration(300).springify().damping(15).stiffness(100)}>
+        entering={SlideInRight.duration(300).damping(25).stiffness(60)}>
         {getActiveTabChildren()}
       </Animated.View>
     </View>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.xs,
     backgroundColor: theme.colors.primaryBlue[100],
   },
-  tabContent: {
+  animatedContent: {
     flex: 1,
     paddingTop: theme.spacing.lg,
   },

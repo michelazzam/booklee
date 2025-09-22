@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { UserServices, type FavoriteType } from '~/src/services';
+import { UserServices, type LocationType } from '~/src/services';
 
 export const useHandleFavorites = (_id: string) => {
   /***** Constants *****/
@@ -16,7 +16,7 @@ export const useHandleFavorites = (_id: string) => {
     [isAddingToFavorites, isRemovingFromFavorites]
   );
   const isInFavorites = useMemo(() => {
-    return favorites?.some((favorite: FavoriteType) => favorite._id === _id);
+    return favorites?.some((favorite: LocationType) => favorite._id === _id);
   }, [favorites, _id]);
 
   const handleToggleFavorites = () => {

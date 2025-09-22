@@ -1,13 +1,15 @@
-import { View, Text, StyleSheet, ImageBackground, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ImageBackground, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
-import { IMAGES } from '~/src/constants/images';
-import { Button } from '~/src/components/buttons';
+
 import { useUserProvider } from '~/src/store';
 
-const { height } = Dimensions.get('window');
+import { IMAGES } from '~/src/constants/images';
+
+import { Button } from '~/src/components/buttons';
 
 const OnboardingStep3 = () => {
   /*** Constants ***/
+  const { height: windowHeight } = useWindowDimensions();
   const { handleOnboardingCompleted } = useUserProvider();
 
   const handleFinish = () => {
@@ -26,11 +28,11 @@ const OnboardingStep3 = () => {
         </View>
       </ImageBackground>
 
-      <View style={styles.bottomSheet}>
+      <View style={[styles.bottomSheet, { minHeight: windowHeight * 0.35 }]}>
         <Text style={styles.stepTitle}>You&apos;re All Set!</Text>
         <Text style={styles.stepDescription}>Ready to start booking your appointments.</Text>
 
-        <Button title="Start Booking" onPress={handleFinish} variant="default" />
+        <Button title="Start Booking" onPress={handleFinish} />
 
         <View style={styles.paginationContainer}>
           <View style={[styles.paginationDot, styles.inactiveDot]} />
@@ -69,7 +71,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     padding: 24,
     paddingBottom: 100,
-    minHeight: height * 0.35,
     position: 'absolute',
     bottom: 0,
     left: 0,

@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 
-import { withErrorCatch } from '../axios/error';
 import { apiClient } from '../axios/interceptor';
+import { withErrorCatch } from '../axios/error';
 
 import {
   RemoveFromFavoritesReqType,

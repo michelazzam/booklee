@@ -5,7 +5,7 @@ import { IconType } from './IconType';
 
 const StarIcon: FC<IconType> = ({ width = 24, height = 24, color = '#000000' }) => {
   return (
-    <Svg width={width} height={height} viewBox="0 0 18 18" fill={color}>
+    <Svg width={width} height={height} viewBox="0 0 15 15" fill={color}>
       <Path
         stroke={color}
         strokeLinecap="round"

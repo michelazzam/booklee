@@ -10,6 +10,7 @@ import {
   getUserMeApi,
 } from './api';
 
+import type { LocationType } from '../locations/types';
 import type { ResErrorType } from '../axios/types';
 import type {
   RemoveFromFavoritesReqType,
@@ -18,7 +19,6 @@ import type {
   AddToFavoritesReqType,
   GetFavoritesResType,
   GetUserMeResType,
-  FavoriteType,
 } from './types';
 
 const useGetMe = () => {
@@ -52,7 +52,7 @@ const useUpdateUser = () => {
 };
 
 const useGetFavorites = () => {
-  return useQuery<GetFavoritesResType, ResErrorType, FavoriteType[]>({
+  return useQuery<GetFavoritesResType, ResErrorType, LocationType[]>({
     queryFn: getFavoritesApi,
     queryKey: ['getFavorites'],
     select: ({ favorites }) => favorites,

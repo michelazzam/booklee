@@ -29,6 +29,5 @@ export type {
   UpdateUserResType,
   GetUserMeResType,
   OrganizationType,
-  FavoriteType,
   UserType,
 } from './user/types';

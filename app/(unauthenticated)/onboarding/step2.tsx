@@ -1,25 +1,19 @@
-import { View, Text, StyleSheet, ImageBackground, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ImageBackground, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
-import { IMAGES } from '~/src/constants/images';
-import { Button } from '~/src/components/buttons';
-import { useUserProvider } from '~/src/store';
-import { usePermissions } from '~/src/hooks';
 
-const { height } = Dimensions.get('window');
+import { useUserProvider } from '~/src/store';
+
+import { IMAGES } from '~/src/constants/images';
+
+import { Button } from '~/src/components/buttons';
 
 const OnboardingStep2 = () => {
   /*** Constants ***/
+  const { height: windowHeight } = useWindowDimensions();
   const { handleOnboardingCompleted } = useUserProvider();
-  const { requestNotificationPermission, isLoading } = usePermissions();
 
   const handleEnableNotifications = async () => {
-    const granted = await requestNotificationPermission();
-    if (granted) {
-      router.push('/(unauthenticated)/onboarding/step3');
-    } else {
-      // Still allow user to proceed even if permission is denied
-      router.push('/(unauthenticated)/onboarding/step3');
-    }
+    router.navigate('/(unauthenticated)/onboarding/step3');
   };
 
   const handleSkip = () => {
@@ -38,17 +32,13 @@ const OnboardingStep2 = () => {
         </View>
       </ImageBackground>
 
-      <View style={styles.bottomSheet}>
+      <View style={[styles.bottomSheet, { minHeight: windowHeight * 0.35 }]}>
         <Text style={styles.stepTitle}>We&apos;ll keep you right on schedule.</Text>
         <Text style={styles.stepDescription}>
           We&apos;ll send you gentle reminders so you never miss an appointment.
         </Text>
 
-        <Button
-          title={isLoading ? 'Requesting...' : 'Enable Notifications'}
-          onPress={handleEnableNotifications}
-          disabled={isLoading}
-        />
+        <Button title="Enable Notifications" onPress={handleEnableNotifications} />
 
         <View style={styles.paginationContainer}>
           <View style={[styles.paginationDot, styles.inactiveDot]} />
@@ -94,7 +84,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     padding: 24,
     paddingBottom: 100,
-    minHeight: height * 0.35,
     position: 'absolute',
     bottom: 0,
     left: 0,

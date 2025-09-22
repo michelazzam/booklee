@@ -16,7 +16,11 @@ export type LocationType = {
   name: string;
   logo: string;
   city: string;
+  price?: string;
   tags: string[];
+  rating?: number;
+  photos?: string[];
+  geo?: LocationGeolocationType;
 };
 export type LocationCategoryType = {
   _id: string;
@@ -24,40 +28,55 @@ export type LocationCategoryType = {
   slug: string;
   locations: LocationType[];
 };
-export type DetailedLocationType = {
-  _id: string;
-  slug: string;
-  name: string;
-  city: string;
-  logo?: string;
-  price: string;
+export type LocationServiceType = {
+  id: string;
+  duration: string;
+  service: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
+  price: {
+    min: number;
+    max: number;
+    type: string;
+    value: number;
+  };
+};
+export type DetailedLocationType = LocationType & {
   main: boolean;
   phone?: string;
-  rating: number;
-  tags: string[];
   address: string;
   teamSize: number;
-  photos: string[];
   bookable: boolean;
   categoryId: string;
-  locationServices: string[];
-  geo: LocationGeolocationType;
   category: LocationCategoryType;
+  locationServices: LocationServiceType[];
   operatingHours: LocationOperatingHoursType;
 };
 
 /*** Get Locations API Types ***/
 export type GetLocationsReqType = {
+  lat?: number;
+  lng?: number;
+  slug?: string;
   city?: string;
-  geo?: boolean;
-  distance?: number;
+  sort?: string;
+  unit?: string;
+  title?: string;
+  order?: string;
+  limit?: number;
+  main?: boolean;
+  fields?: string;
   category?: string;
+  distance?: number;
   bookable?: boolean;
   price_min?: number;
   price_max?: number;
+  defaults?: boolean;
   rating_min?: number;
-  operatingHours?: boolean;
-  locationServices?: boolean;
+  categories?: boolean;
+  title_starts_with?: string;
 };
 export type GetLocationsResType = {
   locations: LocationType[];
