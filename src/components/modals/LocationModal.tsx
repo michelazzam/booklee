@@ -84,12 +84,12 @@ const LocationModal = forwardRef<LocationModalRef, LocationModalProps>(({ onDism
         </Text>
 
         <View style={{ gap: theme.spacing.sm }}>
-          {days.map((day) => {
+          {days.map((day, index) => {
             const dayData = operatingHours[day.toLowerCase()];
             const isToday = day === todayName;
 
             return (
-              <View key={day} style={[styles.hourRow, isToday && styles.todayRow]}>
+              <View key={index} style={[styles.hourRow, isToday && styles.todayRow]}>
                 <Text
                   size={14}
                   weight={isToday ? 'semiBold' : 'regular'}
@@ -113,19 +113,22 @@ const LocationModal = forwardRef<LocationModalRef, LocationModalProps>(({ onDism
 
   if (isLoading) {
     return (
-      <ModalWrapper ref={modalRef} snapPoints={['50%']} title="Loading..." onDismiss={onDismiss}>
-        <View style={styles.loadingContainer}>
-          <Text>Loading location details...</Text>
-        </View>
+      <ModalWrapper
+        ref={modalRef}
+        title="Loading..."
+        snapPoints={['50%']}
+        onDismiss={onDismiss}
+        contentContainerStyle={styles.loadingContainer}>
+        <Text>Loading location details...</Text>
       </ModalWrapper>
     );
   }
 
   return (
     <ModalWrapper
+      title={name}
       ref={modalRef}
       snapPoints={['75%']}
-      title={name}
       onDismiss={onDismiss}
       contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
       <View style={{ gap: theme.spacing.md }}>

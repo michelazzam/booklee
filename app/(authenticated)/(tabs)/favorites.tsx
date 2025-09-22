@@ -60,10 +60,10 @@ const FavoritesPage = () => {
         numColumns={2}
         data={favorites}
         renderItem={RenderItem}
+        keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={RenderListEmptyComponent}
         columnWrapperStyle={{ gap: theme.spacing.lg }}
-        keyExtractor={(item, index) => item._id + index}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
       />
     </>
