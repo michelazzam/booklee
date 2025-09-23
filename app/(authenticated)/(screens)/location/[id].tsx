@@ -21,7 +21,6 @@ const SalonDetailPage = () => {
   const { data: location } = LocationServices.useGetLocationById(id || '');
   const { photos, name, address, category, rating, phone, teamSize, bookable } = location || {};
 
-  console.log(id);
   /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'services' | 'about'>('services');

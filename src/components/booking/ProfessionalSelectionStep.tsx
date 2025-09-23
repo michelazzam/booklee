@@ -8,14 +8,14 @@ import type { Employee, SelectedService } from '~/src/services';
 type ProfessionalSelectionStepProps = {
   locationId: string;
   selectedServices: SelectedService[];
-  selectedEmployee?: Employee;
-  onEmployeeSelect: (employee?: Employee) => void;
+  selectedEmployeesByService?: Record<string, Employee | undefined>;
+  onEmployeeSelect: (serviceId: string, employee?: Employee) => void;
 };
 
 const ProfessionalSelectionStep = ({
   locationId,
   selectedServices,
-  selectedEmployee,
+  selectedEmployeesByService,
   onEmployeeSelect,
 }: ProfessionalSelectionStepProps) => {
   const { data: bookingData } = AppointmentServices.useGetLocationBookingData(locationId);
@@ -37,8 +37,10 @@ const ProfessionalSelectionStep = ({
       <View style={styles.optionsContainer}>
         {/* Any Professional Option */}
         <TouchableOpacity
-          style={[styles.optionCard, !selectedEmployee && styles.optionCardSelected]}
-          onPress={() => onEmployeeSelect(undefined)}>
+          style={[styles.optionCard]}
+          onPress={() => {
+            selectedServices.forEach((service) => onEmployeeSelect(service.id, undefined));
+          }}>
           <View style={styles.optionIconContainer}>
             <Icon name="account" size={24} color={theme.colors.primaryBlue['100']} />
           </View>
@@ -54,14 +56,7 @@ const ProfessionalSelectionStep = ({
         </TouchableOpacity>
 
         {/* Specific Professional Option */}
-        <TouchableOpacity
-          style={[styles.optionCard, selectedEmployee && styles.optionCardSelected]}
-          onPress={() => {
-            // If already selected, keep the selection; otherwise show professionals
-            if (!selectedEmployee && employees.length > 0) {
-              onEmployeeSelect(employees[0]);
-            }
-          }}>
+        <TouchableOpacity style={[styles.optionCard]} onPress={() => {}}>
           <View style={styles.optionIconContainer}>
             <Icon name="account" size={24} color={theme.colors.primaryBlue['100']} />
           </View>
@@ -90,9 +85,9 @@ const ProfessionalSelectionStep = ({
               <TouchableOpacity
                 style={[
                   styles.professionalCard,
-                  !selectedEmployee && styles.professionalCardSelected,
+                  !selectedEmployeesByService?.[service.id] && styles.professionalCardSelected,
                 ]}
-                onPress={() => onEmployeeSelect(undefined)}>
+                onPress={() => onEmployeeSelect(service.id, undefined)}>
                 <View style={styles.professionalIconContainer}>
                   <Icon name="account" size={24} color={theme.colors.primaryBlue['100']} />
                 </View>
@@ -115,9 +110,10 @@ const ProfessionalSelectionStep = ({
                     key={`${service.id}-${employee._id}`}
                     style={[
                       styles.professionalCard,
-                      selectedEmployee?._id === employee._id && styles.professionalCardSelected,
+                      selectedEmployeesByService?.[service.id]?._id === employee._id &&
+                        styles.professionalCardSelected,
                     ]}
-                    onPress={() => onEmployeeSelect(employee)}>
+                    onPress={() => onEmployeeSelect(service.id, employee)}>
                     <View style={[styles.professionalAvatar, { backgroundColor: avatarBgColor }]}>
                       <Text
                         size={theme.typography.fontSizes.lg}

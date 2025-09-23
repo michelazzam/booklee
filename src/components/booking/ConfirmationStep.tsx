@@ -107,7 +107,7 @@ const ConfirmationStep = ({ bookingData, location, onNotesChange }: Confirmation
                 {service.name}
               </Text>
               <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
-                {bookingData.selectedEmployee?.name || 'Any Professional'}
+                {bookingData.selectedEmployeesByService?.[service.id]?.name || 'Any Professional'}
               </Text>
             </View>
             <View style={styles.servicePrice}>

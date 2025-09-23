@@ -79,7 +79,8 @@ export type BookingData = {
   locationId: string;
   locationName: string;
   selectedServices: SelectedService[];
-  selectedEmployee?: Employee;
+  // Per-service selected employee. Keyed by service id. Undefined means "any".
+  selectedEmployeesByService?: Record<string, Employee | undefined>;
   selectedDate?: string;
   selectedTime?: string;
   notes?: string;

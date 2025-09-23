@@ -103,7 +103,7 @@ const BookingFlow = () => {
         locationId: bookingData.locationId,
         startAt,
         items: bookingData.selectedServices.map((service) => {
-          let selectedEmployee = bookingData.selectedEmployee;
+          let selectedEmployee = bookingData.selectedEmployeesByService?.[service.id];
 
           // If no employee selected, choose a random one who can perform this service
           if (!selectedEmployee && availableEmployees.length > 0) {
@@ -176,10 +176,6 @@ const BookingFlow = () => {
         return;
       }
 
-      console.log('✅ All validations passed. Sending to API...');
-      console.log('API endpoint: POST /appointments');
-      console.log('Request payload size:', JSON.stringify(appointmentData).length, 'characters');
-
       await createAppointmentMutation.mutateAsync(appointmentData, {
         onSuccess: () => {
           Toast.success('Booking confirmed');
@@ -201,9 +197,15 @@ const BookingFlow = () => {
           <ProfessionalSelectionStep
             locationId={locationId || ''}
             selectedServices={selectedServices}
-            selectedEmployee={bookingData.selectedEmployee}
-            onEmployeeSelect={(employee) =>
-              setBookingData((prev) => ({ ...prev, selectedEmployee: employee }))
+            selectedEmployeesByService={bookingData.selectedEmployeesByService}
+            onEmployeeSelect={(serviceId, employee) =>
+              setBookingData((prev) => ({
+                ...prev,
+                selectedEmployeesByService: {
+                  ...(prev.selectedEmployeesByService || {}),
+                  [serviceId]: employee,
+                },
+              }))
             }
           />
         );
