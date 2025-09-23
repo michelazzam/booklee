@@ -18,6 +18,8 @@ const HomePage = () => {
   const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
   const {
+    refetch,
+    isFetching,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
@@ -113,7 +115,9 @@ const HomePage = () => {
       />
 
       <FlatList
+        onRefresh={refetch}
         data={locationsData}
+        refreshing={isFetching}
         renderItem={renderCategory}
         onEndReachedThreshold={0.5}
         onEndReached={handleEndReached}
