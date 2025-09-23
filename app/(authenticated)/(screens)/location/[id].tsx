@@ -3,6 +3,7 @@ import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useMemo, useState } from 'react';
 
 import { LocationServices } from '~/src/services';
+import type { SelectedService } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
@@ -20,6 +21,7 @@ const SalonDetailPage = () => {
   const { data: location } = LocationServices.useGetLocationById(id || '');
   const { photos, name, address, category, rating, phone, teamSize, bookable } = location || {};
 
+  console.log(id);
   /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'services' | 'about'>('services');
@@ -38,10 +40,36 @@ const SalonDetailPage = () => {
     return `Open ${todayHours?.open} - ${todayHours?.close}`;
   }, [location]);
 
+  const selectedServiceData = useMemo((): SelectedService[] => {
+    if (!location?.locationServices) return [];
+
+    return location.locationServices
+      .filter((service) => selectedServices.includes(service.id))
+      .map((service) => ({
+        id: service.id,
+        name: service.service.name,
+        price: service.price.value || service.price.min || 0,
+        duration: service.duration,
+        priceType: service.price.type,
+        priceMin: service.price.min,
+        priceMax: service.price.max,
+      }));
+  }, [location, selectedServices]);
+
   const handleServiceToggle = (serviceId: string) => {
-    setSelectedServices((prev) =>
-      prev.includes(serviceId) ? prev.filter((id) => id !== serviceId) : [...prev, serviceId]
-    );
+    setSelectedServices((prev) => {
+      const updated = prev.includes(serviceId)
+        ? prev.filter((id) => id !== serviceId)
+        : [...prev, serviceId];
+
+      return updated;
+    });
+  };
+
+  const handleBookingNext = () => {
+    // Navigate to booking flow with selected services
+    const servicesParam = encodeURIComponent(JSON.stringify(selectedServiceData));
+    router.push(`/(authenticated)/(screens)/booking/${id}?services=${servicesParam}` as any);
   };
 
   const RenderServices = () => {
@@ -54,10 +82,10 @@ const SalonDetailPage = () => {
         <View style={{ gap: theme.spacing.sm }}>
           {location?.locationServices?.map((service) => (
             <Services
-              key={service}
+              key={service.id}
               data={service}
               onPress={handleServiceToggle}
-              isActive={selectedServices.includes(service)}
+              isActive={selectedServices.includes(service.id)}
             />
           ))}
         </View>
@@ -164,15 +192,23 @@ const SalonDetailPage = () => {
           ]}
         />
 
+        {/* Fixed Booking Bar */}
         {selectedServices.length > 0 && (
-          <View style={styles.bookingContainer}>
-            <Button
-              title={`Book ${selectedServices.length} service${selectedServices.length > 1 ? 's' : ''}`}
-              onPress={() => {
-                // TODO: Implement booking flow
-                console.log('Selected services:', selectedServices);
-              }}
-            />
+          <View style={styles.bookingBar}>
+            <View style={styles.bookingInfo}>
+              <Text size={theme.typography.fontSizes.md} weight="bold">
+                {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
+              </Text>
+              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+                Starting $
+                {selectedServiceData.reduce((total, service) => {
+                  if (service.priceType === 'fixed') return total + service.price;
+                  if (service.priceType === 'starting') return total + service.price;
+                  return total + (service.priceMin || service.price);
+                }, 0)}
+              </Text>
+            </View>
+            <Button title="Next" onPress={handleBookingNext} />
           </View>
         )}
       </View>
@@ -231,10 +267,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  bookingContainer: {
-    marginTop: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
+  bookingBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    backgroundColor: theme.colors.white.DEFAULT,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
+    gap: theme.spacing.md,
+  },
+  bookingInfo: {
+    flex: 1,
+    gap: theme.spacing.xs,
   },
 });

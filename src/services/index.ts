@@ -5,6 +5,7 @@ export { apiClient } from './axios/interceptor';
 export { withErrorCatch } from './axios/error';
 export { AuthServices } from './auth/hooks';
 export { UserServices } from './user/hooks';
+export { AppointmentServices } from './appointments/hooks';
 
 /*** Types ***/
 export type { ResErrorType } from './axios/types';
@@ -32,3 +33,13 @@ export type {
   FavoriteType,
   UserType,
 } from './user/types';
+export type {
+  CreateAppointmentReqType,
+  CreateAppointmentResType,
+  BookingData,
+  BookingStep,
+  SelectedService,
+  Employee,
+  BookingService,
+  BookingDataResponse,
+} from './appointments/types';
