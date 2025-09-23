@@ -7,4 +7,7 @@ export const IMAGES = {
   favorites: {
     placeholder: require('../assets/images/appImages/FavoritesPlaceholder.png'),
   },
+  placeholder: {
+    preview: require('../assets/images/appImages/androidIcon.png'),
+  },
 };

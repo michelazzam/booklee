@@ -2,6 +2,7 @@ import { View, StyleSheet, FlatList, useWindowDimensions } from 'react-native';
 import { useState, useRef, useCallback } from 'react';
 import { Image } from 'expo-image';
 
+import { IMAGES } from '~/src/constants/images';
 import { theme } from '~/src/constants/theme';
 
 type ImageCarouselProps = {
@@ -24,15 +25,30 @@ const ImageCarousel = ({ images }: ImageCarouselProps) => {
     }
   }).current;
 
-  const renderImage = useCallback(
-    ({ item }: { item: string }) => (
+  const RenderImage = useCallback(
+    ({ item }: { item: string }) => {
+      return (
+        <>
+          <Image
+            priority="high"
+            transition={100}
+            contentFit="cover"
+            source={{ uri: item }}
+            cachePolicy="memory-disk"
+            style={{ width: screenWidth }}
+          />
+
+          <View style={styles.gradientOverlay} pointerEvents="none" />
+        </>
+      );
+    },
+    [screenWidth]
+  );
+  const RenderListEmptyComponent = useCallback(
+    () => (
       <Image
-        priority="high"
-        transition={100}
-        contentFit="cover"
-        source={{ uri: item }}
-        cachePolicy="memory-disk"
-        style={{ width: screenWidth }}
+        style={[styles.emptyImage, { width: screenWidth }]}
+        source={IMAGES.placeholder.preview}
       />
     ),
     [screenWidth]
@@ -45,13 +61,12 @@ const ImageCarousel = ({ images }: ImageCarouselProps) => {
         data={images}
         pagingEnabled
         ref={flatListRef}
-        renderItem={renderImage}
+        renderItem={RenderImage}
         showsHorizontalScrollIndicator={false}
+        ListEmptyComponent={RenderListEmptyComponent}
         keyExtractor={(_, index) => index.toString()}
         onViewableItemsChanged={onViewableItemsChanged}
       />
-
-      <View style={styles.gradientOverlay} pointerEvents="none" />
 
       <View style={styles.dotsContainer}>
         {images.map((_, index) => (
@@ -101,5 +116,9 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: theme.radii.full,
+  },
+  emptyImage: {
+    height: 450,
+    backgroundColor: theme.colors.lightText + '70',
   },
 });

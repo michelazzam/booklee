@@ -59,7 +59,15 @@ const HomePage = () => {
                 delay={index * 150}
                 key={store._id + index}
                 animatedStyle="slideLeft"
-                onPress={() => router.navigate(`/(authenticated)/(screens)/location/${store._id}`)}
+                onPress={() =>
+                  router.navigate({
+                    pathname: `/(authenticated)/(screens)/location/[id]`,
+                    params: {
+                      id: store._id,
+                      image: store.photos?.[0],
+                    },
+                  })
+                }
               />
             ))}
           </ScrollView>
