@@ -1,9 +1,9 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 
-import { LocationServices } from '~/src/services';
-import type { SelectedService } from '~/src/services';
+import { LocationServices, type SelectedService } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
@@ -19,7 +19,8 @@ const SalonDetailPage = () => {
   const { top, bottom } = useAppSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: location } = LocationServices.useGetLocationById(id || '');
-  const { photos, name, address, category, rating, phone, teamSize, bookable } = location || {};
+  const { photos, name, address, category, rating, phone, teamSize, bookable, tags } =
+    location || {};
 
   /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -38,7 +39,6 @@ const SalonDetailPage = () => {
 
     return `Open ${todayHours?.open} - ${todayHours?.close}`;
   }, [location]);
-
   const selectedServiceData = useMemo((): SelectedService[] => {
     if (!location?.locationServices) return [];
 
@@ -47,11 +47,11 @@ const SalonDetailPage = () => {
       .map((service) => ({
         id: service.id,
         name: service.service.name,
-        price: service.price.value || service.price.min || 0,
-        duration: service.duration,
-        priceType: service.price.type,
         priceMin: service.price.min,
         priceMax: service.price.max,
+        duration: parseInt(service.duration, 10),
+        price: service.price.value || service.price.min || 0,
+        priceType: service.price.type as 'fixed' | 'range' | 'starting',
       }));
   }, [location, selectedServices]);
 
@@ -64,9 +64,7 @@ const SalonDetailPage = () => {
       return updated;
     });
   };
-
   const handleBookingNext = () => {
-    // Navigate to booking flow with selected services
     const servicesParam = encodeURIComponent(JSON.stringify(selectedServiceData));
     router.push(`/(authenticated)/(screens)/booking/${id}?services=${servicesParam}` as any);
   };
@@ -75,14 +73,14 @@ const SalonDetailPage = () => {
     return (
       <View style={{ gap: theme.spacing.md }}>
         <Text size={theme.typography.fontSizes.md} weight={'medium'}>
-          Services
+          {category?.title}
         </Text>
 
         <View style={{ gap: theme.spacing.sm }}>
           {location?.locationServices?.map((service) => (
             <Services
-              key={service.id}
               data={service}
+              key={service.id}
               onPress={handleServiceToggle}
               isActive={selectedServices.includes(service.id)}
             />
@@ -92,40 +90,33 @@ const SalonDetailPage = () => {
     );
   };
   const RenderAbout = () => {
+    const formatData = [
+      { title: 'Address', value: address },
+      { title: 'Phone', value: phone },
+      { title: 'Team Size', value: `${teamSize} professionals` },
+      { title: 'Bookable', value: bookable ? 'Yes' : 'No' },
+    ];
+
     return (
       <View style={{ gap: theme.spacing.md }}>
         <Text size={theme.typography.fontSizes.md} weight={'medium'}>
           About {name}
         </Text>
 
-        <View style={{ gap: theme.spacing.sm }}>
-          <View style={styles.infoRow}>
-            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
-              Address:
-            </Text>
-            <Text size={theme.typography.fontSizes.sm}>{address}</Text>
-          </View>
+        <View style={{ gap: theme.spacing.md }}>
+          {formatData.map((item, index) => (
+            <View style={styles.infoRow} key={index}>
+              <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
+                {item.title}:
+              </Text>
 
-          <View style={styles.infoRow}>
-            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
-              Phone:
-            </Text>
-            <Text size={theme.typography.fontSizes.sm}>{phone}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
-              Team Size:
-            </Text>
-            <Text size={theme.typography.fontSizes.sm}>{teamSize} professionals</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
-              Bookable:
-            </Text>
-            <Text size={theme.typography.fontSizes.sm}>{bookable ? 'Yes' : 'No'}</Text>
-          </View>
+              <Text
+                size={theme.typography.fontSizes.sm}
+                style={{ width: '75%', textAlign: 'right' }}>
+                {item.value}
+              </Text>
+            </View>
+          ))}
         </View>
       </View>
     );
@@ -135,7 +126,7 @@ const SalonDetailPage = () => {
     <ScrollView
       bounces={false}
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom }}>
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom * 2 }}>
       <View>
         <View style={[styles.headerComponent, { top }]}>
           <TouchableOpacity onPress={() => router.back()}>
@@ -175,11 +166,13 @@ const SalonDetailPage = () => {
         <View style={{ gap: theme.spacing.sm }}>
           <Text size={theme.typography.fontSizes.md}>{address}</Text>
 
-          <View style={styles.tagContainer}>
-            <Text size={theme.typography.fontSizes.xs} weight={'bold'}>
-              {category?.title}
-            </Text>
-          </View>
+          {tags && tags.length > 0 && (
+            <View style={styles.tagContainer}>
+              <Text size={theme.typography.fontSizes.xs} weight={'bold'}>
+                {tags.join(', ')}
+              </Text>
+            </View>
+          )}
         </View>
 
         <TabMenu
@@ -190,27 +183,26 @@ const SalonDetailPage = () => {
             { tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() },
           ]}
         />
-
-        {/* Fixed Booking Bar */}
-        {selectedServices.length > 0 && (
-          <View style={styles.bookingBar}>
-            <View style={styles.bookingInfo}>
-              <Text size={theme.typography.fontSizes.md} weight="bold">
-                {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
-              </Text>
-              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
-                Starting $
-                {selectedServiceData.reduce((total, service) => {
-                  if (service.priceType === 'fixed') return total + service.price;
-                  if (service.priceType === 'starting') return total + service.price;
-                  return total + (service.priceMin || service.price);
-                }, 0)}
-              </Text>
-            </View>
-            <Button title="Next" onPress={handleBookingNext} />
-          </View>
-        )}
       </View>
+
+      {selectedServices.length > 0 && (
+        <View style={styles.bookingBar}>
+          <View style={styles.bookingInfo}>
+            <Text size={theme.typography.fontSizes.md} weight="bold">
+              {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
+            </Text>
+            <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+              Starting $
+              {selectedServiceData.reduce((total, service) => {
+                if (service.priceType === 'fixed') return total + service.price;
+                if (service.priceType === 'starting') return total + service.price;
+                return total + (service.priceMin || service.price);
+              }, 0)}
+            </Text>
+          </View>
+          <Button title="Next" onPress={handleBookingNext} />
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -262,20 +254,20 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   infoRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
   bookingBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.white.DEFAULT,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    alignItems: 'center',
+    flexDirection: 'row',
     gap: theme.spacing.md,
+    justifyContent: 'space-between',
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderTopColor: theme.colors.border,
+    backgroundColor: theme.colors.white.DEFAULT,
   },
   bookingInfo: {
     flex: 1,

@@ -1,3 +1,5 @@
+import type { LocationType } from '../locations/types';
+
 /*** User types ***/
 export type UserType = {
   id: string;
@@ -37,20 +39,10 @@ export type UpdateUserResType = {
   user: UserType;
 };
 
-/*** User favorites type ***/
-export type FavoriteType = {
-  _id: string;
-  slug: string;
-  name: string;
-  logo: string;
-  city: string;
-  tags: string[];
-};
-
 /*** Get user favorites type ***/
 export type GetFavoritesResType = {
   ok: boolean;
-  favorites: FavoriteType[];
+  favorites: LocationType[];
 };
 
 /*** Add to user favorites type ***/

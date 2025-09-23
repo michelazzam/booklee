@@ -1,5 +1,4 @@
 import { View, TouchableOpacity, StyleSheet, type ViewStyle } from 'react-native';
-import { useRouter, type RelativePathString } from 'expo-router';
 import { Image } from 'expo-image';
 import { useMemo } from 'react';
 import Animated, {
@@ -14,7 +13,8 @@ import Animated, {
 import { type LocationType } from '~/src/services';
 
 import { useHandleFavorites } from '~/src/hooks';
-import { theme } from '../../../constants/theme';
+import { theme } from '~/src/constants/theme';
+import { StarIcon } from '~/src/assets/icons';
 
 import { Text, Icon } from '../../base';
 
@@ -23,8 +23,7 @@ type LocationCardProps = {
   duration?: number;
   data: LocationType;
   onPress?: () => void;
-  showMapButton?: boolean;
-  minWidth?: ViewStyle['minWidth'];
+  width?: ViewStyle['width'];
   animatedStyle?: 'slideUp' | 'slideLeft' | 'none';
 };
 
@@ -33,14 +32,12 @@ const LocationCard = ({
   data,
   onPress,
   delay = 0,
-  minWidth = 230,
+  width = '100%',
   duration = 300,
   animatedStyle = 'none',
-  showMapButton = true,
 }: LocationCardProps) => {
   /***** Constants *****/
-  const router = useRouter();
-  const { _id, name, city = 'Unknown', logo, tags } = data;
+  const { _id, name, city, logo, tags, rating, photos } = data;
   const { isInFavorites, handleToggleFavorites, isLoading } = useHandleFavorites(_id);
 
   /***** Memoization *****/
@@ -87,15 +84,15 @@ const LocationCard = ({
       activeOpacity={0.8}
       exiting={getExitingAnimation}
       entering={getEnteringAnimation}
-      style={[styles.container, { minWidth }]}>
+      style={[styles.container, { width }]}>
       <View style={styles.imageContainer}>
-        {logo ? (
+        {logo || (photos && photos.length > 0) ? (
           <Image
             transition={100}
             contentFit="cover"
             style={styles.image}
-            source={{ uri: logo }}
             cachePolicy="memory-disk"
+            source={{ uri: logo || photos?.[0] || '' }}
           />
         ) : (
           <View style={styles.image} />
@@ -110,43 +107,39 @@ const LocationCard = ({
             name={isInFavorites ? 'heart' : 'heart-outline'}
           />
         </View>
-
-        {showMapButton && (
-          <View style={styles.mapButton}>
-            <Icon
-              size={28}
-              name="map-marker"
-              color={'#FFFFFF'}
-              onPress={() =>
-                router.push(`/(authenticated)/(screens)/map?focusId=${_id}` as RelativePathString)
-              }
-            />
-          </View>
-        )}
       </View>
 
       <View style={styles.infoContainer}>
-        <View>
+        <View style={{ gap: theme.spacing.xs }}>
           <View style={styles.topContainer}>
-            <Text size={theme.typography.fontSizes.sm} numberOfLines={1}>
+            <Text weight="medium" style={{ flexShrink: 1 }} size={theme.typography.fontSizes.md}>
               {name}
             </Text>
 
-            {/* <View style={styles.ratingContainer}>
-              <Icon name="star" size={18} color="#FFD700" />
+            {rating && (
+              <View style={styles.ratingContainer}>
+                <StarIcon />
 
-              <Text size={theme.typography.fontSizes.sm}>{rating.toFixed(1)}</Text>
-            </View> */}
+                <Text size={theme.typography.fontSizes.sm}>{rating.toFixed(1)}</Text>
+              </View>
+            )}
           </View>
 
-          <Text size={theme.typography.fontSizes.xs} numberOfLines={1}>
+          <Text
+            size={theme.typography.fontSizes.sm}
+            numberOfLines={1}
+            color={theme.colors.lightText}>
             {city}
           </Text>
         </View>
 
-        {tags.length > 0 && (
+        {tags && tags.length > 0 && (
           <View style={styles.tagContainer}>
-            <Text size={theme.typography.fontSizes.xs}>{tags.join(', ')}</Text>
+            {tags.map((tag) => (
+              <View style={styles.tagItem} key={tag}>
+                <Text size={theme.typography.fontSizes.xs}>{tag}</Text>
+              </View>
+            ))}
           </View>
         )}
       </View>
@@ -158,7 +151,6 @@ export default LocationCard;
 
 const styles = StyleSheet.create({
   container: {
-    height: 300,
     ...theme.shadows.soft,
     borderRadius: theme.radii.md,
     backgroundColor: theme.colors.white.DEFAULT,
@@ -198,13 +190,14 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flex: 1,
-    gap: theme.spacing.xs,
+    gap: theme.spacing.md,
     padding: theme.spacing.md,
     justifyContent: 'space-between',
   },
   topContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    gap: theme.spacing.md,
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
   ratingContainer: {
@@ -212,6 +205,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tagContainer: {
+    flexWrap: 'wrap',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  tagItem: {
     height: 20,
     alignSelf: 'flex-start',
     justifyContent: 'center',

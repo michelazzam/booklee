@@ -16,13 +16,8 @@ export default function UnauthenticatedLayout() {
   const { isAuthenticated, user: authUser } = AuthServices.useGetBetterAuthUser();
 
   // If user is authenticated and has getMe data and is verified, redirect to app
-  if (isAuthenticated && userData && authUser?.emailVerified) {
+  if (isOnboardingCompleted && isAuthenticated && userData && authUser?.emailVerified) {
     return <Redirect href="/(authenticated)/(tabs)" />;
-  }
-
-  // Redirects users to onboarding if they haven't completed it
-  if (!isOnboardingCompleted && !pathname.includes('onboarding')) {
-    return <Redirect href="/(unauthenticated)/onboarding" />;
   }
 
   // Redirects users to login if they have completed onboarding and are not logged in

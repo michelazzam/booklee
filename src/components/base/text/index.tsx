@@ -1,4 +1,4 @@
-import { type TextProps as RNTextProps, TextStyle } from 'react-native';
+import { type TextProps as RNTextProps, TextStyle, type StyleProp } from 'react-native';
 import Animated, { type AnimatedProps } from 'react-native-reanimated';
 import { forwardRef, ReactNode } from 'react';
 
@@ -9,7 +9,7 @@ type TextProps = AnimatedProps<typeof Animated.Text> &
     size?: number;
     color?: string;
     children?: ReactNode;
-    style?: TextStyle | TextStyle[];
+    style?: StyleProp<TextStyle>;
 
     /**
      * Font weight variants with Inter font files:

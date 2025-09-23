@@ -169,7 +169,7 @@ const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
               />
 
               <Text weight="medium" color={theme.colors.darkText[100]}>
-                {Math.round((filters.rating_min || 0) * 10) / 10} ⭐
+                {Math.round((filters.rating_min || 0) * 10) / 10}
               </Text>
             </View>
           </View>

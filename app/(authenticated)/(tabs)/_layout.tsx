@@ -1,4 +1,6 @@
-import { Tabs } from 'expo-router';
+import { Tabs, usePathname } from 'expo-router';
+import { type ViewStyle } from 'react-native';
+import { useMemo } from 'react';
 
 import { theme } from '~/src/constants/theme';
 
@@ -36,13 +38,28 @@ const TABS: TabType[] = [
     icon: 'account',
   },
 ];
+const FLOATING_TAB_STYLE: ViewStyle = {
+  bottom: 25,
+  height: 60,
+  paddingTop: 5,
+  borderRadius: 30,
+  position: 'absolute',
+  marginHorizontal: 10,
+};
 
 export default function TabLayout() {
+  /*** Constants ***/
+  const pathname = usePathname();
+
+  /*** Memoization ***/
+  const isSearchScreen = useMemo(() => pathname === '/search', [pathname]);
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primaryBlue[100],
+        tabBarStyle: isSearchScreen && FLOATING_TAB_STYLE,
         sceneStyle: {
           backgroundColor: theme.colors.white.DEFAULT,
         },

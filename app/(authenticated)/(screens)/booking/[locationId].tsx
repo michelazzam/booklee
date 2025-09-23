@@ -278,6 +278,7 @@ const BookingFlow = () => {
                   </Text>
                 )}
               </View>
+
               <Text
                 size={theme.typography.fontSizes.xs}
                 style={[styles.stepText, index === currentStepIndex && styles.stepTextActive]}>

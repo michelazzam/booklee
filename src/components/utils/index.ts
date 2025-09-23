@@ -1,5 +1,6 @@
-export { default as FilterContainer, type FilterType } from './FilterContainer';
+export { default as FilterContainer, type FilterType } from './filterContainer';
 export { default as SettingsCard, type CardRowDataType } from './settingsCard';
+export { default as Marker, type MarkerDataType } from './map/Marker';
 export { default as ImageCarousel } from './ImageCarousel';
 export { default as ScreenHeader } from './ScreenHeader';
 export { default as PhotoPicker } from './photoPicker';
