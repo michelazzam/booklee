@@ -61,17 +61,20 @@ const SalonDetailPage = () => {
   }, [location, selectedServices]);
 
   const handleServiceToggle = (serviceId: string) => {
-    setSelectedServices((prev) => {
-      const updated = prev.includes(serviceId)
-        ? prev.filter((id) => id !== serviceId)
-        : [...prev, serviceId];
-
-      return updated;
-    });
+    if (selectedServices.includes(serviceId)) {
+      setSelectedServices((prev) => prev.filter((id) => id !== serviceId));
+    } else {
+      setSelectedServices((prev) => [...prev, serviceId]);
+    }
   };
   const handleBookingNext = () => {
-    const servicesParam = encodeURIComponent(JSON.stringify(selectedServiceData));
-    router.push(`/(authenticated)/(screens)/booking/${id}?services=${servicesParam}` as any);
+    router.navigate({
+      pathname: '/(authenticated)/(screens)/booking/[locationId]',
+      params: {
+        locationId: id,
+        services: JSON.stringify(selectedServiceData),
+      },
+    });
   };
 
   const RenderServices = () => {
@@ -194,11 +197,15 @@ const SalonDetailPage = () => {
         </View>
 
         {selectedServices.length > 0 && (
-          <View style={styles.bookingBar}>
+          <Animated.View
+            style={styles.bookingBar}
+            exiting={FadeOut.duration(200)}
+            entering={FadeIn.duration(200)}>
             <View style={styles.bookingInfo}>
               <Text size={theme.typography.fontSizes.md} weight="bold">
                 {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
               </Text>
+
               <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
                 Starting $
                 {selectedServiceData.reduce((total, service) => {
@@ -208,8 +215,9 @@ const SalonDetailPage = () => {
                 }, 0)}
               </Text>
             </View>
+
             <Button title="Next" onPress={handleBookingNext} />
-          </View>
+          </Animated.View>
         )}
       </ScrollView>
     </>
@@ -268,14 +276,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   bookingBar: {
-    borderTopWidth: 1,
     alignItems: 'center',
     flexDirection: 'row',
     gap: theme.spacing.md,
     justifyContent: 'space-between',
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
-    borderTopColor: theme.colors.border,
     backgroundColor: theme.colors.white.DEFAULT,
   },
   bookingInfo: {
