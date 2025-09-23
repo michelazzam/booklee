@@ -50,6 +50,7 @@ export type DetailedLocationType = LocationType & {
   teamSize: number;
   bookable: boolean;
   categoryId: string;
+  geo: LocationGeolocationType;
   category: LocationCategoryType;
   locationServices: LocationServiceType[];
   operatingHours: LocationOperatingHoursType;
@@ -113,4 +114,19 @@ export type SearchResType = {
 /*** Delete Search History API Types ***/
 export type DeleteSearchHistoryResType = {
   ok: boolean;
+};
+
+/*** Location Service Types ***/
+export type LocationService = {
+  id: string;
+  service: {
+    name: string;
+  };
+  price: {
+    type: 'fixed' | 'range' | 'starting';
+    value?: number;
+    min?: number;
+    max?: number;
+  };
+  duration: number;
 };

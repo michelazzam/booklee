@@ -24,7 +24,6 @@ import type {
 const useGetMe = () => {
   /*** Constants ***/
   const { data: session } = authClient.useSession();
-
   return useQuery<GetUserMeResType, ResErrorType>({
     retry: 1,
     gcTime: Infinity,

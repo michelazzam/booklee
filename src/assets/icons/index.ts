@@ -14,6 +14,7 @@ export { default as LogoutIcon } from './LogoutIcon';
 export { default as ClockIcon } from './ClockIcon';
 export { default as PhoneIcon } from './PhoneIcon';
 export { default as TrashIcon } from './TrashIcon';
+export { default as AppLogo } from './appLogo.svg';
 export { default as HomeIcon } from './HomeIcon';
 export { default as GearIcon } from './GearIcon';
 export { default as BellIcon } from './BellIcon';

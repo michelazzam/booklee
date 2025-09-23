@@ -12,9 +12,9 @@ import Animated, {
 
 import { type LocationType } from '~/src/services';
 
+import { StarIcon, AppLogo } from '~/src/assets/icons';
 import { useHandleFavorites } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
-import { StarIcon } from '~/src/assets/icons';
 
 import { Text, Icon } from '../../base';
 
@@ -37,7 +37,7 @@ const LocationCard = ({
   animatedStyle = 'none',
 }: LocationCardProps) => {
   /***** Constants *****/
-  const { _id, name, city, logo, tags, rating, photos } = data;
+  const { _id, name, city, tags, rating, photos } = data;
   const { isInFavorites, handleToggleFavorites, isLoading } = useHandleFavorites(_id);
 
   /***** Memoization *****/
@@ -86,16 +86,18 @@ const LocationCard = ({
       entering={getEnteringAnimation}
       style={[styles.container, { width }]}>
       <View style={styles.imageContainer}>
-        {logo || (photos && photos.length > 0) ? (
+        {photos?.[0] ? (
           <Image
             transition={100}
             contentFit="cover"
             style={styles.image}
             cachePolicy="memory-disk"
-            source={{ uri: logo || photos?.[0] || '' }}
+            source={{ uri: photos?.[0] }}
           />
         ) : (
-          <View style={styles.image} />
+          <View style={styles.imagePlaceholder}>
+            <AppLogo />
+          </View>
         )}
 
         <View style={styles.favoriteButton}>
@@ -164,7 +166,12 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.colors.lightText,
+  },
+  imagePlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.lightText + '70',
   },
   favoriteButton: {
     width: 42,

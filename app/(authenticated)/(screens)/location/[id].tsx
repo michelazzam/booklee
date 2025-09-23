@@ -3,30 +3,33 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 
-import { LocationServices } from '~/src/services';
+import { LocationServices, type SelectedService } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { ImageCarousel, TabMenu } from '~/src/components/utils';
+import { ImageCarousel, TabMenu, LocationSplashImage } from '~/src/components/utils';
 import { Services } from '~/src/components/preview';
 import { Icon, Text } from '~/src/components/base';
 import { Button } from '~/src/components/buttons';
+
+type SalonDetailPageProps = {
+  id: string;
+  image: string;
+};
 
 const SalonDetailPage = () => {
   /***** Constants *****/
   const router = useRouter();
   const { top, bottom } = useAppSafeAreaInsets();
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: location } = LocationServices.useGetLocationById(id || '');
+  const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
+  const { data: location, isLoading } = LocationServices.useGetLocationById(id || '');
   const { photos, name, address, category, rating, phone, teamSize, bookable, tags } =
     location || {};
 
   /***** States *****/
-  const [selectedServices, setSelectedServices] = useState<string>('[]');
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'services' | 'about'>('services');
-
-  // console.log('selectedServices', selectedServices);
 
   /***** Memoized values *****/
   const operatingHoursText = useMemo(() => {
@@ -41,13 +44,37 @@ const SalonDetailPage = () => {
 
     return `Open ${todayHours?.open} - ${todayHours?.close}`;
   }, [location]);
+  const selectedServiceData = useMemo((): SelectedService[] => {
+    if (!location?.locationServices) return [];
+
+    return location.locationServices
+      .filter((service) => selectedServices.includes(service.id))
+      .map((service) => ({
+        id: service.id,
+        name: service.service.name,
+        priceMin: service.price.min,
+        priceMax: service.price.max,
+        duration: parseInt(service.duration, 10),
+        price: service.price.value || service.price.min || 0,
+        priceType: service.price.type as 'fixed' | 'range' | 'starting',
+      }));
+  }, [location, selectedServices]);
 
   const handleServiceToggle = (serviceId: string) => {
     if (selectedServices.includes(serviceId)) {
-      setSelectedServices('');
+      setSelectedServices((prev) => prev.filter((id) => id !== serviceId));
     } else {
-      setSelectedServices(serviceId);
+      setSelectedServices((prev) => [...prev, serviceId]);
     }
+  };
+  const handleBookingNext = () => {
+    router.navigate({
+      pathname: '/(authenticated)/(screens)/booking/[locationId]',
+      params: {
+        locationId: id,
+        services: JSON.stringify(selectedServiceData),
+      },
+    });
   };
 
   const RenderServices = () => {
@@ -105,6 +132,8 @@ const SalonDetailPage = () => {
 
   return (
     <>
+      <LocationSplashImage imageUri={image} isLoading={isLoading} />
+
       <ScrollView
         bounces={false}
         showsVerticalScrollIndicator={false}
@@ -122,6 +151,7 @@ const SalonDetailPage = () => {
 
           <ImageCarousel images={photos || []} />
         </View>
+
         <View style={styles.storeContentContainer}>
           <View style={{ gap: theme.spacing.sm }}>
             <Text size={theme.typography.fontSizes.xl} weight={'bold'}>
@@ -165,22 +195,31 @@ const SalonDetailPage = () => {
             ]}
           />
         </View>
-      </ScrollView>
 
-      {selectedServices.length > 0 && (
-        <Animated.View
-          style={[styles.bookingContainer, { bottom }]}
-          entering={FadeIn}
-          exiting={FadeOut}>
-          <Button
-            title={`Book now`}
-            onPress={() => {
-              // TODO: Implement booking flow
-              console.log('Selected services:', selectedServices);
-            }}
-          />
-        </Animated.View>
-      )}
+        {selectedServices.length > 0 && (
+          <Animated.View
+            style={styles.bookingBar}
+            exiting={FadeOut.duration(200)}
+            entering={FadeIn.duration(200)}>
+            <View style={styles.bookingInfo}>
+              <Text size={theme.typography.fontSizes.md} weight="bold">
+                {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
+              </Text>
+
+              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+                Starting $
+                {selectedServiceData.reduce((total, service) => {
+                  if (service.priceType === 'fixed') return total + service.price;
+                  if (service.priceType === 'starting') return total + service.price;
+                  return total + (service.priceMin || service.price);
+                }, 0)}
+              </Text>
+            </View>
+
+            <Button title="Next" onPress={handleBookingNext} />
+          </Animated.View>
+        )}
+      </ScrollView>
     </>
   );
 };
@@ -236,13 +275,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  bookingContainer: {
-    left: 16,
-    right: 16,
-    borderTopWidth: 1,
-    position: 'absolute',
-    marginTop: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    borderTopColor: theme.colors.border,
+  bookingBar: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: theme.spacing.md,
+    justifyContent: 'space-between',
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    backgroundColor: theme.colors.white.DEFAULT,
+  },
+  bookingInfo: {
+    flex: 1,
+    gap: theme.spacing.xs,
   },
 });

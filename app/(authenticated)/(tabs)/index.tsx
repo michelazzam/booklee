@@ -18,6 +18,8 @@ const HomePage = () => {
   const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
   const {
+    refetch,
+    isFetching,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
@@ -56,10 +58,18 @@ const HomePage = () => {
               <LocationCard
                 width={230}
                 data={store}
-                key={store._id}
                 delay={index * 150}
+                key={store._id + index}
                 animatedStyle="slideLeft"
-                onPress={() => router.navigate(`/(authenticated)/(screens)/location/${store._id}`)}
+                onPress={() =>
+                  router.navigate({
+                    pathname: `/(authenticated)/(screens)/location/[id]`,
+                    params: {
+                      id: store._id,
+                      image: store.photos?.[0],
+                    },
+                  })
+                }
               />
             ))}
           </ScrollView>
@@ -105,7 +115,9 @@ const HomePage = () => {
       />
 
       <FlatList
+        onRefresh={refetch}
         data={locationsData}
+        refreshing={isFetching}
         renderItem={renderCategory}
         onEndReachedThreshold={0.5}
         onEndReached={handleEndReached}

@@ -37,8 +37,8 @@ const config: ExpoConfig = {
   userInterfaceStyle: 'automatic',
   ios: {
     supportsTablet: true,
-    icon: './src/assets/images/appImages/icon.png',
     bundleIdentifier: getAppUniqueIdentifier(),
+    icon: './src/assets/images/appImages/appleIcon.png',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
@@ -49,21 +49,16 @@ const config: ExpoConfig = {
   android: {
     edgeToEdgeEnabled: true,
     package: getAppUniqueIdentifier(),
-    icon: './src/assets/images/appImages/icon.png',
+    icon: './src/assets/images/appImages/appleIcon.png',
     adaptiveIcon: {
-      backgroundColor: '#ffffff',
-      foregroundImage: './src/assets/images/appImages/icon.png',
+      foregroundImage: './src/assets/images/appImages/androidIcon.png',
+      backgroundImage: './src/assets/images/appImages/androidBackground.png',
     },
     config: {
       googleMaps: {
         apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
       },
     },
-  },
-  web: {
-    bundler: 'metro',
-    output: 'static',
-    favicon: './src/assets/images/appImages/icon.png',
   },
   plugins: [
     'expo-router',
@@ -72,8 +67,8 @@ const config: ExpoConfig = {
       {
         imageWidth: 200,
         resizeMode: 'contain',
-        backgroundColor: '#ffffff',
-        image: './src/assets/images/appImages/icon.png',
+        backgroundColor: '#476c80',
+        image: './src/assets/images/splashIcon.png',
       },
     ],
   ],
