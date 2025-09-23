@@ -75,7 +75,6 @@ export default FavoritesPage;
 const styles = StyleSheet.create({
   emptyStateContent: {
     flex: 1,
-    alignItems: 'center',
     gap: theme.spacing.lg,
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.md,

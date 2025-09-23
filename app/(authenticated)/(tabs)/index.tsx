@@ -56,8 +56,8 @@ const HomePage = () => {
               <LocationCard
                 width={230}
                 data={store}
-                key={store._id}
                 delay={index * 150}
+                key={store._id + index}
                 animatedStyle="slideLeft"
                 onPress={() => router.navigate(`/(authenticated)/(screens)/location/${store._id}`)}
               />
