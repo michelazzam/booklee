@@ -15,7 +15,7 @@ const FavoritesPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
-  const { data: favorites } = UserServices.useGetFavorites();
+  const { data: favorites, refetch, isFetching } = UserServices.useGetFavorites();
 
   const RenderItem = useCallback(
     ({ item }: { item: LocationType }) => <LocationCard data={item} width={'48%'} />,
@@ -59,6 +59,8 @@ const FavoritesPage = () => {
       <FlatList
         numColumns={2}
         data={favorites}
+        onRefresh={refetch}
+        refreshing={isFetching}
         renderItem={RenderItem}
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
@@ -75,7 +77,6 @@ export default FavoritesPage;
 const styles = StyleSheet.create({
   emptyStateContent: {
     flex: 1,
-    alignItems: 'center',
     gap: theme.spacing.lg,
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.md,

@@ -54,9 +54,10 @@ const useGetLocations = (filters?: GetLocationsReqType) => {
 
 const useGetLocationById = (id: string) => {
   return useQuery<GetLocationByIdResType, ResErrorType, DetailedLocationType>({
+    enabled: !!id,
     queryKey: ['getLocationById', id],
-    queryFn: () => getLocationByIdApi(id),
     select: ({ location }) => location,
+    queryFn: () => getLocationByIdApi(id),
   });
 };
 

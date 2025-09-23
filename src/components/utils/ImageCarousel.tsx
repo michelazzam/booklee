@@ -3,6 +3,7 @@ import { useState, useRef, useCallback } from 'react';
 import { Image } from 'expo-image';
 
 import { theme } from '~/src/constants/theme';
+import { AppLogo } from '~/src/assets/icons';
 
 type ImageCarouselProps = {
   images: string[];
@@ -24,18 +25,32 @@ const ImageCarousel = ({ images }: ImageCarouselProps) => {
     }
   }).current;
 
-  const renderImage = useCallback(
-    ({ item }: { item: string }) => (
-      <Image
-        priority="high"
-        transition={100}
-        contentFit="cover"
-        source={{ uri: item }}
-        cachePolicy="memory-disk"
-        style={{ width: screenWidth }}
-      />
-    ),
+  const RenderImage = useCallback(
+    ({ item }: { item: string }) => {
+      return (
+        <>
+          <Image
+            priority="high"
+            transition={100}
+            contentFit="cover"
+            source={{ uri: item }}
+            cachePolicy="memory-disk"
+            style={{ width: screenWidth }}
+          />
+
+          <View style={styles.gradientOverlay} pointerEvents="none" />
+        </>
+      );
+    },
     [screenWidth]
+  );
+  const RenderListEmptyComponent = useCallback(
+    () => (
+      <View style={[styles.imagePlaceholder, { width: screenWidth }]}>
+        <AppLogo />
+      </View>
+    ),
+    []
   );
 
   return (
@@ -45,13 +60,12 @@ const ImageCarousel = ({ images }: ImageCarouselProps) => {
         data={images}
         pagingEnabled
         ref={flatListRef}
-        renderItem={renderImage}
+        renderItem={RenderImage}
         showsHorizontalScrollIndicator={false}
+        ListEmptyComponent={RenderListEmptyComponent}
         keyExtractor={(_, index) => index.toString()}
         onViewableItemsChanged={onViewableItemsChanged}
       />
-
-      <View style={styles.gradientOverlay} pointerEvents="none" />
 
       <View style={styles.dotsContainer}>
         {images.map((_, index) => (
@@ -78,6 +92,12 @@ const styles = StyleSheet.create({
     height: 450,
     width: '100%',
   },
+  imagePlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.lightText + '70',
+  },
   gradientOverlay: {
     left: 0,
     right: 0,
@@ -101,5 +121,9 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: theme.radii.full,
+  },
+  emptyImage: {
+    height: 450,
+    backgroundColor: theme.colors.lightText + '70',
   },
 });

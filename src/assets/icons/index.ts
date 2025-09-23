@@ -18,3 +18,4 @@ export { default as HomeIcon } from './HomeIcon';
 export { default as GearIcon } from './GearIcon';
 export { default as BellIcon } from './BellIcon';
 export { default as StarIcon } from './StarIcon';
+export { default as AppLogo } from './appLogo';

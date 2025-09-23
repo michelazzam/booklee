@@ -8,17 +8,22 @@ import { LocationServices, type SelectedService } from '~/src/services';
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { ImageCarousel, TabMenu } from '~/src/components/utils';
+import { ImageCarousel, TabMenu, LocationSplashImage } from '~/src/components/utils';
 import { Services } from '~/src/components/preview';
 import { Icon, Text } from '~/src/components/base';
 import { Button } from '~/src/components/buttons';
+
+type SalonDetailPageProps = {
+  id: string;
+  image: string;
+};
 
 const SalonDetailPage = () => {
   /***** Constants *****/
   const router = useRouter();
   const { top, bottom } = useAppSafeAreaInsets();
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: location } = LocationServices.useGetLocationById(id || '');
+  const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
+  const { data: location, isLoading } = LocationServices.useGetLocationById(id || '');
   const { photos, name, address, category, rating, phone, teamSize, bookable, tags } =
     location || {};
 
@@ -123,87 +128,91 @@ const SalonDetailPage = () => {
   };
 
   return (
-    <ScrollView
-      bounces={false}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom * 2 }}>
-      <View>
-        <View style={[styles.headerComponent, { top }]}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Icon size={32} name="chevron-left" color={theme.colors.white.DEFAULT} />
-          </TouchableOpacity>
+    <>
+      <LocationSplashImage imageUri={image} isLoading={isLoading} />
 
-          <TouchableOpacity>
-            <Icon name="heart-outline" size={32} color={theme.colors.white.DEFAULT} />
-          </TouchableOpacity>
+      <ScrollView
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom * 2 }}>
+        <View>
+          <View style={[styles.headerComponent, { top }]}>
+            <TouchableOpacity onPress={() => router.back()}>
+              <Icon size={32} name="chevron-left" color={theme.colors.white.DEFAULT} />
+            </TouchableOpacity>
+
+            <TouchableOpacity>
+              <Icon name="heart-outline" size={32} color={theme.colors.white.DEFAULT} />
+            </TouchableOpacity>
+          </View>
+
+          <ImageCarousel images={photos || []} />
         </View>
 
-        <ImageCarousel images={photos || []} />
-      </View>
+        <View style={styles.storeContentContainer}>
+          <View style={{ gap: theme.spacing.sm }}>
+            <Text size={theme.typography.fontSizes.xl} weight={'bold'}>
+              {name}
+            </Text>
 
-      <View style={styles.storeContentContainer}>
-        <View style={{ gap: theme.spacing.sm }}>
-          <Text size={theme.typography.fontSizes.xl} weight={'bold'}>
-            {name}
-          </Text>
+            <View style={styles.storeInfoContainer}>
+              <View style={styles.ratingContainer}>
+                <Icon name="star" size={16} color="#FFD700" />
 
-          <View style={styles.storeInfoContainer}>
-            <View style={styles.ratingContainer}>
-              <Icon name="star" size={16} color="#FFD700" />
+                <Text
+                  weight={'bold'}
+                  size={theme.typography.fontSizes.xs}
+                  style={{ textDecorationLine: 'underline' }}>
+                  {rating}
+                </Text>
+              </View>
 
-              <Text
-                weight={'bold'}
-                size={theme.typography.fontSizes.xs}
-                style={{ textDecorationLine: 'underline' }}>
-                {rating}
+              <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
+            </View>
+          </View>
+
+          <View style={{ gap: theme.spacing.sm }}>
+            <Text size={theme.typography.fontSizes.md}>{address}</Text>
+
+            {tags && tags.length > 0 && (
+              <View style={styles.tagContainer}>
+                <Text size={theme.typography.fontSizes.xs} weight={'bold'}>
+                  {tags.join(', ')}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <TabMenu
+            activeTab={activeTab}
+            onTabChange={(tab) => setActiveTab(tab as 'services' | 'about')}
+            tabs={[
+              { tabName: { name: 'Services', value: 'services' }, tabChildren: RenderServices() },
+              { tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() },
+            ]}
+          />
+        </View>
+
+        {selectedServices.length > 0 && (
+          <View style={styles.bookingBar}>
+            <View style={styles.bookingInfo}>
+              <Text size={theme.typography.fontSizes.md} weight="bold">
+                {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
+              </Text>
+              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+                Starting $
+                {selectedServiceData.reduce((total, service) => {
+                  if (service.priceType === 'fixed') return total + service.price;
+                  if (service.priceType === 'starting') return total + service.price;
+                  return total + (service.priceMin || service.price);
+                }, 0)}
               </Text>
             </View>
-
-            <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
+            <Button title="Next" onPress={handleBookingNext} />
           </View>
-        </View>
-
-        <View style={{ gap: theme.spacing.sm }}>
-          <Text size={theme.typography.fontSizes.md}>{address}</Text>
-
-          {tags && tags.length > 0 && (
-            <View style={styles.tagContainer}>
-              <Text size={theme.typography.fontSizes.xs} weight={'bold'}>
-                {tags.join(', ')}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        <TabMenu
-          activeTab={activeTab}
-          onTabChange={(tab) => setActiveTab(tab as 'services' | 'about')}
-          tabs={[
-            { tabName: { name: 'Services', value: 'services' }, tabChildren: RenderServices() },
-            { tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() },
-          ]}
-        />
-      </View>
-
-      {selectedServices.length > 0 && (
-        <View style={styles.bookingBar}>
-          <View style={styles.bookingInfo}>
-            <Text size={theme.typography.fontSizes.md} weight="bold">
-              {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
-            </Text>
-            <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
-              Starting $
-              {selectedServiceData.reduce((total, service) => {
-                if (service.priceType === 'fixed') return total + service.price;
-                if (service.priceType === 'starting') return total + service.price;
-                return total + (service.priceMin || service.price);
-              }, 0)}
-            </Text>
-          </View>
-          <Button title="Next" onPress={handleBookingNext} />
-        </View>
-      )}
-    </ScrollView>
+        )}
+      </ScrollView>
+    </>
   );
 };
 
