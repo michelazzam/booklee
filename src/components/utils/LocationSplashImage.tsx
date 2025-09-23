@@ -1,4 +1,4 @@
-import Animated, { SlideOutUp, FadeIn } from 'react-native-reanimated';
+import Animated, { SlideOutUp } from 'react-native-reanimated';
 import { useState, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
