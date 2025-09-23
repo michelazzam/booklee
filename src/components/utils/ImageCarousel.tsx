@@ -50,7 +50,7 @@ const ImageCarousel = ({ images }: ImageCarouselProps) => {
         <AppLogo />
       </View>
     ),
-    []
+    [screenWidth]
   );
 
   return (
