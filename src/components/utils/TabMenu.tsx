@@ -72,7 +72,7 @@ const TabMenu = ({ tabs, activeTab, onTabChange }: TabMenuProps) => {
                 {
                   color:
                     activeTab === tabName.value
-                      ? theme.colors.primaryBlue[100]
+                      ? theme.colors.darkText[100]
                       : theme.colors.lightText,
                 },
               ]}>
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     height: 3,
     position: 'absolute',
     borderRadius: theme.radii.xs,
-    backgroundColor: theme.colors.primaryBlue[100],
+    backgroundColor: theme.colors.darkText[100],
   },
   animatedContent: {
     flex: 1,

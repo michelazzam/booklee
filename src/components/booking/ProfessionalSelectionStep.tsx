@@ -1,15 +1,18 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useState, useMemo } from 'react';
 
 import { theme } from '~/src/constants/theme';
-import { Text, Icon } from '../base';
+import { Text } from '../base';
 import { AppointmentServices } from '~/src/services';
 import type { Employee, SelectedService } from '~/src/services';
+import { CoupleIcon, GroupIcon, StarIcon } from '~/src/assets/icons';
 
 type ProfessionalSelectionStepProps = {
   locationId: string;
   selectedServices: SelectedService[];
   selectedEmployeesByService?: Record<string, Employee | undefined>;
   onEmployeeSelect: (serviceId: string, employee?: Employee) => void;
+  onOptionChosen?: (chosen: boolean) => void;
 };
 
 const ProfessionalSelectionStep = ({
@@ -17,32 +20,55 @@ const ProfessionalSelectionStep = ({
   selectedServices,
   selectedEmployeesByService,
   onEmployeeSelect,
+  onOptionChosen,
 }: ProfessionalSelectionStepProps) => {
   const { data: bookingData } = AppointmentServices.useGetLocationBookingData(locationId);
   const employees = bookingData?.data?.employees || [];
 
+  // UI state: initially only show the two options; reveal details if user chooses to select professional
+  const [showDetailedSelection, setShowDetailedSelection] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<'any' | 'specific' | undefined>(undefined);
+
   // Group employees by selected services
-  const employeesByService = selectedServices.map((service) => {
-    const serviceEmployees = employees.filter((employee) =>
-      employee.serviceIds.includes(service.id)
-    );
-    return {
-      service,
-      employees: serviceEmployees,
-    };
-  });
+  const employeesByService = useMemo(
+    () =>
+      selectedServices.map((service) => {
+        const serviceEmployees = employees.filter((employee) =>
+          employee.serviceIds.includes(service.id)
+        );
+        return {
+          service,
+          employees: serviceEmployees,
+        };
+      }),
+    [selectedServices, employees]
+  );
 
   return (
     <View style={styles.container}>
       <View style={styles.optionsContainer}>
         {/* Any Professional Option */}
         <TouchableOpacity
-          style={[styles.optionCard]}
+          style={[
+            styles.optionCard,
+            selectedOption === 'any' && styles.optionCardSelected,
+          ]}
           onPress={() => {
-            selectedServices.forEach((service) => onEmployeeSelect(service.id, undefined));
+            // For each selected service, pick a random employee who can perform it.
+            // If none found, fall back to any random employee.
+            selectedServices.forEach((service) => {
+              const serviceEmployees = employees.filter((emp) => emp.serviceIds.includes(service.id));
+              const pool = serviceEmployees.length > 0 ? serviceEmployees : employees;
+              const random = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
+              onEmployeeSelect(service.id, random);
+            });
+            // Keep the details hidden; user can proceed with Next
+            setShowDetailedSelection(false);
+            setSelectedOption('any');
+            onOptionChosen?.(true);
           }}>
           <View style={styles.optionIconContainer}>
-            <Icon name="account" size={24} color={theme.colors.primaryBlue['100']} />
+            <GroupIcon  />
           </View>
           <Text size={theme.typography.fontSizes.md} weight="semiBold" style={styles.optionTitle}>
             Any Professional
@@ -56,12 +82,21 @@ const ProfessionalSelectionStep = ({
         </TouchableOpacity>
 
         {/* Specific Professional Option */}
-        <TouchableOpacity style={[styles.optionCard]} onPress={() => {}}>
+        <TouchableOpacity
+          style={[
+            styles.optionCard,
+            (showDetailedSelection || selectedOption === 'specific') && styles.optionCardSelected,
+          ]}
+          onPress={() => {
+            setShowDetailedSelection(true);
+            setSelectedOption('specific');
+            onOptionChosen?.(true);
+          }}>
           <View style={styles.optionIconContainer}>
-            <Icon name="account" size={24} color={theme.colors.primaryBlue['100']} />
+            <CoupleIcon  />
           </View>
           <Text size={theme.typography.fontSizes.md} weight="semiBold" style={styles.optionTitle}>
-            Select professional
+            Select professional 
           </Text>
           <Text
             size={theme.typography.fontSizes.xs}
@@ -73,7 +108,7 @@ const ProfessionalSelectionStep = ({
       </View>
 
       {/* Professional List Grouped by Services */}
-      {employeesByService.map(({ service, employees: serviceEmployees }) => (
+      {showDetailedSelection && employeesByService.map(({ service, employees: serviceEmployees }) => (
         <View key={service.id} style={styles.serviceSection}>
           <Text size={theme.typography.fontSizes.lg} weight="medium" style={styles.serviceTitle}>
             {service.name.toUpperCase()}
@@ -89,7 +124,7 @@ const ProfessionalSelectionStep = ({
                 ]}
                 onPress={() => onEmployeeSelect(service.id, undefined)}>
                 <View style={styles.professionalIconContainer}>
-                  <Icon name="account" size={24} color={theme.colors.primaryBlue['100']} />
+                  <GroupIcon  />
                 </View>
                 <Text
                   size={theme.typography.fontSizes.sm}
@@ -101,8 +136,8 @@ const ProfessionalSelectionStep = ({
 
               {serviceEmployees.map((employee) => {
                 // Generate different avatar background colors
-                const avatarColors = ['#4F46E5', '#06B6D4', '#10B981', '#F59E0B', '#EF4444'];
-                const colorIndex = employee._id.length % avatarColors.length;
+                const avatarColors = ['#4A882E26', '#41637526', '#269FDF26'];
+                const colorIndex = employee.name.length % avatarColors.length;
                 const avatarBgColor = avatarColors[colorIndex];
 
                 return (
@@ -118,13 +153,13 @@ const ProfessionalSelectionStep = ({
                       <Text
                         size={theme.typography.fontSizes.lg}
                         weight="bold"
-                        color={theme.colors.white.DEFAULT}>
+                        >
                         {employee.name.charAt(0).toUpperCase()}
                       </Text>
                     </View>
 
                     <View style={styles.ratingContainer}>
-                      <Icon name="star" size={12} color="#FFD700" />
+                      <StarIcon width={20} height={20} />
                       <Text size={theme.typography.fontSizes.xs} weight="medium">
                         {employee.rating}
                       </Text>
@@ -180,15 +215,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.white.DEFAULT,
-    minHeight: 120,
+    minHeight: 200,
     justifyContent: 'center',
   },
   optionCardSelected: {
-    borderColor: theme.colors.primaryBlue['100'],
-    backgroundColor: theme.colors.primaryBlue['10'],
+    borderColor: theme.colors.darkText['100'],
+    borderWidth: 1,
+    backgroundColor: theme.colors.white.DEFAULT,
   },
   optionIconContainer: {
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.xl,
   },
   optionTitle: {
     textAlign: 'center',
@@ -211,29 +247,29 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.white.DEFAULT,
     width: '48%',
-    minHeight: 140,
+    minHeight: 200,
     justifyContent: 'center',
   },
   professionalCardSelected: {
-    borderColor: theme.colors.primaryBlue['100'],
-    backgroundColor: theme.colors.primaryBlue['10'],
+    borderColor: theme.colors.darkText['100'],
+    borderWidth: 1,
+    backgroundColor: theme.colors.white.DEFAULT,
   },
   professionalAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: "100%",
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing.xs,
+ 
   },
   professionalIconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing.xs,
+    marginBottom: theme.spacing.lg,
   },
   professionalName: {
     textAlign: 'center',
@@ -246,7 +282,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-    marginBottom: theme.spacing.xs,
+    marginBottom: theme.spacing.lg,
+    borderColor: theme.colors.border,
+    borderWidth: 1,
+    borderRadius: theme.radii.md,
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
   },
   serviceSection: {
     gap: theme.spacing.md,

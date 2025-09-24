@@ -19,3 +19,8 @@ export { default as HomeIcon } from './HomeIcon';
 export { default as GearIcon } from './GearIcon';
 export { default as BellIcon } from './BellIcon';
 export { default as StarIcon } from './StarIcon';
+export { default as GroupIcon } from './GroupIcon';
+export { default as CoupleIcon } from './CoupleIcon';
+export { default as XIcon } from './XIcon';
+export { default as DoneStepIcon } from './DoneStepIcon';
+export { default as CurrentStepIcon } from './CurrentStepIcon';

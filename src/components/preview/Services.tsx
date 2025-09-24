@@ -33,7 +33,7 @@ const ServicesPreview = ({ data, onPress, isActive }: ServicesPreviewProps) => {
       <View
         style={[
           styles.checkboxContainer,
-          { backgroundColor: isActive ? theme.colors.primaryBlue[100] : 'transparent' },
+          { backgroundColor: isActive ? theme.colors.darkText[100] : 'transparent' },
         ]}>
         {isActive && <Icon name="check" size={18} color={theme.colors.white.DEFAULT} />}
       </View>
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.radii.xs,
-    borderColor: theme.colors.primaryBlue[100],
+    borderColor: theme.colors.darkText[100],
   },
   infoContainer: {
     flex: 1,

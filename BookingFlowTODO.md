@@ -1,12 +1,12 @@
 # Booking flow
 
-1- Clicking on the x button should prompt a modal asking the user to confirm cancellation (refer to figma)
+1- Clicking on the x button should prompt a modal asking the user to confirm cancellation (refer to figma) Done
 
 # Select Professional screen
 
 1- The screen is not the same as figma
 2- Spacings needs fixing
-3- Title above peoples names needs to be removed if only 1 service was chosen (refer to figma)
+3- Title above peoples names needs to be removed if only 1 service was chosen (refer to figma) (done, another flow was agreed on)
 4- All boxes needs an active opacity of 0.7 not 1
 5- The stepper is not correct the line is above it and is not dashed
 6- The current stepper UI is not correct

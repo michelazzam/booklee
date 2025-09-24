@@ -1,18 +1,20 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, Fragment } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
-import { Text, Icon } from '~/src/components/base';
+import { Text } from '~/src/components/base';
 import { Button } from '~/src/components/buttons';
 import { LocationServices, AppointmentServices } from '~/src/services';
 import type { BookingData, BookingStep, SelectedService } from '~/src/services';
+import { CancelBookingConfirmationModal, type CancelBookingConfirmationModalRef } from '~/src/components/modals';
 
 import ProfessionalSelectionStep from '~/src/components/booking/ProfessionalSelectionStep';
 import DateTimeSelectionStep from '~/src/components/booking/DateTimeSelectionStep';
 import ConfirmationStep from '~/src/components/booking/ConfirmationStep';
 import { Toast } from 'toastify-react-native';
+import { ArrowLeftIcon, XIcon, DoneStepIcon, CurrentStepIcon } from '~/src/assets/icons';
 
 const BookingFlow = () => {
   const router = useRouter();
@@ -21,6 +23,9 @@ const BookingFlow = () => {
     locationId: string;
     services: string;
   }>();
+
+  // Modal refs
+  const cancelConfirmationModalRef = useRef<CancelBookingConfirmationModalRef>(null);
 
   // Parse selected services from params
   const selectedServices: SelectedService[] = useMemo(() => {
@@ -46,6 +51,7 @@ const BookingFlow = () => {
     locationName: location?.name || '',
     selectedServices,
   });
+  const [hasChosenOption, setHasChosenOption] = useState(false);
 
   const steps: { key: BookingStep; title: string }[] = [
     { key: 'service', title: 'Select Service' },
@@ -55,7 +61,6 @@ const BookingFlow = () => {
   ];
 
   const currentStepIndex = steps.findIndex((step) => step.key === currentStep);
-  const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
   const handleNext = () => {
     const stepOrder: BookingStep[] = ['professional', 'datetime', 'confirm'];
@@ -73,6 +78,14 @@ const BookingFlow = () => {
     } else {
       router.back();
     }
+  };
+
+  const handleCancelBooking = () => {
+    cancelConfirmationModalRef.current?.present();
+  };
+
+  const handleConfirmCancel = () => {
+    router.back();
   };
 
   const handleConfirmBooking = async () => {
@@ -145,27 +158,6 @@ const BookingFlow = () => {
         ...(bookingData.notes && { notes: bookingData.notes }),
       };
 
-      console.log('Sending appointment data:', JSON.stringify(appointmentData, null, 2));
-
-      // Validate data structure matches API specification
-      console.log('Data validation:');
-      console.log('- locationId:', typeof appointmentData.locationId, appointmentData.locationId);
-      console.log('- startAt:', typeof appointmentData.startAt, appointmentData.startAt);
-      console.log('- items count:', appointmentData.items.length);
-      appointmentData.items.forEach((item, index) => {
-        console.log(`- item[${index}]:`, {
-          serviceId: item.serviceId,
-          serviceName: item.serviceName,
-          durationMinutes: item.durationMinutes,
-          price: item.price,
-          employeeId: item.employeeId || 'MISSING - ERROR',
-          employeeName: item.employeeName || 'MISSING - ERROR',
-        });
-      });
-      console.log('- status:', appointmentData.status);
-      console.log('- source:', appointmentData.source);
-      console.log('- notes:', appointmentData.notes || 'none');
-
       // Final validation before sending
       const missingEmployees = appointmentData.items.filter(
         (item) => !item.employeeId || !item.employeeName
@@ -207,6 +199,7 @@ const BookingFlow = () => {
                 },
               }))
             }
+            onOptionChosen={() => setHasChosenOption(true)}
           />
         );
       case 'datetime':
@@ -247,47 +240,69 @@ const BookingFlow = () => {
   return (
     <View style={[styles.container, { paddingTop: top, paddingBottom: bottom }]}>
       {/* Header */}
-      <View style={styles.header}>
+     <View style={styles.header}>
         <TouchableOpacity onPress={handleBack}>
-          <Icon name="arrow-left" size={24} color={theme.colors.darkText['100']} />
+          <ArrowLeftIcon  width={30} height={30} />
         </TouchableOpacity>
 
-        <Text size={theme.typography.fontSizes.lg} weight="medium">
+        <Text size={theme.typography.fontSizes.md} weight="medium">
           BOOK AN APPOINTMENT
         </Text>
 
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text size={theme.typography.fontSizes.lg}>✕</Text>
+        <TouchableOpacity onPress={handleCancelBooking}>
+          <XIcon  width={30} height={30} />
         </TouchableOpacity>
-      </View>
+      </View> 
 
       {/* Progress Bar */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progress}%` }]} />
-        </View>
-
-        <View style={styles.stepsContainer}>
-          {steps.map((step, index) => (
-            <View key={step.key} style={styles.stepIndicator}>
-              <View
-                style={[styles.stepCircle, index <= currentStepIndex && styles.stepCircleActive]}>
-                {index < currentStepIndex && (
-                  <Text size={12} color={theme.colors.white.DEFAULT}>
-                    ✓
-                  </Text>
-                )}
-              </View>
-
-              <Text
-                size={theme.typography.fontSizes.xs}
-                style={[styles.stepText, index === currentStepIndex && styles.stepTextActive]}>
-                {step.title}
-              </Text>
+  <View style={styles.progressContainer}>
+  <View style={styles.stepsContainer}>
+    {steps.map((step, index) => {
+      const isCompleted = index < currentStepIndex;
+      const isCurrent = index === currentStepIndex;
+      const isPending = index > currentStepIndex;
+                       
+      return (
+        <Fragment key={step.key}>
+          {/* Step Indicator */}
+          <View style={styles.stepIndicator}>
+            {/* Step Icon */}
+            <View style={styles.stepIconContainer}>
+              {isCompleted ? (
+                <DoneStepIcon width={20} height={20} />
+              ) : isCurrent ? (
+                <CurrentStepIcon width={20} height={20}  />
+              ) : (
+                <View style={styles.pendingStepIcon} />
+              )}
             </View>
-          ))}
-        </View>
-      </View>
+             
+            {/* Step Text */}
+            <Text
+              size={theme.typography.fontSizes.xs}
+              style={[
+                styles.stepText,
+                isCurrent && styles.stepTextActive,
+                isPending && styles.stepTextPending
+              ]}>
+              {step.title}
+            </Text>
+          </View>
+
+          {/* Connecting Line to Next Step */}
+               {index < steps.length - 1 && (
+            <View style={[
+              styles.connectingLine,
+              isCompleted ? styles.connectingLineCompleted : styles.connectingLinePending,
+              // Adjust margins for the last connecting line
+              index === steps.length - 2 && { marginRight: -5 }
+            ]} />
+          )}
+        </Fragment>
+      );
+    })}
+  </View>
+</View>
 
       {/* Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
@@ -304,9 +319,19 @@ const BookingFlow = () => {
             disabled={!canProceed()}
           />
         ) : (
-          <Button title="Next" onPress={handleNext} disabled={!canProceed()} />
+          <Button
+            title="Next"
+            onPress={handleNext}
+            disabled={currentStep === 'professional' ? !hasChosenOption : !canProceed()}
+          />
         )}
       </View>
+
+      {/* Cancel Confirmation Modal */}
+      <CancelBookingConfirmationModal
+        ref={cancelConfirmationModalRef}
+        onConfirm={handleConfirmCancel}
+      />
     </View>
   );
 };
@@ -324,49 +349,94 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
   },
   progressContainer: {
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: theme.spacing.lg,
   },
-  progressTrack: {
-    height: 2,
-    backgroundColor: theme.colors.border,
-    borderRadius: 1,
-    marginBottom: theme.spacing.md,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: theme.colors.darkText['100'],
-    borderRadius: 1,
-  },
   stepsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    position: 'relative',
+    paddingVertical: theme.spacing.sm,
   },
   stepIndicator: {
     alignItems: 'center',
-    gap: theme.spacing.xs,
+    position: 'relative',
+    zIndex: 2,
   },
-  stepCircle: {
+  stepIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.xs,
+    width: 32,
+    height: 32,
+  },
+  // Completed step (checkmark with black background)
+  completedStepIcon: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: theme.colors.border,
+    backgroundColor: '#000000',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepCircleActive: {
-    backgroundColor: theme.colors.darkText['100'],
+  // Current step (filled circle with outer ring)
+  currentStepIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
+  currentStepInner: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#000000',
+  },
+  // Pending step (empty circle)
+  pendingStepIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    backgroundColor: 'transparent',
+  },
+  connectingLine: {
+    flex: 1,
+    height: 3,
+    marginTop: 13, // Center with the circles (32/2 - 2/2 = 15, but adjust as needed)
+    marginHorizontal: -25, // Slight overlap to connect properly
+    zIndex: 1,
+  },
+  connectingLineCompleted: {
+    backgroundColor: '#000000',
+  },
+  connectingLinePending: {
+  backgroundColor: 'transparent',
+  borderTopWidth: 1,
+  borderTopColor: '#D1D5DB',
+  borderStyle: 'dashed',
+},
   stepText: {
-    color: theme.colors.darkText['50'],
+    color: '#6B7280',
     textAlign: 'center',
     maxWidth: 80,
+    lineHeight: 16,
+    marginTop: 4,
   },
   stepTextActive: {
-    color: theme.colors.darkText['100'],
+    color: '#000000',
     fontWeight: '600',
+  },
+  stepTextPending: {
+    color: '#9CA3AF',
   },
   content: {
     flex: 1,
