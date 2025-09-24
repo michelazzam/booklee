@@ -203,10 +203,6 @@ const SalonDetailPage = () => {
             entering={FadeIn.duration(200)}>
             <View style={styles.bookingInfo}>
               <Text size={theme.typography.fontSizes.md} weight="bold">
-                {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
-              </Text>
-
-              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
                 Starting $
                 {selectedServiceData.reduce((total, service) => {
                   if (service.priceType === 'fixed') return total + service.price;
@@ -214,9 +210,13 @@ const SalonDetailPage = () => {
                   return total + (service.priceMin || service.price);
                 }, 0)}
               </Text>
+
+              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+                 {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
+              </Text>
             </View>
 
-            <Button title="Next" onPress={handleBookingNext} />
+            <Button title="Next" onPress={handleBookingNext} width={180} />
           </Animated.View>
         )}
       </ScrollView>
