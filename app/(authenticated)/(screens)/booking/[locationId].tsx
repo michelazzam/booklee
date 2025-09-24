@@ -8,7 +8,10 @@ import { Text } from '~/src/components/base';
 import { Button } from '~/src/components/buttons';
 import { LocationServices, AppointmentServices } from '~/src/services';
 import type { BookingData, BookingStep, SelectedService } from '~/src/services';
-import { CancelBookingConfirmationModal, type CancelBookingConfirmationModalRef } from '~/src/components/modals';
+import {
+  CancelBookingConfirmationModal,
+  type CancelBookingConfirmationModalRef,
+} from '~/src/components/modals';
 
 import ProfessionalSelectionStep from '~/src/components/booking/ProfessionalSelectionStep';
 import DateTimeSelectionStep from '~/src/components/booking/DateTimeSelectionStep';
@@ -97,7 +100,6 @@ const BookingFlow = () => {
 
       // Get available employees from the booking data
       const availableEmployees = locationBookingData?.data?.employees || [];
-    
 
       // Create proper ISO string for the appointment time
       const startAt = new Date(
@@ -124,7 +126,6 @@ const BookingFlow = () => {
               // Fallback: pick any random employee
               const randomIndex = Math.floor(Math.random() * availableEmployees.length);
               selectedEmployee = availableEmployees[randomIndex];
-        
             }
           }
 
@@ -228,9 +229,9 @@ const BookingFlow = () => {
   return (
     <View style={[styles.container, { paddingTop: top, paddingBottom: bottom }]}>
       {/* Header */}
-     <View style={styles.header}>
+      <View style={styles.header}>
         <TouchableOpacity onPress={handleBack}>
-          <ArrowLeftIcon  width={30} height={30} />
+          <ArrowLeftIcon width={30} height={30} />
         </TouchableOpacity>
 
         <Text size={theme.typography.fontSizes.md} weight="medium">
@@ -238,59 +239,59 @@ const BookingFlow = () => {
         </Text>
 
         <TouchableOpacity onPress={handleCancelBooking}>
-          <XIcon  width={30} height={30} />
+          <XIcon width={30} height={30} />
         </TouchableOpacity>
-      </View> 
+      </View>
 
       {/* Progress Bar */}
-  <View style={styles.progressContainer}>
-  <View style={styles.stepsContainer}>
-    {steps.map((step, index) => {
-      const isCompleted = index < currentStepIndex;
-      const isCurrent = index === currentStepIndex;
-      const isPending = index > currentStepIndex;
-                       
-      return (
-        <Fragment key={step.key}>
-          {/* Step Indicator */}
-          <View style={styles.stepIndicator}>
-            {/* Step Icon */}
-            <View style={styles.stepIconContainer}>
-              {isCompleted ? (
-                <DoneStepIcon width={20} height={20} />
-              ) : isCurrent ? (
-                <CurrentStepIcon width={20} height={20}  />
-              ) : (
-                <View style={styles.pendingStepIcon} />
-              )}
-            </View>
-             
-            {/* Step Text */}
-            <Text
-              size={theme.typography.fontSizes.xs}
-              style={[
-                styles.stepText,
-                isCurrent && styles.stepTextActive,
-                isPending && styles.stepTextPending
-              ]}>
-              {step.title}
-            </Text>
-          </View>
+      <View style={styles.stepsContainer}>
+        {steps.map((step, index) => {
+          const isCompleted = index < currentStepIndex;
+          const isCurrent = index === currentStepIndex;
+          const isPending = index > currentStepIndex;
 
-          {/* Connecting Line to Next Step */}
-               {index < steps.length - 1 && (
-            <View style={[
-              styles.connectingLine,
-              isCompleted ? styles.connectingLineCompleted : styles.connectingLinePending,
-              // Adjust margins for the last connecting line
-              index === steps.length - 2 && { marginRight: -5 }
-            ]} />
-          )}
-        </Fragment>
-      );
-    })}
-  </View>
-</View>
+          return (
+            <Fragment key={step.key}>
+              {/* Step Indicator */}
+              <View style={styles.stepIndicator}>
+                {/* Step Icon */}
+                <View style={styles.stepIconContainer}>
+                  {isCompleted ? (
+                    <DoneStepIcon width={20} height={20} />
+                  ) : isCurrent ? (
+                    <CurrentStepIcon width={20} height={20} />
+                  ) : (
+                    <View style={styles.pendingStepIcon} />
+                  )}
+                </View>
+
+                {/* Step Text */}
+                <Text
+                  size={theme.typography.fontSizes.xs}
+                  style={[
+                    styles.stepText,
+                    isCurrent && styles.stepTextActive,
+                    isPending && styles.stepTextPending,
+                  ]}>
+                  {step.title}
+                </Text>
+              </View>
+
+              {/* Connecting Line to Next Step */}
+              {index < steps.length - 1 && (
+                <View
+                  style={[
+                    styles.connectingLine,
+                    isCompleted ? styles.connectingLineCompleted : styles.connectingLinePending,
+                    // Adjust margins for the last connecting line
+                    index === steps.length - 2 && { marginRight: -5 },
+                  ]}
+                />
+              )}
+            </Fragment>
+          );
+        })}
+      </View>
 
       {/* Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
@@ -339,36 +340,28 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     marginBottom: theme.spacing.lg,
   },
-  progressContainer: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.lg,
-  },
   stepsContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    position: 'relative',
-    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
   },
   stepIndicator: {
-    alignItems: 'center',
-    position: 'relative',
     zIndex: 2,
+    alignItems: 'center',
   },
   stepIconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: theme.spacing.xs,
     width: 32,
     height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   // Completed step (checkmark with black background)
   completedStepIcon: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#000000',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#000000',
   },
   // Current step (filled circle with outer ring)
   currentStepIcon: {
@@ -407,17 +400,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   connectingLinePending: {
-  backgroundColor: 'transparent',
-  borderTopWidth: 1,
-  borderTopColor: '#D1D5DB',
-  borderStyle: 'dashed',
-},
+    borderTopWidth: 1,
+    borderTopColor: '#D1D5DB',
+    backgroundColor: 'transparent',
+  },
   stepText: {
     color: '#6B7280',
     textAlign: 'center',
     maxWidth: 80,
     lineHeight: 16,
-    marginTop: 4,
   },
   stepTextActive: {
     color: '#000000',
@@ -428,6 +419,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    marginTop: theme.spacing.lg,
     paddingHorizontal: theme.spacing.lg,
   },
   footer: {

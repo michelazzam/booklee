@@ -1,4 +1,4 @@
-import  { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 
@@ -37,8 +37,7 @@ const CancelBookingConfirmationModal = forwardRef<
       ref={ref}
       snapPoints={['30%']}
       handleStyle={styles.handle}
-      handleIndicatorStyle={styles.handleIndicator}
-    >
+      handleIndicatorStyle={styles.handleIndicator}>
       <View style={styles.container}>
         {/* Header with question and close button */}
         <View style={styles.header}>
@@ -54,20 +53,16 @@ const CancelBookingConfirmationModal = forwardRef<
 
         {/* Action buttons */}
         <View style={styles.buttonsContainer}>
-          <Button
-            title="No"
-            onPress={handleCancel}
-            
-            containerStyle={styles.noButton}
-          />
-          <Button
-            title="Yes"
-            onPress={handleConfirm}
-            variant="ghost"
-            containerStyle={styles.yesButton}
+          <Button title="No" onPress={handleCancel} containerStyle={styles.noButton} />
 
-            
-          />
+          <TouchableOpacity activeOpacity={0.7} onPress={handleConfirm} style={styles.yesButton}>
+            <Text
+              weight="medium"
+              color={theme.colors.red['100']}
+              size={theme.typography.fontSizes.lg}>
+              Yes
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ModalWrapper>
@@ -119,11 +114,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   yesButton: {
-    backgroundColor: theme.colors.white.DEFAULT,
-    borderColor: theme.colors.red['100'],
-    borderWidth: 1,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing.md,
     borderRadius: theme.radii.md,
-
+    borderColor: theme.colors.red['100'],
+    backgroundColor: theme.colors.white.DEFAULT,
   },
-
 });
