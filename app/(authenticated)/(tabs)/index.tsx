@@ -1,6 +1,6 @@
 import { StyleSheet, FlatList, View, ScrollView, ActivityIndicator } from 'react-native';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { useCallback } from 'react';
 
 import { LocationServices, type LocationCategoryType, UserServices } from '~/src/services';
 
@@ -13,13 +13,15 @@ import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
 const HomePage = () => {
+  /*** States ***/
+  const [isRefetching, setIsRefetching] = useState(false);
+
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
   const {
     refetch,
-    isFetching,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
@@ -92,6 +94,13 @@ const HomePage = () => {
     return <HomePageSkeleton />;
   }, []);
 
+  const handleRefresh = useCallback(() => {
+    setIsRefetching(true);
+    refetch().finally(() => {
+      setIsRefetching(false);
+    });
+  }, [refetch]);
+
   return (
     <>
       <ScreenHeader
@@ -115,9 +124,9 @@ const HomePage = () => {
       />
 
       <FlatList
-        onRefresh={refetch}
         data={locationsData}
-        refreshing={isFetching}
+        onRefresh={handleRefresh}
+        refreshing={isRefetching}
         renderItem={renderCategory}
         onEndReachedThreshold={0.5}
         onEndReached={handleEndReached}

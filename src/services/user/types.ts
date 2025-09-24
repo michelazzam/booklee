@@ -62,3 +62,9 @@ export type RemoveFromFavoritesResType = {
   ok: boolean;
   message?: string;
 };
+
+/*** Delete user type ***/
+export type DeleteUserResType = {
+  ok: boolean;
+  message?: string;
+};

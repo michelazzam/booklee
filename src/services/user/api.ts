@@ -12,6 +12,7 @@ import {
   UpdateUserReqType,
   UpdateUserResType,
   GetUserMeResType,
+  DeleteUserResType,
 } from './types';
 
 /*** API for get user ***/
@@ -89,6 +90,22 @@ export const getFavoritesApi = async () => {
   const [response, error] = await withErrorCatch(
     apiClient.get<GetFavoritesResType>('/user/favorites')
   );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API for delete user ***/
+export const deleteUserApi = async () => {
+  const [response, error] = await withErrorCatch(apiClient.delete<DeleteUserResType>('/user'));
 
   if (error instanceof AxiosError) {
     throw {

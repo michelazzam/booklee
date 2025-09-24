@@ -7,6 +7,7 @@ import {
   addToFavoritesApi,
   updateUserMeApi,
   getFavoritesApi,
+  deleteUserApi,
   getUserMeApi,
 } from './api';
 
@@ -18,6 +19,7 @@ import type {
   AddToFavoritesResType,
   AddToFavoritesReqType,
   GetFavoritesResType,
+  DeleteUserResType,
   GetUserMeResType,
 } from './types';
 
@@ -82,10 +84,23 @@ const useRemoveFromFavorites = () => {
   });
 };
 
+const useDeleteUser = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation<DeleteUserResType, ResErrorType, void>({
+    mutationFn: deleteUserApi,
+    onSuccess: () => {
+      queryClient.clear();
+    },
+  });
+};
+
 export const UserServices = {
   useRemoveFromFavorites,
   useAddToFavorites,
   useGetFavorites,
   useUpdateUser,
+  useDeleteUser,
   useGetMe,
 };

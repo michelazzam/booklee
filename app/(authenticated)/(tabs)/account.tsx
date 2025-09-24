@@ -25,7 +25,8 @@ const AccountPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { data: userData } = UserServices.useGetMe();
-  const { mutate: logout } = AuthServices.useLogout();
+  const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
+  const { mutate: deleteUser, isPending: isDeleteUserPending } = UserServices.useDeleteUser();
 
   /*** Memoization ***/
   const personalInformationData: CardRowDataType[] = useMemo(() => {
@@ -77,15 +78,18 @@ const AccountPage = () => {
       {
         onPress: logout,
         label: 'LOG OUT',
+        loading: isLogoutPending,
         leadingIcon: <LogoutIcon />,
       },
       {
         variant: 'danger',
+        onPress: deleteUser,
         label: 'DELETE ACCOUNT',
         leadingIcon: <TrashIcon />,
+        loading: isDeleteUserPending,
       },
     ];
-  }, [logout]);
+  }, [logout, deleteUser, isLogoutPending, isDeleteUserPending]);
 
   return (
     <View style={styles.container}>
