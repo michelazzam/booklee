@@ -9,6 +9,7 @@ import {
   getFavoritesApi,
   deleteUserApi,
   getUserMeApi,
+  updateUserImageApi,
 } from './api';
 
 import type { LocationType } from '../locations/types';
@@ -46,6 +47,18 @@ const useUpdateUser = () => {
 
   return useMutation({
     mutationFn: updateUserMeApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['getMe'] });
+    },
+  });
+};
+
+const useUpdateUserImage = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateUserImageApi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['getMe'] });
     },
@@ -98,6 +111,7 @@ const useDeleteUser = () => {
 
 export const UserServices = {
   useRemoveFromFavorites,
+  useUpdateUserImage,
   useAddToFavorites,
   useGetFavorites,
   useUpdateUser,

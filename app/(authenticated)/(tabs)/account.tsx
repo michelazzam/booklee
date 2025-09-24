@@ -11,9 +11,8 @@ import {
   LogoutIcon,
   PhoneIcon,
   TrashIcon,
-  GearIcon,
-  HomeIcon,
   BellIcon,
+  StarIcon,
 } from '~/src/assets/icons';
 
 import { AuthServices, UserServices } from '~/src/services';
@@ -47,17 +46,20 @@ const AccountPage = () => {
         trailingIcon: <ChevronRightIcon />,
       },
       {
-        label: userData?.user?.phone || 'No phone number',
         leadingIcon: <PhoneIcon />,
         trailingIcon: <ChevronRightIcon />,
+        label: userData?.user?.phone || 'No phone number',
+        onPress: () => {
+          router.navigate('/(authenticated)/(screens)/settings/editPhone');
+        },
       },
     ];
   }, [userData, router]);
   const openBusinessData: CardRowDataType[] = useMemo(() => {
     return [
       {
-        label: 'Settings',
-        leadingIcon: <GearIcon />,
+        label: 'My Reviews',
+        leadingIcon: <StarIcon />,
         trailingIcon: <ChevronRightIcon />,
       },
       {
@@ -69,12 +71,12 @@ const AccountPage = () => {
   }, []);
   const appSettingsData: CardRowDataType[] = useMemo(() => {
     return [
-      {
-        variant: 'secondary',
-        label: 'OPEN A BUSINESS',
-        leadingIcon: <HomeIcon />,
-        trailingIcon: <ChevronRightIcon />,
-      },
+      // {
+      //   variant: 'secondary',
+      //   label: 'OPEN A BUSINESS',
+      //   leadingIcon: <HomeIcon />,
+      //   trailingIcon: <ChevronRightIcon />,
+      // },
       {
         onPress: logout,
         label: 'LOG OUT',

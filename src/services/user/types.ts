@@ -31,11 +31,21 @@ export type GetUserMeResType = {
 
 /*** Update user type ***/
 export type UpdateUserReqType = {
+  name?: string;
+  phone?: string;
   lastName?: string;
+  salonName?: string;
   firstName?: string;
-  image?: string | null;
 };
 export type UpdateUserResType = {
+  user: UserType;
+};
+
+/*** Update user Image type ***/
+export type UpdateUserImageReqType = {
+  image: string;
+};
+export type UpdateUserImageResType = {
   user: UserType;
 };
 
