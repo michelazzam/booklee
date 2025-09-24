@@ -4,14 +4,14 @@
 
 # Select Professional screen
 
-1- The screen is not the same as figma
-2- Spacings needs fixing
+1- The screen is not the same as figma done
+2- Spacings needs fixing done 
 3- Title above peoples names needs to be removed if only 1 service was chosen (refer to figma) (done, another flow was agreed on)
 4- All boxes needs an active opacity of 0.7 not 1
-5- The stepper is not correct the line is above it and is not dashed
-6- The current stepper UI is not correct
-7- The star icon is incorrect use the one u imported from figma inside the /icons file
-8- All boxes needs an FadeIn effect screen is lacking all animation
+5- The stepper is not correct the line is above it and is not dashed done
+6- The current stepper UI is not correct done
+7- The star icon is incorrect use the one u imported from figma inside the /icons file done
+8- All boxes needs an FadeIn effect screen is lacking all animation moe
 
 # Select Date & Time screen
 

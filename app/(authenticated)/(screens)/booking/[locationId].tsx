@@ -97,15 +97,7 @@ const BookingFlow = () => {
 
       // Get available employees from the booking data
       const availableEmployees = locationBookingData?.data?.employees || [];
-      console.log(
-        'Available employees:',
-        availableEmployees.length,
-        availableEmployees.map((e) => ({
-          id: e._id,
-          name: e.name,
-          serviceIds: e.serviceIds,
-        }))
-      );
+    
 
       // Create proper ISO string for the appointment time
       const startAt = new Date(
@@ -128,15 +120,11 @@ const BookingFlow = () => {
               // Pick a random employee from those who can perform this service
               const randomIndex = Math.floor(Math.random() * serviceEmployees.length);
               selectedEmployee = serviceEmployees[randomIndex];
-              console.log(`Auto-selected employee for ${service.name}:`, selectedEmployee.name);
             } else {
               // Fallback: pick any random employee
               const randomIndex = Math.floor(Math.random() * availableEmployees.length);
               selectedEmployee = availableEmployees[randomIndex];
-              console.log(
-                `Auto-selected random employee for ${service.name}:`,
-                selectedEmployee.name
-              );
+        
             }
           }
 
