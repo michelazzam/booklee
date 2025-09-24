@@ -1,10 +1,5 @@
 # Booking flow
 
-# Select Professional screen
-
-1- All boxes needs an active opacity of 0.7 not 1
-2- All boxes needs an FadeIn effect screen is lacking all animation (moe)
-
 # Select Date & Time screen
 
 1- Sunday contains no day number in the calender

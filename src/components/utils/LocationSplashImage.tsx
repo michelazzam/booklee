@@ -1,5 +1,5 @@
-import Animated, { SlideOutUp } from 'react-native-reanimated';
-import { StyleSheet, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, SlideOutUp } from 'react-native-reanimated';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Image } from 'expo-image';
 
@@ -19,7 +19,7 @@ const LocationSplashImage = ({ imageUri, isLoading = true }: LocationSplashImage
     if (!isLoading) {
       const timer = setTimeout(() => {
         setShowSplash(false);
-      }, 1600);
+      }, 800);
 
       return () => clearTimeout(timer);
     }
@@ -44,28 +44,38 @@ const LocationSplashImage = ({ imageUri, isLoading = true }: LocationSplashImage
           <AppLogo />
         </View>
       )}
+
+      {isLoading && !imageUri && (
+        <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.white.DEFAULT} />
+        </Animated.View>
+      )}
     </Animated.View>
   );
 };
 
+export default LocationSplashImage;
+
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     zIndex: 1000,
+    gap: theme.spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
     ...StyleSheet.absoluteFillObject,
     backgroundColor: theme.colors.primaryBlue[100],
   },
   image: {
-    flex: 1,
     width: '100%',
     height: '100%',
   },
   imagePlaceholder: {
-    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
 });
-
-export default LocationSplashImage;
