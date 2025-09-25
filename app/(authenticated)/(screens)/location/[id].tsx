@@ -212,7 +212,7 @@ const SalonDetailPage = () => {
               </Text>
 
               <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
-                 {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
+                {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
               </Text>
             </View>
 

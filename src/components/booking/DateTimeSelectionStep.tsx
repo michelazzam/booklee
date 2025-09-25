@@ -1,5 +1,13 @@
-import { useState, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  PanResponder,
+  Animated,
+} from 'react-native';
+import { Calendar } from 'react-native-calendars';
+import { useState, useRef } from 'react';
 
 import { theme } from '~/src/constants/theme';
 import { Text, Icon } from '../base';
@@ -17,64 +25,46 @@ const DateTimeSelectionStep = ({
   onDateSelect,
   onTimeSelect,
 }: DateTimeSelectionStepProps) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showWeekView, setShowWeekView] = useState(false);
+  const pan = useRef(new Animated.Value(0)).current;
 
-  // Generate calendar days for current month
-  const calendarDays = useMemo(() => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
+  // PanResponder for swipe-down gesture
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => showWeekView,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Only respond to vertical swipes when in week view
+        return (
+          showWeekView &&
+          Math.abs(gestureState.dy) > Math.abs(gestureState.dx) &&
+          Math.abs(gestureState.dy) > 5
+        );
+      },
+      onPanResponderGrant: () => {
+        pan.setOffset((pan as any)._value);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        // Only allow downward swipes (positive dy values)
+        if (gestureState.dy > 0) {
+          pan.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        pan.flattenOffset();
 
-    const days = [];
+        // If swipe down is significant enough, expand to monthly view
+        if (gestureState.dy > 30) {
+          setShowWeekView(false);
+        }
 
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
-    }
-
-    // Add days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month, day);
-      const dateString = date.toISOString().split('T')[0];
-      days.push({
-        day,
-        date: dateString,
-        isToday: dateString === new Date().toISOString().split('T')[0],
-        isPast: date < new Date(new Date().toDateString()),
-      });
-    }
-
-    return days;
-  }, [currentMonth]);
-
-  // Generate week view if date is selected
-  const weekDays = useMemo(() => {
-    if (!selectedDate) return [];
-
-    const selected = new Date(selectedDate);
-    const startOfWeek = new Date(selected);
-    startOfWeek.setDate(selected.getDate() - selected.getDay());
-
-    const week = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + i);
-      const dateString = date.toISOString().split('T')[0];
-
-      week.push({
-        day: date.getDate(),
-        date: dateString,
-        dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
-        isSelected: dateString === selectedDate,
-      });
-    }
-
-    return week;
-  }, [selectedDate]);
+        // Reset the pan value
+        Animated.spring(pan, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      },
+    })
+  ).current;
 
   // Available time slots
   const timeSlots = [
@@ -94,148 +84,194 @@ const DateTimeSelectionStep = ({
     '17:15',
   ];
 
-  const monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-
-  const weekDayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
-  const handleDateSelect = (dateString: string) => {
-    onDateSelect(dateString);
-    setShowWeekView(true);
+  const handleDateSelect = (day: any) => {
+    if (day && day.dateString) {
+      onDateSelect(day.dateString);
+      setShowWeekView(true);
+    }
   };
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentMonth((prev) => {
-      const newMonth = new Date(prev);
-      if (direction === 'prev') {
-        newMonth.setMonth(prev.getMonth() - 1);
-      } else {
-        newMonth.setMonth(prev.getMonth() + 1);
+  const handleExpandToMonthly = () => {
+    setShowWeekView(false);
+  };
+
+  // Generate marked dates for disabled dates
+  const getMarkedDates = () => {
+    const marked: any = {};
+
+    if (selectedDate) {
+      marked[selectedDate] = {
+        selected: true,
+        selectedColor: theme.colors.primaryBlue['100'],
+        selectedTextColor: theme.colors.white.DEFAULT,
+      };
+    }
+
+    // Mark today
+    const today = new Date().toISOString().split('T')[0];
+    marked[today] = {
+      ...marked[today],
+      marked: true,
+      dotColor: theme.colors.primaryBlue['100'],
+    };
+
+    return marked;
+  };
+
+  // Generate disabled dates
+  const getDisabledDates = () => {
+    const disabled: any = {};
+    const today = new Date();
+    const currentYear = today.getFullYear();
+
+    // Disable past dates and specific dates (like 17th)
+    for (let month = 0; month < 12; month++) {
+      for (let day = 1; day <= 31; day++) {
+        const date = new Date(currentYear, month, day);
+        const dateString = date.toISOString().split('T')[0];
+
+        // Skip invalid dates
+        if (date.getMonth() !== month) continue;
+
+        // Disable past dates
+        if (date < today) {
+          disabled[dateString] = { disabled: true, disableTouchEvent: true };
+        }
+
+        // Disable 17th of any month (as shown in the image)
+        if (day === 17) {
+          disabled[dateString] = { disabled: true, disableTouchEvent: true };
+        }
       }
-      return newMonth;
-    });
+    }
+
+    return disabled;
+  };
+
+  // Generate week view data
+  const getWeekViewData = () => {
+    if (!selectedDate) return [];
+
+    const selected = new Date(selectedDate);
+    const startOfWeek = new Date(selected);
+    startOfWeek.setDate(selected.getDate() - selected.getDay() + 1); // Start from Monday
+
+    const week = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      const dateString = date.toISOString().split('T')[0];
+
+      week.push({
+        day: date.getDate(),
+        date: dateString,
+        dayName: date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0),
+        isSelected: dateString === selectedDate,
+      });
+    }
+
+    return week;
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text size={theme.typography.fontSizes.xl} weight="bold">
-          Select Date & Time
-        </Text>
-      </View>
-
-      {/* Calendar Header */}
-      <View style={styles.calendarHeader}>
-        <TouchableOpacity onPress={() => navigateMonth('prev')}>
-          <Icon
-            name="chevron-right"
-            size={20}
-            color={theme.colors.darkText['100']}
-            style={{ transform: [{ rotate: '180deg' }] }}
+      {/* Calendar Card */}
+      <View style={styles.calendarCard}>
+        {!showWeekView ? (
+          <Calendar
+            onDayPress={handleDateSelect}
+            markedDates={{
+              ...getMarkedDates(),
+              ...getDisabledDates(),
+            }}
+            minDate={new Date().toISOString().split('T')[0]}
+            maxDate={'2025-12-31'}
+            monthFormat={'MMMM yyyy'}
+            hideArrows={false}
+            renderArrow={(direction) => (
+              <Icon
+                name="chevron-right"
+                size={20}
+                color={theme.colors.darkText['100']}
+                style={direction === 'left' ? { transform: [{ rotate: '180deg' }] } : {}}
+              />
+            )}
+            theme={{
+              backgroundColor: 'transparent',
+              calendarBackground: 'transparent',
+              textSectionTitleColor: theme.colors.darkText['50'],
+              selectedDayBackgroundColor: theme.colors.primaryBlue['100'],
+              selectedDayTextColor: theme.colors.white.DEFAULT,
+              todayTextColor: theme.colors.primaryBlue['100'],
+              dayTextColor: theme.colors.darkText['100'],
+              textDisabledColor: theme.colors.grey['100'],
+              dotColor: theme.colors.primaryBlue['100'],
+              selectedDotColor: theme.colors.white.DEFAULT,
+              arrowColor: theme.colors.darkText['100'],
+              monthTextColor: theme.colors.darkText['100'],
+              indicatorColor: theme.colors.primaryBlue['100'],
+              textDayFontFamily: 'Montserrat-Regular',
+              textMonthFontFamily: 'Montserrat-Medium',
+              textDayHeaderFontFamily: 'Montserrat-Regular',
+              textDayFontSize: theme.typography.fontSizes.md,
+              textMonthFontSize: theme.typography.fontSizes.lg,
+              textDayHeaderFontSize: theme.typography.fontSizes.sm,
+            }}
+            firstDay={1} // Start week on Monday
           />
-        </TouchableOpacity>
-
-        <Text size={theme.typography.fontSizes.lg} weight="medium">
-          {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-        </Text>
-
-        <TouchableOpacity onPress={() => navigateMonth('next')}>
-          <Icon name="chevron-right" size={20} color={theme.colors.darkText['100']} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Calendar */}
-      {!showWeekView ? (
-        <View style={styles.calendar}>
-          {/* Week day headers */}
-          <View style={styles.weekHeader}>
-            {weekDayNames.map((day, index) => (
-              <Text
-                key={index}
-                style={styles.weekDayHeader}
-                size={theme.typography.fontSizes.sm}
-                color={theme.colors.darkText['50']}>
-                {day}
-              </Text>
-            ))}
-          </View>
-
-          {/* Calendar grid */}
-          <View style={styles.calendarGrid}>
-            {calendarDays.map((day, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.dayCell,
-                  day?.isToday && styles.todayCell,
-                  selectedDate === day?.date && styles.selectedDayCell,
-                ]}
-                onPress={() => day && !day.isPast && handleDateSelect(day.date)}
-                disabled={!day || day.isPast}>
-                {day && (
+        ) : (
+          /* Week View */
+          <Animated.View
+            style={[
+              styles.weekView,
+              {
+                transform: [{ translateY: pan }],
+              },
+            ]}
+            {...panResponder.panHandlers}>
+            <View style={styles.weekContainer}>
+              {getWeekViewData().map((day) => (
+                <TouchableOpacity
+                  key={day.date}
+                  style={[styles.weekDayCell, day.isSelected && styles.selectedWeekDayCell]}
+                  onPress={() => onDateSelect(day.date)}>
                   <Text
-                    size={theme.typography.fontSizes.md}
+                    size={theme.typography.fontSizes.xs}
                     color={
-                      day.isPast
-                        ? theme.colors.grey['100']
-                        : selectedDate === day.date
-                          ? theme.colors.white.DEFAULT
-                          : day.isToday
-                            ? theme.colors.primaryBlue['100']
-                            : theme.colors.darkText['100']
-                    }
-                    weight={day.isToday || selectedDate === day.date ? 'bold' : 'regular'}>
+                      day.isSelected ? theme.colors.white.DEFAULT : theme.colors.darkText['50']
+                    }>
+                    {day.dayName}
+                  </Text>
+                  <Text
+                    size={theme.typography.fontSizes.lg}
+                    weight="bold"
+                    color={
+                      day.isSelected ? theme.colors.white.DEFAULT : theme.colors.darkText['100']
+                    }>
                     {day.day}
                   </Text>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      ) : (
-        /* Week View */
-        <View style={styles.weekView}>
-          <View style={styles.weekContainer}>
-            {weekDays.map((day) => (
-              <TouchableOpacity
-                key={day.date}
-                style={[styles.weekDayCell, day.isSelected && styles.selectedWeekDayCell]}
-                onPress={() => onDateSelect(day.date)}>
-                <Text
-                  size={theme.typography.fontSizes.xs}
-                  color={day.isSelected ? theme.colors.white.DEFAULT : theme.colors.darkText['50']}>
-                  {day.dayName}
-                </Text>
-                <Text
-                  size={theme.typography.fontSizes.lg}
-                  weight="bold"
-                  color={
-                    day.isSelected ? theme.colors.white.DEFAULT : theme.colors.darkText['100']
-                  }>
-                  {day.day}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      )}
+                </TouchableOpacity>
+              ))}
+            </View>
 
-      {/* Time Slots */}
+            {/* Swipe indicator at bottom */}
+            <TouchableOpacity style={styles.swipeIndicator} onPress={handleExpandToMonthly}>
+              <View style={styles.swipeHandle} />
+              <Text
+                size={theme.typography.fontSizes.xs}
+                color={theme.colors.darkText['50']}
+                style={styles.swipeText}>
+                Swipe down to expand
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+      </View>
+
+      {/* Time Slots Card */}
       {selectedDate && (
-        <View style={styles.timeSlotsContainer}>
-          <Text size={theme.typography.fontSizes.lg} weight="medium">
+        <View style={styles.timeSlotsCard}>
+          <Text size={theme.typography.fontSizes.lg} weight="medium" style={styles.timeSlotsTitle}>
             Available Times
           </Text>
 
@@ -272,44 +308,35 @@ const styles = StyleSheet.create({
   header: {
     gap: theme.spacing.sm,
   },
-  calendarHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: theme.spacing.md,
-  },
-  calendar: {
-    gap: theme.spacing.md,
-  },
-  weekHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingBottom: theme.spacing.sm,
-  },
-  weekDayHeader: {
-    textAlign: 'center',
-    flex: 1,
-  },
-  calendarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 1,
-  },
-  dayCell: {
-    width: '14.28%',
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: theme.radii.sm,
-  },
-  todayCell: {
-    backgroundColor: theme.colors.primaryBlue['10'],
-  },
-  selectedDayCell: {
-    backgroundColor: theme.colors.primaryBlue['100'],
+  calendarCard: {
+    backgroundColor: theme.colors.white.DEFAULT,
+    borderRadius: theme.radii.lg,
+    padding: theme.spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
   },
   weekView: {
     paddingVertical: theme.spacing.md,
+  },
+  swipeIndicator: {
+    alignItems: 'center',
+    paddingTop: theme.spacing.md,
+  },
+  swipeHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: theme.colors.grey['100'],
+    borderRadius: 2,
+    marginBottom: theme.spacing.xs,
+  },
+  swipeText: {
+    textAlign: 'center',
   },
   weekContainer: {
     flexDirection: 'row',
@@ -326,8 +353,15 @@ const styles = StyleSheet.create({
   selectedWeekDayCell: {
     backgroundColor: theme.colors.primaryBlue['100'],
   },
-  timeSlotsContainer: {
+  timeSlotsCard: {
+    backgroundColor: theme.colors.white.DEFAULT,
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.md,
+
     gap: theme.spacing.md,
+  },
+  timeSlotsTitle: {
+    marginBottom: theme.spacing.sm,
   },
   timeSlots: {
     maxHeight: 300,

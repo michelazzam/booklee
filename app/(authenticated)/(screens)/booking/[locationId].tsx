@@ -48,7 +48,7 @@ const BookingFlow = () => {
   const createAppointmentMutation = AppointmentServices.useCreateAppointment();
 
   // Booking state
-  const [currentStep, setCurrentStep] = useState<BookingStep>('professional');
+  const [currentStep, setCurrentStep] = useState<BookingStep>('datetime');
   const [bookingData, setBookingData] = useState<BookingData>({
     locationId: locationId || '',
     locationName: location?.name || '',
@@ -58,15 +58,15 @@ const BookingFlow = () => {
 
   const steps: { key: BookingStep; title: string }[] = [
     { key: 'service', title: 'Select Service' },
-    { key: 'professional', title: 'Select Professional' },
     { key: 'datetime', title: 'Select Date & Time' },
+    { key: 'professional', title: 'Select Professional' },
     { key: 'confirm', title: 'Confirm' },
   ];
 
   const currentStepIndex = steps.findIndex((step) => step.key === currentStep);
 
   const handleNext = () => {
-    const stepOrder: BookingStep[] = ['professional', 'datetime', 'confirm'];
+    const stepOrder: BookingStep[] = ['datetime', 'professional', 'confirm'];
     const currentIndex = stepOrder.indexOf(currentStep);
     if (currentIndex < stepOrder.length - 1) {
       setCurrentStep(stepOrder[currentIndex + 1]);
@@ -74,7 +74,7 @@ const BookingFlow = () => {
   };
 
   const handleBack = () => {
-    const stepOrder: BookingStep[] = ['professional', 'datetime', 'confirm'];
+    const stepOrder: BookingStep[] = ['datetime', 'professional', 'confirm'];
     const currentIndex = stepOrder.indexOf(currentStep);
     if (currentIndex > 0) {
       setCurrentStep(stepOrder[currentIndex - 1]);
@@ -173,6 +173,15 @@ const BookingFlow = () => {
 
   const renderStepContent = () => {
     switch (currentStep) {
+      case 'datetime':
+        return (
+          <DateTimeSelectionStep
+            selectedDate={bookingData.selectedDate}
+            selectedTime={bookingData.selectedTime}
+            onDateSelect={(date) => setBookingData((prev) => ({ ...prev, selectedDate: date }))}
+            onTimeSelect={(time) => setBookingData((prev) => ({ ...prev, selectedTime: time }))}
+          />
+        );
       case 'professional':
         return (
           <ProfessionalSelectionStep
@@ -191,15 +200,6 @@ const BookingFlow = () => {
             onOptionChosen={() => setHasChosenOption(true)}
           />
         );
-      case 'datetime':
-        return (
-          <DateTimeSelectionStep
-            selectedDate={bookingData.selectedDate}
-            selectedTime={bookingData.selectedTime}
-            onDateSelect={(date) => setBookingData((prev) => ({ ...prev, selectedDate: date }))}
-            onTimeSelect={(time) => setBookingData((prev) => ({ ...prev, selectedTime: time }))}
-          />
-        );
       case 'confirm':
         return (
           <ConfirmationStep
@@ -215,10 +215,10 @@ const BookingFlow = () => {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 'professional':
-        return true; // Can proceed with or without selecting specific professional
       case 'datetime':
         return bookingData.selectedDate && bookingData.selectedTime;
+      case 'professional':
+        return true; // Can proceed with or without selecting specific professional
       case 'confirm':
         return true;
       default:
