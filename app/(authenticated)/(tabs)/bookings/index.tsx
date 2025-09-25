@@ -1,6 +1,8 @@
-import { View, StyleSheet, Image, FlatList } from 'react-native';
+import { View, StyleSheet, Image, FlatList, ActivityIndicator } from 'react-native';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { useCallback } from 'react';
+
+import { AppointmentServices, type UserAppointment } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
@@ -10,12 +12,24 @@ import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
 const UpcomingBookingsPage = () => {
+  /*** States ***/
+  const [isRefetching, setIsRefetching] = useState(false);
+
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
+  const {
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    data: userAppointments,
+  } = AppointmentServices.useGetUserAppointments({
+    upcoming: true,
+  });
 
   const RenderItem = useCallback(
-    ({ item }: { item: any }) => (
+    ({ item }: { item: UserAppointment }) => (
       <Booking data={item} onCancel={() => {}} onChangeDateTime={() => {}} />
     ),
     []
@@ -50,11 +64,34 @@ const UpcomingBookingsPage = () => {
     ),
     [router]
   );
+  const RenderFooter = useCallback(() => {
+    if (!isFetchingNextPage) return null;
+
+    return <ActivityIndicator color={theme.colors.primaryBlue[100]} />;
+  }, [isFetchingNextPage]);
+
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const handleRefresh = useCallback(() => {
+    setIsRefetching(true);
+    refetch().finally(() => {
+      setIsRefetching(false);
+    });
+  }, [refetch]);
 
   return (
     <FlatList
-      data={[1, 2, 3]}
+      data={userAppointments}
       renderItem={RenderItem}
+      onRefresh={handleRefresh}
+      refreshing={isRefetching}
+      onEndReachedThreshold={0.5}
+      onEndReached={handleEndReached}
+      ListFooterComponent={RenderFooter}
+      showsVerticalScrollIndicator={false}
       ListEmptyComponent={RenderListEmptyComponent}
       keyExtractor={(_, index) => index.toString()}
       contentContainerStyle={[styles.container, { paddingBottom: bottom }]}

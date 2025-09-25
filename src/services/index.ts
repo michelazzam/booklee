@@ -41,4 +41,6 @@ export type {
   Employee,
   BookingService,
   BookingDataResponse,
+  UserAppointment,
+  UserAppointmentsResType,
 } from './appointments/types';

@@ -2,15 +2,17 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useCallback, useRef } from 'react';
 import { Image } from 'expo-image';
 
-import { theme } from '~/src/constants';
+import { type UserAppointment } from '~/src/services';
+
+import { IMAGES, theme } from '~/src/constants';
 
 import { BookingIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
-import { ModifyBookingModal, type ModalWrapperRef } from '../modals';
+import { ModifyBookingModal, type ModalWrapperRef } from '../../../modals';
 import { Icon, Text } from '~/src/components/base';
 
 type BookingProps = {
-  data: any;
   onCancel: () => void;
+  data: UserAppointment;
   onChangeDateTime: () => void;
 };
 
@@ -19,31 +21,7 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
   const modifyBookingModalRef = useRef<ModalWrapperRef>(null);
 
   /***** Constants *****/
-  const {
-    rating = 4.0,
-    city = 'Beirut',
-    totalPrice = '10',
-    name = 'Luxe Locks',
-    date = 'Thursday 23 August',
-    time = '12:00 PM - 1hr 30min',
-    image = 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop',
-    services = [
-      {
-        id: '1',
-        servicePrice: '10',
-        clientName: 'John Doe',
-        serviceName: 'Blow-dry',
-        serviceDuration: '45 min',
-      },
-      {
-        id: '2',
-        servicePrice: '15',
-        clientName: 'Jane Doe',
-        serviceName: 'Hairstyle',
-        serviceDuration: '45 min',
-      },
-    ],
-  } = data;
+  const { _id, notes, items, status, startAt, clientName, totalPrice } = data;
 
   const RenderService = useCallback(({ service }: { service: any }) => {
     const { serviceName, clientName, servicePrice, serviceDuration } = service;
@@ -69,34 +47,27 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
     <>
       <View style={styles.container}>
         <View style={[styles.headerContainer, styles.borderStyle]}>
-          <Image
-            source={image}
-            priority="high"
-            transition={100}
-            contentFit="cover"
-            cachePolicy="memory-disk"
-            style={styles.imageStyle}
-          />
+          <Image contentFit="cover" style={styles.imageStyle} source={IMAGES.onboarding.location} />
 
           <View style={styles.infoContainer}>
             <View style={{ gap: theme.spacing.md }}>
               <Text size={theme.typography.fontSizes.lg} weight={'bold'}>
-                {name}
+                {clientName}
               </Text>
 
               <View style={styles.ratingContainer}>
                 <StarIcon />
 
                 <Text
-                  size={theme.typography.fontSizes.xs}
                   weight={'bold'}
-                  style={{ marginBottom: 4 }}>
-                  {rating}
+                  style={{ marginBottom: 4 }}
+                  size={theme.typography.fontSizes.xs}>
+                  {4.0}
                 </Text>
               </View>
             </View>
 
-            <Text size={theme.typography.fontSizes.sm}>{city}</Text>
+            <Text size={theme.typography.fontSizes.sm}>Beirut</Text>
           </View>
         </View>
 
@@ -106,7 +77,7 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
               <BookingIcon />
             </View>
 
-            <Text size={theme.typography.fontSizes.sm}>{date}</Text>
+            <Text size={theme.typography.fontSizes.sm}>{startAt}</Text>
           </View>
 
           <View style={styles.bookingDetailsItem}>
@@ -114,12 +85,12 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
               <ClockIcon />
             </View>
 
-            <Text size={theme.typography.fontSizes.sm}>{time}</Text>
+            <Text size={theme.typography.fontSizes.sm}>12:00 PM - 1hr 30min</Text>
           </View>
         </View>
 
         <View style={styles.paymentDetailsContainer}>
-          {services.map((service: any) => (
+          {items.map((service: any) => (
             <RenderService key={service.id} service={service} />
           ))}
 
