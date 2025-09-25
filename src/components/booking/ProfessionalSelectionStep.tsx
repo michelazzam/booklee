@@ -1,11 +1,42 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useState, useMemo } from 'react';
+import Animated, { FadeIn, FadeOut, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 import { theme } from '~/src/constants/theme';
 import { Text } from '../base';
 import { AppointmentServices } from '~/src/services';
 import type { Employee, SelectedService } from '~/src/services';
 import { CoupleIcon, GroupIcon, StarIcon } from '~/src/assets/icons';
+
+type AnimatedButtonProps = {
+  style?: any;
+  isSelected?: boolean;
+  onPress?: () => void;
+  children: React.ReactNode;
+};
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedButton = ({ style, onPress, children, isSelected = false }: AnimatedButtonProps) => {
+  /*** Animations ***/
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      borderColor: withTiming(isSelected ? theme.colors.darkText['100'] : theme.colors.border, {
+        duration: 300,
+      }),
+      transform: [
+        {
+          scale: withTiming(isSelected ? 1.02 : 1, { duration: 300 }),
+        },
+      ],
+    };
+  });
+
+  return (
+    <AnimatedTouchableOpacity onPress={onPress} activeOpacity={0.8} style={[style, animatedStyle]}>
+      {children}
+    </AnimatedTouchableOpacity>
+  );
+};
 
 type ProfessionalSelectionStepProps = {
   locationId: string;
@@ -23,7 +54,10 @@ const ProfessionalSelectionStep = ({
   onOptionChosen,
 }: ProfessionalSelectionStepProps) => {
   const { data: bookingData } = AppointmentServices.useGetLocationBookingData(locationId);
-  const employees = bookingData?.data?.employees || [];
+  const employees = useMemo(
+    () => bookingData?.data?.employees || [],
+    [bookingData?.data?.employees]
+  );
 
   // UI state: initially only show the two options; reveal details if user chooses to select professional
   const [showDetailedSelection, setShowDetailedSelection] = useState(false);
@@ -48,18 +82,19 @@ const ProfessionalSelectionStep = ({
     <View style={styles.container}>
       <View style={styles.optionsContainer}>
         {/* Any Professional Option */}
-        <TouchableOpacity
-          style={[
-            styles.optionCard,
-            selectedOption === 'any' && styles.optionCardSelected,
-          ]}
+        <AnimatedButton
+          style={styles.optionCard}
+          isSelected={selectedOption === 'any'}
           onPress={() => {
             // For each selected service, pick a random employee who can perform it.
             // If none found, fall back to any random employee.
             selectedServices.forEach((service) => {
-              const serviceEmployees = employees.filter((emp) => emp.serviceIds.includes(service.id));
+              const serviceEmployees = employees.filter((emp) =>
+                emp.serviceIds.includes(service.id)
+              );
               const pool = serviceEmployees.length > 0 ? serviceEmployees : employees;
-              const random = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
+              const random =
+                pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
               onEmployeeSelect(service.id, random);
             });
             // Keep the details hidden; user can proceed with Next
@@ -68,7 +103,7 @@ const ProfessionalSelectionStep = ({
             onOptionChosen?.(true);
           }}>
           <View style={styles.optionIconContainer}>
-            <GroupIcon  />
+            <GroupIcon />
           </View>
           <Text size={theme.typography.fontSizes.md} weight="semiBold" style={styles.optionTitle}>
             Any Professional
@@ -79,24 +114,22 @@ const ProfessionalSelectionStep = ({
             style={styles.optionSubtitle}>
             for maximum availability
           </Text>
-        </TouchableOpacity>
+        </AnimatedButton>
 
         {/* Specific Professional Option */}
-        <TouchableOpacity
-          style={[
-            styles.optionCard,
-            (showDetailedSelection || selectedOption === 'specific') && styles.optionCardSelected,
-          ]}
+        <AnimatedButton
+          isSelected={selectedOption === 'specific'}
+          style={styles.optionCard}
           onPress={() => {
             setShowDetailedSelection(true);
             setSelectedOption('specific');
             onOptionChosen?.(true);
           }}>
           <View style={styles.optionIconContainer}>
-            <CoupleIcon  />
+            <CoupleIcon />
           </View>
           <Text size={theme.typography.fontSizes.md} weight="semiBold" style={styles.optionTitle}>
-            Select professional 
+            Select professional
           </Text>
           <Text
             size={theme.typography.fontSizes.xs}
@@ -104,93 +137,96 @@ const ProfessionalSelectionStep = ({
             style={styles.optionSubtitle}>
             per service
           </Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
 
       {/* Professional List Grouped by Services */}
-      {showDetailedSelection && employeesByService.map(({ service, employees: serviceEmployees }) => (
-        <View key={service.id} style={styles.serviceSection}>
-          <Text size={theme.typography.fontSizes.lg} weight="medium" style={styles.serviceTitle}>
-            {service.name.toUpperCase()}
-          </Text>
+      {showDetailedSelection && (
+        <Animated.View
+          exiting={FadeOut.duration(200)}
+          entering={FadeIn.duration(200)}
+          style={{ gap: theme.spacing.xl }}>
+          {employeesByService.map(({ service, employees: serviceEmployees }) => (
+            <View key={service.id} style={styles.serviceSection}>
+              <Text
+                size={theme.typography.fontSizes.lg}
+                weight="medium"
+                style={styles.serviceTitle}>
+                {service.name.toUpperCase()}
+              </Text>
 
-          {serviceEmployees.length > 0 ? (
-            <View style={styles.professionalsGrid}>
-              {/* Anyone option for this service */}
-              <TouchableOpacity
-                style={[
-                  styles.professionalCard,
-                  !selectedEmployeesByService?.[service.id] && styles.professionalCardSelected,
-                ]}
-                onPress={() => onEmployeeSelect(service.id, undefined)}>
-                <View style={styles.professionalIconContainer}>
-                  <GroupIcon  />
-                </View>
-                <Text
-                  size={theme.typography.fontSizes.sm}
-                  weight="semiBold"
-                  style={styles.professionalName}>
-                  Anyone
-                </Text>
-              </TouchableOpacity>
-
-              {serviceEmployees.map((employee) => {
-                // Generate different avatar background colors
-                const avatarColors = ['#4A882E26', '#41637526', '#269FDF26'];
-                const colorIndex = employee.name.length % avatarColors.length;
-                const avatarBgColor = avatarColors[colorIndex];
-
-                return (
-                  <TouchableOpacity
-                    key={`${service.id}-${employee._id}`}
-                    style={[
-                      styles.professionalCard,
-                      selectedEmployeesByService?.[service.id]?._id === employee._id &&
-                        styles.professionalCardSelected,
-                    ]}
-                    onPress={() => onEmployeeSelect(service.id, employee)}>
-                    <View style={[styles.professionalAvatar, { backgroundColor: avatarBgColor }]}>
-                      <Text
-                        size={theme.typography.fontSizes.lg}
-                        weight="bold"
-                        >
-                        {employee.name.charAt(0).toUpperCase()}
-                      </Text>
+              {serviceEmployees.length > 0 ? (
+                <View style={styles.professionalsGrid}>
+                  {/* Anyone option for this service */}
+                  <AnimatedButton
+                    isSelected={!selectedEmployeesByService?.[service.id]}
+                    style={styles.professionalCard}
+                    onPress={() => onEmployeeSelect(service.id, undefined)}>
+                    <View style={styles.professionalIconContainer}>
+                      <GroupIcon />
                     </View>
-
-                    <View style={styles.ratingContainer}>
-                      <StarIcon width={20} height={20} />
-                      <Text size={theme.typography.fontSizes.xs} weight="medium">
-                        {employee.rating}
-                      </Text>
-                    </View>
-
                     <Text
                       size={theme.typography.fontSizes.sm}
                       weight="semiBold"
                       style={styles.professionalName}>
-                      {employee.name}
+                      Anyone
                     </Text>
-                    <Text
-                      size={theme.typography.fontSizes.xs}
-                      color={theme.colors.darkText['50']}
-                      style={styles.professionalTitle}>
-                      {employee.specialties[0] || 'Professional'}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+                  </AnimatedButton>
+
+                  {serviceEmployees.map((employee) => {
+                    // Generate different avatar background colors
+                    const avatarColors = ['#4A882E26', '#41637526', '#269FDF26'];
+                    const colorIndex = employee.name.length % avatarColors.length;
+                    const avatarBgColor = avatarColors[colorIndex];
+
+                    return (
+                      <AnimatedButton
+                        key={`${service.id}-${employee._id}`}
+                        isSelected={selectedEmployeesByService?.[service.id]?._id === employee._id}
+                        style={styles.professionalCard}
+                        onPress={() => onEmployeeSelect(service.id, employee)}>
+                        <View
+                          style={[styles.professionalAvatar, { backgroundColor: avatarBgColor }]}>
+                          <Text size={theme.typography.fontSizes.lg} weight="bold">
+                            {employee.name.charAt(0).toUpperCase()}
+                          </Text>
+                        </View>
+
+                        <View style={styles.ratingContainer}>
+                          <StarIcon width={20} height={20} />
+                          <Text size={theme.typography.fontSizes.xs} weight="medium">
+                            {employee.rating}
+                          </Text>
+                        </View>
+
+                        <Text
+                          size={theme.typography.fontSizes.sm}
+                          weight="semiBold"
+                          style={styles.professionalName}>
+                          {employee.name}
+                        </Text>
+                        <Text
+                          size={theme.typography.fontSizes.xs}
+                          color={theme.colors.darkText['50']}
+                          style={styles.professionalTitle}>
+                          {employee.specialties[0] || 'Professional'}
+                        </Text>
+                      </AnimatedButton>
+                    );
+                  })}
+                </View>
+              ) : (
+                <Text
+                  size={theme.typography.fontSizes.sm}
+                  color={theme.colors.darkText['50']}
+                  style={styles.noEmployeesText}>
+                  No professionals available for this service
+                </Text>
+              )}
             </View>
-          ) : (
-            <Text
-              size={theme.typography.fontSizes.sm}
-              color={theme.colors.darkText['50']}
-              style={styles.noEmployeesText}>
-              No professionals available for this service
-            </Text>
-          )}
-        </View>
-      ))}
+          ))}
+        </Animated.View>
+      )}
     </View>
   );
 };
@@ -217,11 +253,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.white.DEFAULT,
     minHeight: 200,
     justifyContent: 'center',
-  },
-  optionCardSelected: {
-    borderColor: theme.colors.darkText['100'],
-    borderWidth: 1,
-    backgroundColor: theme.colors.white.DEFAULT,
   },
   optionIconContainer: {
     marginBottom: theme.spacing.xl,
@@ -250,18 +281,12 @@ const styles = StyleSheet.create({
     minHeight: 200,
     justifyContent: 'center',
   },
-  professionalCardSelected: {
-    borderColor: theme.colors.darkText['100'],
-    borderWidth: 1,
-    backgroundColor: theme.colors.white.DEFAULT,
-  },
   professionalAvatar: {
     width: 50,
     height: 50,
-    borderRadius: "100%",
+    borderRadius: '100%',
     alignItems: 'center',
     justifyContent: 'center',
- 
   },
   professionalIconContainer: {
     width: 40,
