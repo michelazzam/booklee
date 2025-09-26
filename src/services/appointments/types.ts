@@ -62,17 +62,15 @@ export type BookingDataResponse = {
 
 /*** Booking Flow Types ***/
 export type BookingStep = 'service' | 'professional' | 'datetime' | 'confirm';
-
 export type SelectedService = {
   id: string;
   name: string;
   price: number;
   duration: number;
-  priceType: 'fixed' | 'range' | 'starting';
   priceMin?: number;
   priceMax?: number;
+  priceType: 'fixed' | 'range' | 'starting';
 };
-
 export type BookingData = {
   notes?: string;
   locationId: string;
@@ -84,14 +82,27 @@ export type BookingData = {
 };
 
 /*** User Appointments Type ***/
+export type UserAppointmentLocation = {
+  id: string;
+  name: string;
+  rating: number;
+  photos: string[];
+  geoLocation: {
+    type: string;
+    coordinates: number[];
+  };
+};
 export type UserAppointment = {
-  _id: string;
+  id: string;
   notes: string;
   startAt: string;
   clientName: string;
   totalPrice: number;
+  totalServices: number;
   items: AppointmentItem[];
   status: AppointmentStatus;
+  totalDurationMinutes: number;
+  location: UserAppointmentLocation;
 };
 export type UserAppointmentsReqType = {
   past?: boolean;

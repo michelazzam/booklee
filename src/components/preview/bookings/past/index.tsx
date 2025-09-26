@@ -1,4 +1,5 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { formatDate } from 'date-fns';
 import { useMemo } from 'react';
 
 import { type UserAppointment } from '~/src/services';
@@ -15,7 +16,18 @@ type PastBookingsProps = {
 
 const PastBookings = ({ data }: PastBookingsProps) => {
   /*** Constants ***/
-  const { _id, notes, items, status, startAt, clientName, totalPrice } = data;
+  const {
+    id,
+    notes,
+    items,
+    status,
+    startAt,
+    clientName,
+    totalPrice,
+    location,
+    totalServices,
+    totalDurationMinutes,
+  } = data;
 
   const statusConfig = useMemo(() => {
     switch (status) {
@@ -58,8 +70,8 @@ const PastBookings = ({ data }: PastBookingsProps) => {
 
       <View style={styles.contentContainer}>
         <View style={styles.locationContainer}>
-          {false ? (
-            <Image source={IMAGES.onboarding.location} style={styles.locationImage} />
+          {location.photos?.[0] ? (
+            <Image source={{ uri: location.photos?.[0] }} style={styles.locationImage} />
           ) : (
             <View style={styles.locationImagePlaceholder}>
               <AppLogo width={24} height={24} />
@@ -72,7 +84,7 @@ const PastBookings = ({ data }: PastBookingsProps) => {
                 size={theme.typography.fontSizes.sm}
                 weight="semiBold"
                 style={{ flexShrink: 1 }}>
-                Harmony Haven
+                {location.name}
               </Text>
 
               <View style={styles.ratingContainer}>
@@ -82,18 +94,18 @@ const PastBookings = ({ data }: PastBookingsProps) => {
                   weight="semiBold"
                   color={theme.colors.darkText[100]}
                   size={theme.typography.fontSizes.md}>
-                  4.0
+                  {location.rating}
                 </Text>
               </View>
             </View>
 
             <View style={{ gap: theme.spacing.xs }}>
               <Text size={theme.typography.fontSizes.sm} color={theme.colors.lightText}>
-                Thursday 23 AUG
+                {formatDate(startAt, 'EEEE dd MMM')}
               </Text>
 
               <Text size={theme.typography.fontSizes.sm} color={theme.colors.lightText}>
-                2 Services | Total: $20
+                {totalServices} Services | Total: ${totalPrice}
               </Text>
             </View>
 
