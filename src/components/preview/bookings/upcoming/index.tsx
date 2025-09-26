@@ -1,12 +1,13 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useCallback, useRef } from 'react';
+import { formatDate } from 'date-fns';
 import { Image } from 'expo-image';
 
-import { type UserAppointment } from '~/src/services';
+import { type AppointmentItem, type UserAppointment } from '~/src/services';
 
-import { IMAGES, theme } from '~/src/constants';
+import { theme } from '~/src/constants';
 
-import { BookingIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
+import { AppLogo, BookingIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
 import { ModifyBookingModal, type ModalWrapperRef } from '../../../modals';
 import { Icon, Text } from '~/src/components/base';
 
@@ -21,23 +22,25 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
   const modifyBookingModalRef = useRef<ModalWrapperRef>(null);
 
   /***** Constants *****/
-  const { _id, notes, items, status, startAt, clientName, totalPrice } = data;
+  const { items, startAt, location, totalPrice, totalDurationMinutes } = data;
 
-  const RenderService = useCallback(({ service }: { service: any }) => {
-    const { serviceName, clientName, servicePrice, serviceDuration } = service;
+  const RenderService = useCallback(({ service }: { service: AppointmentItem }) => {
+    const { serviceName, price, employeeName, durationMinutes } = service;
 
     return (
       <View style={styles.paymentDetailsItem}>
-        <View>
+        <View style={{ gap: theme.spacing.xs }}>
           <Text size={theme.typography.fontSizes.md}>{serviceName}</Text>
 
-          <Text size={theme.typography.fontSizes.xs}>{clientName}</Text>
+          <Text size={theme.typography.fontSizes.xs} style={{ textTransform: 'capitalize' }}>
+            {employeeName}
+          </Text>
         </View>
 
         <View style={{ alignItems: 'flex-end' }}>
-          <Text size={theme.typography.fontSizes.xs}>Starting {servicePrice} $</Text>
+          <Text size={theme.typography.fontSizes.xs}>Starting {price} $</Text>
 
-          <Text size={theme.typography.fontSizes.xs}>{serviceDuration}</Text>
+          <Text size={theme.typography.fontSizes.xs}>{durationMinutes}</Text>
         </View>
       </View>
     );
@@ -47,12 +50,22 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
     <>
       <View style={styles.container}>
         <View style={[styles.headerContainer, styles.borderStyle]}>
-          <Image contentFit="cover" style={styles.imageStyle} source={IMAGES.onboarding.location} />
+          {location.photos?.[0] ? (
+            <Image
+              contentFit="cover"
+              style={styles.imageStyle}
+              source={{ uri: location.photos?.[0] }}
+            />
+          ) : (
+            <View style={styles.imageStylePlaceholder}>
+              <AppLogo width={24} height={24} />
+            </View>
+          )}
 
           <View style={styles.infoContainer}>
             <View style={{ gap: theme.spacing.md }}>
               <Text size={theme.typography.fontSizes.lg} weight={'bold'}>
-                {clientName}
+                {location.name}
               </Text>
 
               <View style={styles.ratingContainer}>
@@ -62,12 +75,12 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
                   weight={'bold'}
                   style={{ marginBottom: 4 }}
                   size={theme.typography.fontSizes.xs}>
-                  {4.0}
+                  {location.rating}
                 </Text>
               </View>
             </View>
 
-            <Text size={theme.typography.fontSizes.sm}>Beirut</Text>
+            <Text size={theme.typography.fontSizes.sm}>CityName is needed from BE</Text>
           </View>
         </View>
 
@@ -77,7 +90,7 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
               <BookingIcon />
             </View>
 
-            <Text size={theme.typography.fontSizes.sm}>{startAt}</Text>
+            <Text size={theme.typography.fontSizes.sm}>{formatDate(startAt, 'EEEE dd MMM')}</Text>
           </View>
 
           <View style={styles.bookingDetailsItem}>
@@ -85,14 +98,18 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
               <ClockIcon />
             </View>
 
-            <Text size={theme.typography.fontSizes.sm}>12:00 PM - 1hr 30min</Text>
+            <Text size={theme.typography.fontSizes.sm}>
+              {formatDate(startAt, 'HH:mm')} - {totalDurationMinutes} min
+            </Text>
           </View>
         </View>
 
         <View style={styles.paymentDetailsContainer}>
-          {items.map((service: any) => (
-            <RenderService key={service.id} service={service} />
-          ))}
+          <View style={{ gap: theme.spacing.xl }}>
+            {items.map((service, index) => (
+              <RenderService key={index} service={service} />
+            ))}
+          </View>
 
           <View style={styles.dashedLine} />
 
@@ -152,6 +169,14 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: theme.radii.md,
   },
+  imageStylePlaceholder: {
+    width: 100,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radii.md,
+    backgroundColor: theme.colors.lightText + '70',
+  },
   infoContainer: {
     flex: 1,
     justifyContent: 'space-between',
@@ -178,7 +203,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   paymentDetailsContainer: {
-    gap: theme.spacing.xl,
+    gap: theme.spacing.md,
     padding: theme.spacing.md,
     backgroundColor: '#EBEAEA',
     borderRadius: theme.radii.md,
