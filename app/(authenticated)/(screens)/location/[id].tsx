@@ -24,7 +24,6 @@ const SalonDetailPage = () => {
   const router = useRouter();
   const { top, bottom } = useAppSafeAreaInsets();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
-  console.log('id', id);
   const { data: location, isLoading } = LocationServices.useGetLocationById(id || '');
   const { photos, name, address, category, rating, phone, teamSize, bookable, tags } =
     location || {};
@@ -168,7 +167,12 @@ const SalonDetailPage = () => {
                   weight={'bold'}
                   size={theme.typography.fontSizes.sm}
                   style={{ textDecorationLine: 'underline' }}
-                  onPress={() => router.navigate('/(authenticated)/(screens)/location/rating')}>
+                  onPress={() =>
+                    router.navigate({
+                      params: { id },
+                      pathname: '/(authenticated)/(screens)/location/rating',
+                    })
+                  }>
                   {rating}
                 </Text>
               </View>
@@ -215,10 +219,10 @@ const SalonDetailPage = () => {
               }, 0)}
             </Text>
 
-              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
-                {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
-              </Text>
-            </View>
+            <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+              {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
+            </Text>
+          </View>
 
           <Button title="Next" onPress={handleBookingNext} width={180} />
         </Animated.View>

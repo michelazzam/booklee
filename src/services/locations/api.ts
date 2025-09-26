@@ -8,6 +8,8 @@ import type {
   DeleteSearchHistoryResType,
   GetSearchHistoryResType,
   GetLocationByIdResType,
+  LocationRatingReqType,
+  LocationRatingResType,
   GetLocationsReqType,
   GetLocationsResType,
   SearchReqType,
@@ -123,6 +125,30 @@ export const deleteSearchHistoryApi = async () => {
   const [response, error] = await withErrorCatch(
     apiClient.delete<DeleteSearchHistoryResType>(`user/searchHistory`)
   );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API to get location ratings ***/
+export const getLocationRatingsApi = async (filters?: LocationRatingReqType) => {
+  let url = '/reviews';
+
+  if (filters) {
+    url += `?${Object.entries(filters)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&')}`;
+  }
+
+  const [response, error] = await withErrorCatch(apiClient.get<LocationRatingResType>(url));
 
   if (error instanceof AxiosError) {
     throw {

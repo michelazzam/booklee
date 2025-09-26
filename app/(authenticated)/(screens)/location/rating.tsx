@@ -1,11 +1,14 @@
 import { View, StyleSheet, FlatList } from 'react-native';
+// import { useLocalSearchParams } from 'expo-router';
 import { useCallback } from 'react';
+
+// import { LocationServices } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants';
 
+import { DropDown, StarContainer } from '~/src/components/utils';
 import { HeaderNavigation, Text } from '~/src/components/base';
-import { StarContainer } from '~/src/components/utils';
 import { Review } from '~/src/components/preview';
 
 const starContainerData = {
@@ -21,7 +24,6 @@ const starContainerData = {
     { stars: 1, count: 0, percentage: 0 },
   ],
 };
-
 const fakeReviews = [
   {
     name: 'Sarah Johnson',
@@ -55,9 +57,20 @@ const fakeReviews = [
   },
 ];
 
+const FILTER_ITEMS = [
+  { label: 'Latest', value: 'latest' },
+  { label: 'Oldest', value: 'oldest' },
+  { label: 'Lowest Rating', value: 'lowest' },
+  { label: 'Highest Rating', value: 'highest' },
+];
+
 const LocationRatingPage = () => {
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
+  // const { id } = useLocalSearchParams<{ id: string }>();
+  // const { data } = LocationServices.useGetLocationRatings({
+  //   locationId: id,
+  // });
 
   const RenderHeaderItem = useCallback(() => {
     return (
@@ -68,6 +81,8 @@ const LocationRatingPage = () => {
 
         <View style={styles.reviewsSortContainer}>
           <Text size={theme.typography.fontSizes.sm}>Sort by</Text>
+
+          <DropDown items={FILTER_ITEMS} onSelect={() => {}} />
         </View>
       </View>
     );
@@ -91,6 +106,7 @@ const LocationRatingPage = () => {
         renderItem={RenderItem}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={RenderHeaderItem}
+        ListHeaderComponentStyle={{ zIndex: 1000 }}
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
       />
@@ -103,7 +119,7 @@ export default LocationRatingPage;
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    gap: theme.spacing.xl,
+    gap: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
   },
   reviewsHeaderContainer: {
@@ -114,6 +130,6 @@ const styles = StyleSheet.create({
   reviewsSortContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
+    gap: theme.spacing.sm,
   },
 });
