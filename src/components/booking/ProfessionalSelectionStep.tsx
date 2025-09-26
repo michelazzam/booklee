@@ -1,6 +1,6 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useState, useMemo } from 'react';
-import Animated, { FadeIn, FadeOut, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 import { theme } from '~/src/constants/theme';
 import { Text } from '../base';
@@ -94,17 +94,12 @@ const ProfessionalSelectionStep = ({
           style={styles.optionCard}
           isSelected={selectedOption === 'any'}
           onPress={() => {
-            // For each selected service, pick a random employee who can perform it.
-            // If none found, fall back to any random employee.
-            selectedServices.forEach((service) => {
-              const serviceEmployees = employees.filter((emp) =>
-                emp.serviceIds.includes(service.id)
-              );
-              const pool = serviceEmployees.length > 0 ? serviceEmployees : employees;
-              const random =
-                pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
-              onEmployeeSelect(service.id, random);
-            });
+            // Select any available employee for the service
+            const serviceEmployees = employees.filter((emp) => emp.serviceIds.includes(service.id));
+            const pool = serviceEmployees.length > 0 ? serviceEmployees : employees;
+            const random =
+              pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
+            onEmployeeSelect(random);
             // Keep the details hidden; user can proceed with Next
             setShowDetailedSelection(false);
             setSelectedOption('any');
@@ -201,74 +196,28 @@ const ProfessionalSelectionStep = ({
                       </Text>
                     </View>
 
-              {serviceEmployees.length > 0 ? (
-                <View style={styles.professionalsGrid}>
-                  {/* Anyone option for this service */}
-                  <AnimatedButton
-                    isSelected={!selectedEmployeesByService?.[service.id]}
-                    style={styles.professionalCard}
-                    onPress={() => onEmployeeSelect(service.id, undefined)}>
-                    <View style={styles.professionalIconContainer}>
-                      <GroupIcon />
+                    <View style={styles.ratingContainer}>
+                      <StarIcon width={20} height={20} />
+                      <Text size={theme.typography.fontSizes.xs} weight="medium">
+                        {employee.rating}
+                      </Text>
                     </View>
+
                     <Text
                       size={theme.typography.fontSizes.sm}
                       weight="semiBold"
                       style={styles.professionalName}>
-                      Anyone
+                      {employee.name}
                     </Text>
-                  </AnimatedButton>
-
-                  {serviceEmployees.map((employee) => {
-                    // Generate different avatar background colors
-                    const avatarColors = ['#4A882E26', '#41637526', '#269FDF26'];
-                    const colorIndex = employee.name.length % avatarColors.length;
-                    const avatarBgColor = avatarColors[colorIndex];
-
-                    return (
-                      <AnimatedButton
-                        key={`${service.id}-${employee._id}`}
-                        isSelected={selectedEmployeesByService?.[service.id]?._id === employee._id}
-                        style={styles.professionalCard}
-                        onPress={() => onEmployeeSelect(service.id, employee)}>
-                        <View
-                          style={[styles.professionalAvatar, { backgroundColor: avatarBgColor }]}>
-                          <Text size={theme.typography.fontSizes.lg} weight="bold">
-                            {employee.name.charAt(0).toUpperCase()}
-                          </Text>
-                        </View>
-
-                        <View style={styles.ratingContainer}>
-                          <StarIcon width={20} height={20} />
-                          <Text size={theme.typography.fontSizes.xs} weight="medium">
-                            {employee.rating}
-                          </Text>
-                        </View>
-
-                        <Text
-                          size={theme.typography.fontSizes.sm}
-                          weight="semiBold"
-                          style={styles.professionalName}>
-                          {employee.name}
-                        </Text>
-                        <Text
-                          size={theme.typography.fontSizes.xs}
-                          color={theme.colors.darkText['50']}
-                          style={styles.professionalTitle}>
-                          {employee.specialties[0] || 'Professional'}
-                        </Text>
-                      </AnimatedButton>
-                    );
-                  })}
-                </View>
-              ) : (
-                <Text
-                  size={theme.typography.fontSizes.sm}
-                  color={theme.colors.darkText['50']}
-                  style={styles.noEmployeesText}>
-                  No professionals available for this service
-                </Text>
-              )}
+                    <Text
+                      size={theme.typography.fontSizes.xs}
+                      color={theme.colors.darkText['50']}
+                      style={styles.professionalTitle}>
+                      {employee.specialties[0] || 'Professional'}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           ) : (
             <Text
@@ -334,10 +283,14 @@ const styles = StyleSheet.create({
     minHeight: 200,
     justifyContent: 'center',
   },
+  professionalCardSelected: {
+    borderColor: theme.colors.darkText['100'],
+    backgroundColor: theme.colors.lightText,
+  },
   professionalAvatar: {
     width: 50,
     height: 50,
-    borderRadius: '100%',
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
   },
