@@ -196,31 +196,31 @@ const SalonDetailPage = () => {
             ]}
           />
         </View>
+      </ScrollView>
 
-        {selectedServices.length > 0 && (
-          <Animated.View
-            style={styles.bookingBar}
-            exiting={FadeOut.duration(200)}
-            entering={FadeIn.duration(200)}>
-            <View style={styles.bookingInfo}>
-              <Text size={theme.typography.fontSizes.md} weight="bold">
-                Starting $
-                {selectedServiceData.reduce((total, service) => {
-                  if (service.priceType === 'fixed') return total + service.price;
-                  if (service.priceType === 'starting') return total + service.price;
-                  return total + (service.priceMin || service.price);
-                }, 0)}
-              </Text>
+      {selectedServices.length > 0 && (
+        <Animated.View
+          style={[styles.bookingBar, { bottom: bottom }]}
+          exiting={FadeOut.duration(200)}
+          entering={FadeIn.duration(200)}>
+          <View style={styles.bookingInfo}>
+            <Text size={theme.typography.fontSizes.md} weight="bold">
+              Starting $
+              {selectedServiceData.reduce((total, service) => {
+                if (service.priceType === 'fixed') return total + service.price;
+                if (service.priceType === 'starting') return total + service.price;
+                return total + (service.priceMin || service.price);
+              }, 0)}
+            </Text>
 
               <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
                 {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
               </Text>
             </View>
 
-            <Button title="Next" onPress={handleBookingNext} width={180} />
-          </Animated.View>
-        )}
-      </ScrollView>
+          <Button title="Next" onPress={handleBookingNext} width={180} />
+        </Animated.View>
+      )}
     </>
   );
 };
@@ -281,8 +281,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: theme.spacing.md,
     justifyContent: 'space-between',
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
     backgroundColor: theme.colors.white.DEFAULT,
   },
   bookingInfo: {

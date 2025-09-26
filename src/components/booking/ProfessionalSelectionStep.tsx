@@ -1,11 +1,42 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useState, useMemo } from 'react';
+import Animated, { FadeIn, FadeOut, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 import { theme } from '~/src/constants/theme';
 import { Text } from '../base';
 import { AppointmentServices } from '~/src/services';
 import type { Employee, SelectedService, AvailabilityResponse } from '~/src/services';
 import { CoupleIcon, GroupIcon, StarIcon } from '~/src/assets/icons';
+
+type AnimatedButtonProps = {
+  style?: any;
+  isSelected?: boolean;
+  onPress?: () => void;
+  children: React.ReactNode;
+};
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedButton = ({ style, onPress, children, isSelected = false }: AnimatedButtonProps) => {
+  /*** Animations ***/
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      borderColor: withTiming(isSelected ? theme.colors.darkText['100'] : theme.colors.border, {
+        duration: 300,
+      }),
+      transform: [
+        {
+          scale: withTiming(isSelected ? 1.02 : 1, { duration: 300 }),
+        },
+      ],
+    };
+  });
+
+  return (
+    <AnimatedTouchableOpacity onPress={onPress} activeOpacity={0.8} style={[style, animatedStyle]}>
+      {children}
+    </AnimatedTouchableOpacity>
+  );
+};
 
 type ProfessionalSelectionStepProps = {
   locationId: string;
@@ -24,6 +55,12 @@ const ProfessionalSelectionStep = ({
   onEmployeeSelect,
   onOptionChosen,
 }: ProfessionalSelectionStepProps) => {
+  const { data: bookingData } = AppointmentServices.useGetLocationBookingData(locationId);
+  const employees = useMemo(
+    () => bookingData?.data?.employees || [],
+    [bookingData?.data?.employees]
+  );
+
   // UI state: initially only show the two options; reveal details if user chooses to select professional
   const [showDetailedSelection, setShowDetailedSelection] = useState(false);
   const [selectedOption, setSelectedOption] = useState<'any' | 'specific' | undefined>(undefined);
@@ -53,11 +90,22 @@ const ProfessionalSelectionStep = ({
     <View style={styles.container}>
       <View style={styles.optionsContainer}>
         {/* Any Professional Option */}
-        <TouchableOpacity
-          style={[styles.optionCard, selectedOption === 'any' && styles.optionCardSelected]}
+        <AnimatedButton
+          style={styles.optionCard}
+          isSelected={selectedOption === 'any'}
           onPress={() => {
-            // Select any available employee (will be chosen at booking time from available ones)
-            onEmployeeSelect(undefined);
+            // For each selected service, pick a random employee who can perform it.
+            // If none found, fall back to any random employee.
+            selectedServices.forEach((service) => {
+              const serviceEmployees = employees.filter((emp) =>
+                emp.serviceIds.includes(service.id)
+              );
+              const pool = serviceEmployees.length > 0 ? serviceEmployees : employees;
+              const random =
+                pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
+              onEmployeeSelect(service.id, random);
+            });
+            // Keep the details hidden; user can proceed with Next
             setShowDetailedSelection(false);
             setSelectedOption('any');
             onOptionChosen?.(true);
@@ -74,14 +122,12 @@ const ProfessionalSelectionStep = ({
             style={styles.optionSubtitle}>
             for maximum availability
           </Text>
-        </TouchableOpacity>
+        </AnimatedButton>
 
         {/* Specific Professional Option */}
-        <TouchableOpacity
-          style={[
-            styles.optionCard,
-            (showDetailedSelection || selectedOption === 'specific') && styles.optionCardSelected,
-          ]}
+        <AnimatedButton
+          isSelected={selectedOption === 'specific'}
+          style={styles.optionCard}
           onPress={() => {
             setShowDetailedSelection(true);
             setSelectedOption('specific');
@@ -99,7 +145,7 @@ const ProfessionalSelectionStep = ({
             style={styles.optionSubtitle}>
             per service
           </Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
 
       {/* Professional List for Current Service */}
@@ -155,28 +201,74 @@ const ProfessionalSelectionStep = ({
                       </Text>
                     </View>
 
-                    <View style={styles.ratingContainer}>
-                      <StarIcon width={20} height={20} />
-                      <Text size={theme.typography.fontSizes.xs} weight="medium">
-                        {employee.rating}
-                      </Text>
+              {serviceEmployees.length > 0 ? (
+                <View style={styles.professionalsGrid}>
+                  {/* Anyone option for this service */}
+                  <AnimatedButton
+                    isSelected={!selectedEmployeesByService?.[service.id]}
+                    style={styles.professionalCard}
+                    onPress={() => onEmployeeSelect(service.id, undefined)}>
+                    <View style={styles.professionalIconContainer}>
+                      <GroupIcon />
                     </View>
-
                     <Text
                       size={theme.typography.fontSizes.sm}
                       weight="semiBold"
                       style={styles.professionalName}>
-                      {employee.name}
+                      Anyone
                     </Text>
-                    <Text
-                      size={theme.typography.fontSizes.xs}
-                      color={theme.colors.darkText['50']}
-                      style={styles.professionalTitle}>
-                      {employee.specialties[0] || 'Professional'}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+                  </AnimatedButton>
+
+                  {serviceEmployees.map((employee) => {
+                    // Generate different avatar background colors
+                    const avatarColors = ['#4A882E26', '#41637526', '#269FDF26'];
+                    const colorIndex = employee.name.length % avatarColors.length;
+                    const avatarBgColor = avatarColors[colorIndex];
+
+                    return (
+                      <AnimatedButton
+                        key={`${service.id}-${employee._id}`}
+                        isSelected={selectedEmployeesByService?.[service.id]?._id === employee._id}
+                        style={styles.professionalCard}
+                        onPress={() => onEmployeeSelect(service.id, employee)}>
+                        <View
+                          style={[styles.professionalAvatar, { backgroundColor: avatarBgColor }]}>
+                          <Text size={theme.typography.fontSizes.lg} weight="bold">
+                            {employee.name.charAt(0).toUpperCase()}
+                          </Text>
+                        </View>
+
+                        <View style={styles.ratingContainer}>
+                          <StarIcon width={20} height={20} />
+                          <Text size={theme.typography.fontSizes.xs} weight="medium">
+                            {employee.rating}
+                          </Text>
+                        </View>
+
+                        <Text
+                          size={theme.typography.fontSizes.sm}
+                          weight="semiBold"
+                          style={styles.professionalName}>
+                          {employee.name}
+                        </Text>
+                        <Text
+                          size={theme.typography.fontSizes.xs}
+                          color={theme.colors.darkText['50']}
+                          style={styles.professionalTitle}>
+                          {employee.specialties[0] || 'Professional'}
+                        </Text>
+                      </AnimatedButton>
+                    );
+                  })}
+                </View>
+              ) : (
+                <Text
+                  size={theme.typography.fontSizes.sm}
+                  color={theme.colors.darkText['50']}
+                  style={styles.noEmployeesText}>
+                  No professionals available for this service
+                </Text>
+              )}
             </View>
           ) : (
             <Text
@@ -215,11 +307,6 @@ const styles = StyleSheet.create({
     minHeight: 200,
     justifyContent: 'center',
   },
-  optionCardSelected: {
-    borderColor: theme.colors.darkText['100'],
-    borderWidth: 1,
-    backgroundColor: theme.colors.white.DEFAULT,
-  },
   optionIconContainer: {
     marginBottom: theme.spacing.xl,
   },
@@ -246,11 +333,6 @@ const styles = StyleSheet.create({
     width: '48%',
     minHeight: 200,
     justifyContent: 'center',
-  },
-  professionalCardSelected: {
-    borderColor: theme.colors.darkText['100'],
-    borderWidth: 1,
-    backgroundColor: theme.colors.white.DEFAULT,
   },
   professionalAvatar: {
     width: 50,
