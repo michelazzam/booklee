@@ -10,6 +10,12 @@ export { AppointmentServices } from './appointments/hooks';
 /*** Types ***/
 export type { ResErrorType } from './axios/types';
 export type {
+  ServiceBooking,
+  AvailabilityData,
+  AvailabilityResponse,
+  TimeSlot,
+} from './appointments/types';
+export type {
   BetterAuthUserType,
   AuthErrorType,
   SignUpReqType,
