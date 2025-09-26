@@ -3,6 +3,7 @@ import { View, StyleSheet, TextInput, Image } from 'react-native';
 import { theme } from '~/src/constants/theme';
 import { Text, Icon } from '../base';
 import type { BookingData, DetailedLocationType } from '~/src/services';
+import { AccountIcon } from '~/src/assets/icons';
 
 type ConfirmationStepProps = {
   bookingData: BookingData;
@@ -29,10 +30,6 @@ const ConfirmationStep = ({ bookingData, location, onNotesChange }: Confirmation
   };
 
   const totalPrice = bookingData.selectedServices.reduce((sum, service) => sum + service.price, 0);
-  const totalDuration = bookingData.selectedServices.reduce(
-    (sum, service) => sum + service.duration,
-    0
-  );
 
   const formatDuration = (minutes: number) => {
     if (minutes < 60) {
@@ -75,52 +72,73 @@ const ConfirmationStep = ({ bookingData, location, onNotesChange }: Confirmation
         </View>
       </View>
 
-      {/* Date Card */}
+      {/* Bookings Summary */}
       <View style={styles.card}>
-        <View style={styles.dateTimeContainer}>
-          <View style={styles.dateTimeItem}>
-            <Icon name="calendar-month" size={20} color={theme.colors.darkText['100']} />
-            <Text size={theme.typography.fontSizes.md}>
-              {bookingData.selectedDate
-                ? formatDate(bookingData.selectedDate)
-                : 'Date not selected'}
-            </Text>
-          </View>
+        <Text size={theme.typography.fontSizes.lg} weight="medium" style={styles.sectionTitle}>
+          Your Appointments
+        </Text>
+        {bookingData.selectedServices.map((service) => {
+          const booking = bookingData.serviceBookings[service.id];
+          if (!booking?.selectedDate || !booking?.selectedTime) return null;
 
-          <View style={styles.dateTimeItem}>
-            <Icon name="clock" size={20} color={theme.colors.darkText['100']} />
-            <Text size={theme.typography.fontSizes.md}>
-              {bookingData.selectedTime
-                ? `${formatTime(bookingData.selectedTime)} - ${formatDuration(totalDuration)}`
-                : 'Time not selected'}
-            </Text>
-          </View>
-        </View>
+          return (
+            <View key={service.id} style={styles.appointmentItem}>
+              <Text size={theme.typography.fontSizes.md} weight="medium">
+                {service.name}
+              </Text>
+              <View style={styles.dateTimeContainer}>
+                <View style={styles.dateTimeItem}>
+                  <Icon name="calendar-month" size={16} color={theme.colors.darkText['100']} />
+                  <Text size={theme.typography.fontSizes.sm}>
+                    {formatDate(booking.selectedDate)}
+                  </Text>
+                </View>
+                <View style={styles.dateTimeItem}>
+                  <Icon name="clock" size={16} color={theme.colors.darkText['100']} />
+                  <Text size={theme.typography.fontSizes.sm}>
+                    {formatTime(booking.selectedTime)} ({formatDuration(service.duration)})
+                  </Text>
+                </View>
+                {booking.selectedEmployee && (
+                  <View style={styles.dateTimeItem}>
+                    <AccountIcon width={16} height={16} />
+                    <Text size={theme.typography.fontSizes.sm}>
+                      {booking.selectedEmployee.name}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          );
+        })}
       </View>
 
       {/* Services Summary */}
       <View style={[styles.card, styles.servicesCard]}>
-        {bookingData.selectedServices.map((service) => (
-          <View key={service.id} style={styles.serviceItem}>
-            <View style={styles.serviceInfo}>
-              <Text size={theme.typography.fontSizes.md} weight="medium">
-                {service.name}
-              </Text>
-              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
-                {bookingData.selectedEmployeesByService?.[service.id]?.name || 'Any Professional'}
-              </Text>
+        {bookingData.selectedServices.map((service) => {
+          const booking = bookingData.serviceBookings[service.id];
+          return (
+            <View key={service.id} style={styles.serviceItem}>
+              <View style={styles.serviceInfo}>
+                <Text size={theme.typography.fontSizes.md} weight="medium">
+                  {service.name}
+                </Text>
+                <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+                  {booking?.selectedEmployee?.name || 'Any Professional'}
+                </Text>
+              </View>
+              <View style={styles.servicePrice}>
+                <Text size={theme.typography.fontSizes.md} weight="medium">
+                  {service.priceType === 'starting' ? `Starting ` : ''}
+                  {service.price}$
+                </Text>
+                <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+                  {formatDuration(service.duration)}
+                </Text>
+              </View>
             </View>
-            <View style={styles.servicePrice}>
-              <Text size={theme.typography.fontSizes.md} weight="medium">
-                {service.priceType === 'starting' ? `Starting ` : ''}
-                {service.price}$
-              </Text>
-              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
-                {formatDuration(service.duration)}
-              </Text>
-            </View>
-          </View>
-        ))}
+          );
+        })}
 
         <View style={styles.dashedDivider} />
 
@@ -198,8 +216,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: theme.spacing.xs,
   },
+  sectionTitle: {
+    marginBottom: theme.spacing.md,
+  },
+  appointmentItem: {
+    paddingVertical: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    gap: theme.spacing.sm,
+  },
   dateTimeContainer: {
-    gap: theme.spacing.md,
+    gap: theme.spacing.sm,
   },
   dateTimeItem: {
     flexDirection: 'row',

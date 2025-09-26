@@ -4,71 +4,66 @@ import { useState, useMemo } from 'react';
 import { theme } from '~/src/constants/theme';
 import { Text } from '../base';
 import { AppointmentServices } from '~/src/services';
-import type { Employee, SelectedService } from '~/src/services';
+import type { Employee, SelectedService, AvailabilityResponse } from '~/src/services';
 import { CoupleIcon, GroupIcon, StarIcon } from '~/src/assets/icons';
 
 type ProfessionalSelectionStepProps = {
   locationId: string;
-  selectedServices: SelectedService[];
-  selectedEmployeesByService?: Record<string, Employee | undefined>;
-  onEmployeeSelect: (serviceId: string, employee?: Employee) => void;
+  service: SelectedService;
+  availabilityData?: AvailabilityResponse;
+  selectedEmployee?: Employee;
+  onEmployeeSelect: (employee?: Employee) => void;
   onOptionChosen?: (chosen: boolean) => void;
 };
 
 const ProfessionalSelectionStep = ({
   locationId,
-  selectedServices,
-  selectedEmployeesByService,
+  service,
+  availabilityData,
+  selectedEmployee,
   onEmployeeSelect,
   onOptionChosen,
 }: ProfessionalSelectionStepProps) => {
-  const { data: bookingData } = AppointmentServices.useGetLocationBookingData(locationId);
-  const employees = bookingData?.data?.employees || [];
-
   // UI state: initially only show the two options; reveal details if user chooses to select professional
   const [showDetailedSelection, setShowDetailedSelection] = useState(false);
   const [selectedOption, setSelectedOption] = useState<'any' | 'specific' | undefined>(undefined);
 
-  // Group employees by selected services
-  const employeesByService = useMemo(
-    () =>
-      selectedServices.map((service) => {
-        const serviceEmployees = employees.filter((employee) =>
-          employee.serviceIds.includes(service.id)
-        );
-        return {
-          service,
-          employees: serviceEmployees,
-        };
-      }),
-    [selectedServices, employees]
-  );
+  // Get available employees from availability data
+  const availableEmployees = useMemo(() => {
+    if (!availabilityData) return [];
+
+    const locationData = availabilityData.locationData?.[locationId];
+    if (!locationData) return [];
+
+    // Filter employees who are available for the selected time slot
+    return locationData.employees.filter((employee) => {
+      // Check if employee can perform this service
+      if (!employee.serviceIds.includes(service.id)) return false;
+
+      // Check if employee is available (has at least one slot where they're available)
+      const hasAvailableSlots = availabilityData.availability.slots.some(
+        (slot) => slot.isAvailable && slot.availableEmployeeIds.includes(employee._id)
+      );
+
+      return hasAvailableSlots;
+    });
+  }, [availabilityData, locationId, service.id]);
 
   return (
     <View style={styles.container}>
       <View style={styles.optionsContainer}>
         {/* Any Professional Option */}
         <TouchableOpacity
-          style={[
-            styles.optionCard,
-            selectedOption === 'any' && styles.optionCardSelected,
-          ]}
+          style={[styles.optionCard, selectedOption === 'any' && styles.optionCardSelected]}
           onPress={() => {
-            // For each selected service, pick a random employee who can perform it.
-            // If none found, fall back to any random employee.
-            selectedServices.forEach((service) => {
-              const serviceEmployees = employees.filter((emp) => emp.serviceIds.includes(service.id));
-              const pool = serviceEmployees.length > 0 ? serviceEmployees : employees;
-              const random = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
-              onEmployeeSelect(service.id, random);
-            });
-            // Keep the details hidden; user can proceed with Next
+            // Select any available employee (will be chosen at booking time from available ones)
+            onEmployeeSelect(undefined);
             setShowDetailedSelection(false);
             setSelectedOption('any');
             onOptionChosen?.(true);
           }}>
           <View style={styles.optionIconContainer}>
-            <GroupIcon  />
+            <GroupIcon />
           </View>
           <Text size={theme.typography.fontSizes.md} weight="semiBold" style={styles.optionTitle}>
             Any Professional
@@ -93,10 +88,10 @@ const ProfessionalSelectionStep = ({
             onOptionChosen?.(true);
           }}>
           <View style={styles.optionIconContainer}>
-            <CoupleIcon  />
+            <CoupleIcon />
           </View>
           <Text size={theme.typography.fontSizes.md} weight="semiBold" style={styles.optionTitle}>
-            Select professional 
+            Select professional
           </Text>
           <Text
             size={theme.typography.fontSizes.xs}
@@ -107,24 +102,24 @@ const ProfessionalSelectionStep = ({
         </TouchableOpacity>
       </View>
 
-      {/* Professional List Grouped by Services */}
-      {showDetailedSelection && employeesByService.map(({ service, employees: serviceEmployees }) => (
-        <View key={service.id} style={styles.serviceSection}>
+      {/* Professional List for Current Service */}
+      {showDetailedSelection && (
+        <View style={styles.serviceSection}>
           <Text size={theme.typography.fontSizes.lg} weight="medium" style={styles.serviceTitle}>
             {service.name.toUpperCase()}
           </Text>
 
-          {serviceEmployees.length > 0 ? (
+          {availableEmployees.length > 0 ? (
             <View style={styles.professionalsGrid}>
               {/* Anyone option for this service */}
               <TouchableOpacity
                 style={[
                   styles.professionalCard,
-                  !selectedEmployeesByService?.[service.id] && styles.professionalCardSelected,
+                  !selectedEmployee && styles.professionalCardSelected,
                 ]}
-                onPress={() => onEmployeeSelect(service.id, undefined)}>
+                onPress={() => onEmployeeSelect(undefined)}>
                 <View style={styles.professionalIconContainer}>
-                  <GroupIcon  />
+                  <GroupIcon />
                 </View>
                 <Text
                   size={theme.typography.fontSizes.sm}
@@ -132,9 +127,15 @@ const ProfessionalSelectionStep = ({
                   style={styles.professionalName}>
                   Anyone
                 </Text>
+                <Text
+                  size={theme.typography.fontSizes.xs}
+                  color={theme.colors.darkText['50']}
+                  style={styles.professionalTitle}>
+                  {availableEmployees.length} available
+                </Text>
               </TouchableOpacity>
 
-              {serviceEmployees.map((employee) => {
+              {availableEmployees.map((employee) => {
                 // Generate different avatar background colors
                 const avatarColors = ['#4A882E26', '#41637526', '#269FDF26'];
                 const colorIndex = employee.name.length % avatarColors.length;
@@ -142,18 +143,14 @@ const ProfessionalSelectionStep = ({
 
                 return (
                   <TouchableOpacity
-                    key={`${service.id}-${employee._id}`}
+                    key={employee._id}
                     style={[
                       styles.professionalCard,
-                      selectedEmployeesByService?.[service.id]?._id === employee._id &&
-                        styles.professionalCardSelected,
+                      selectedEmployee?._id === employee._id && styles.professionalCardSelected,
                     ]}
-                    onPress={() => onEmployeeSelect(service.id, employee)}>
+                    onPress={() => onEmployeeSelect(employee)}>
                     <View style={[styles.professionalAvatar, { backgroundColor: avatarBgColor }]}>
-                      <Text
-                        size={theme.typography.fontSizes.lg}
-                        weight="bold"
-                        >
+                      <Text size={theme.typography.fontSizes.lg} weight="bold">
                         {employee.name.charAt(0).toUpperCase()}
                       </Text>
                     </View>
@@ -186,11 +183,11 @@ const ProfessionalSelectionStep = ({
               size={theme.typography.fontSizes.sm}
               color={theme.colors.darkText['50']}
               style={styles.noEmployeesText}>
-              No professionals available for this service
+              No professionals available for the selected time
             </Text>
           )}
         </View>
-      ))}
+      )}
     </View>
   );
 };
@@ -258,10 +255,9 @@ const styles = StyleSheet.create({
   professionalAvatar: {
     width: 50,
     height: 50,
-    borderRadius: "100%",
+    borderRadius: '100%',
     alignItems: 'center',
     justifyContent: 'center',
- 
   },
   professionalIconContainer: {
     width: 40,

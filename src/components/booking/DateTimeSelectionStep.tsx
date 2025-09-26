@@ -5,28 +5,53 @@ import {
   ScrollView,
   PanResponder,
   Animated,
+  Alert,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { useState, useRef } from 'react';
 
 import { theme } from '~/src/constants/theme';
 import { Text, Icon } from '../base';
+import { AppointmentServices } from '~/src/services';
+import type { SelectedService, ServiceBooking, AvailabilityResponse } from '~/src/services';
 
 type DateTimeSelectionStepProps = {
+  service: SelectedService;
+  locationId: string;
   selectedDate?: string;
   selectedTime?: string;
+  serviceBookings: Record<string, ServiceBooking>;
+  hasTimeConflict: (
+    date: string,
+    time: string,
+    duration: number,
+    excludeServiceId?: string
+  ) => boolean;
   onDateSelect: (date: string) => void;
-  onTimeSelect: (time: string) => void;
+  onTimeSelect: (time: string, availabilityData: AvailabilityResponse) => void;
 };
 
 const DateTimeSelectionStep = ({
+  service,
+  locationId,
   selectedDate,
   selectedTime,
+  hasTimeConflict,
   onDateSelect,
   onTimeSelect,
 }: DateTimeSelectionStepProps) => {
   const [showWeekView, setShowWeekView] = useState(false);
   const pan = useRef(new Animated.Value(0)).current;
+
+  // Fetch availability data when date is selected
+  const { data: availabilityData, isLoading: isLoadingAvailability } =
+    AppointmentServices.useGetAvailabilities(
+      locationId,
+      selectedDate || '',
+      service.id,
+      service.duration,
+      !!selectedDate
+    );
 
   // PanResponder for swipe-down gesture
   const panResponder = useRef(
@@ -66,23 +91,8 @@ const DateTimeSelectionStep = ({
     })
   ).current;
 
-  // Available time slots
-  const timeSlots = [
-    '08:45',
-    '09:15',
-    '10:00',
-    '10:30',
-    '11:00',
-    '11:30',
-    '13:00',
-    '15:00',
-    '15:15',
-    '15:30',
-    '16:00',
-    '16:15',
-    '16:45',
-    '17:15',
-  ];
+  // Get time slots from availability data
+  const timeSlots = availabilityData?.availability.slots || [];
 
   const handleDateSelect = (day: any) => {
     if (day && day.dateString) {
@@ -272,27 +282,94 @@ const DateTimeSelectionStep = ({
       {selectedDate && (
         <View style={styles.timeSlotsCard}>
           <Text size={theme.typography.fontSizes.lg} weight="medium" style={styles.timeSlotsTitle}>
-            Available Times
+            Available Times for {service.name}
           </Text>
 
-          <ScrollView style={styles.timeSlots} showsVerticalScrollIndicator={false}>
-            {timeSlots.map((time) => (
-              <TouchableOpacity
-                key={time}
-                style={[styles.timeSlot, selectedTime === time && styles.selectedTimeSlot]}
-                onPress={() => onTimeSelect(time)}>
+          {isLoadingAvailability ? (
+            <View style={styles.loadingContainer}>
+              <Text size={theme.typography.fontSizes.md} color={theme.colors.darkText['50']}>
+                Loading available times...
+              </Text>
+            </View>
+          ) : (
+            <ScrollView style={styles.timeSlots} showsVerticalScrollIndicator={false}>
+              {timeSlots.map((slot) => {
+                const hasConflict = hasTimeConflict(
+                  selectedDate,
+                  slot.value,
+                  service.duration,
+                  service.id
+                );
+                const isDisabled = !slot.isAvailable || hasConflict;
+                const isSelected = selectedTime === slot.value;
+
+                return (
+                  <TouchableOpacity
+                    key={slot.value}
+                    style={[
+                      styles.timeSlot,
+                      isSelected && styles.selectedTimeSlot,
+                      isDisabled && styles.disabledTimeSlot,
+                    ]}
+                    disabled={isDisabled}
+                    onPress={() => {
+                      if (hasConflict) {
+                        Alert.alert(
+                          'Time Conflict',
+                          'This time slot conflicts with another service booking. Please choose a different time.'
+                        );
+                        return;
+                      }
+                      if (availabilityData) {
+                        onTimeSelect(slot.value, availabilityData);
+                      }
+                    }}>
+                    <View style={styles.timeSlotContent}>
+                      <Text
+                        size={theme.typography.fontSizes.md}
+                        color={
+                          isDisabled
+                            ? theme.colors.darkText['25']
+                            : isSelected
+                              ? theme.colors.white.DEFAULT
+                              : theme.colors.darkText['100']
+                        }>
+                        {slot.label}
+                      </Text>
+                      {hasConflict && (
+                        <Text size={theme.typography.fontSizes.xs} color={theme.colors.red['100']}>
+                          Conflicts with other service
+                        </Text>
+                      )}
+                      {!hasConflict && !slot.isAvailable && (
+                        <Text
+                          size={theme.typography.fontSizes.xs}
+                          color={theme.colors.darkText['50']}>
+                          {slot.reason || 'Not available'}
+                        </Text>
+                      )}
+                      {!hasConflict && slot.isAvailable && (
+                        <Text
+                          size={theme.typography.fontSizes.xs}
+                          color={theme.colors.darkText['50']}>
+                          {slot.availableEmployeeCount} professional
+                          {slot.availableEmployeeCount !== 1 ? 's' : ''} available
+                        </Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+              {timeSlots.length === 0 && !isLoadingAvailability && (
                 <Text
                   size={theme.typography.fontSizes.md}
-                  color={
-                    selectedTime === time
-                      ? theme.colors.white.DEFAULT
-                      : theme.colors.darkText['100']
-                  }>
-                  {time}
+                  color={theme.colors.darkText['50']}
+                  style={styles.noSlotsText}>
+                  No available times for this date
                 </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+              )}
+            </ScrollView>
+          )}
         </View>
       )}
     </View>
@@ -378,5 +455,24 @@ const styles = StyleSheet.create({
   selectedTimeSlot: {
     backgroundColor: theme.colors.primaryBlue['100'],
     borderColor: theme.colors.primaryBlue['100'],
+  },
+  disabledTimeSlot: {
+    backgroundColor: theme.colors.grey['10'],
+    borderColor: theme.colors.grey['100'],
+    opacity: 0.6,
+  },
+  timeSlotContent: {
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.xl,
+  },
+  noSlotsText: {
+    textAlign: 'center',
+    fontStyle: 'italic',
+    paddingVertical: theme.spacing.xl,
   },
 });

@@ -23,6 +23,7 @@ const SalonDetailPage = () => {
   const router = useRouter();
   const { top, bottom } = useAppSafeAreaInsets();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
+  console.log('id', id);
   const { data: location, isLoading } = LocationServices.useGetLocationById(id || '');
   const { photos, name, address, category, rating, phone, teamSize, bookable, tags } =
     location || {};
