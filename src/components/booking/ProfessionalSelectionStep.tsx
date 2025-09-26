@@ -5,7 +5,7 @@ import Animated, { FadeIn, FadeOut, useAnimatedStyle, withTiming } from 'react-n
 import { theme } from '~/src/constants/theme';
 import { Text } from '../base';
 import { AppointmentServices } from '~/src/services';
-import type { Employee, SelectedService } from '~/src/services';
+import type { Employee, SelectedService, AvailabilityResponse } from '~/src/services';
 import { CoupleIcon, GroupIcon, StarIcon } from '~/src/assets/icons';
 
 type AnimatedButtonProps = {
@@ -40,16 +40,18 @@ const AnimatedButton = ({ style, onPress, children, isSelected = false }: Animat
 
 type ProfessionalSelectionStepProps = {
   locationId: string;
-  selectedServices: SelectedService[];
-  selectedEmployeesByService?: Record<string, Employee | undefined>;
-  onEmployeeSelect: (serviceId: string, employee?: Employee) => void;
+  service: SelectedService;
+  availabilityData?: AvailabilityResponse;
+  selectedEmployee?: Employee;
+  onEmployeeSelect: (employee?: Employee) => void;
   onOptionChosen?: (chosen: boolean) => void;
 };
 
 const ProfessionalSelectionStep = ({
   locationId,
-  selectedServices,
-  selectedEmployeesByService,
+  service,
+  availabilityData,
+  selectedEmployee,
   onEmployeeSelect,
   onOptionChosen,
 }: ProfessionalSelectionStepProps) => {
@@ -63,20 +65,26 @@ const ProfessionalSelectionStep = ({
   const [showDetailedSelection, setShowDetailedSelection] = useState(false);
   const [selectedOption, setSelectedOption] = useState<'any' | 'specific' | undefined>(undefined);
 
-  // Group employees by selected services
-  const employeesByService = useMemo(
-    () =>
-      selectedServices.map((service) => {
-        const serviceEmployees = employees.filter((employee) =>
-          employee.serviceIds.includes(service.id)
-        );
-        return {
-          service,
-          employees: serviceEmployees,
-        };
-      }),
-    [selectedServices, employees]
-  );
+  // Get available employees from availability data
+  const availableEmployees = useMemo(() => {
+    if (!availabilityData) return [];
+
+    const locationData = availabilityData.locationData?.[locationId];
+    if (!locationData) return [];
+
+    // Filter employees who are available for the selected time slot
+    return locationData.employees.filter((employee) => {
+      // Check if employee can perform this service
+      if (!employee.serviceIds.includes(service.id)) return false;
+
+      // Check if employee is available (has at least one slot where they're available)
+      const hasAvailableSlots = availabilityData.availability.slots.some(
+        (slot) => slot.isAvailable && slot.availableEmployeeIds.includes(employee._id)
+      );
+
+      return hasAvailableSlots;
+    });
+  }, [availabilityData, locationId, service.id]);
 
   return (
     <View style={styles.container}>
@@ -140,20 +148,58 @@ const ProfessionalSelectionStep = ({
         </AnimatedButton>
       </View>
 
-      {/* Professional List Grouped by Services */}
+      {/* Professional List for Current Service */}
       {showDetailedSelection && (
-        <Animated.View
-          exiting={FadeOut.duration(200)}
-          entering={FadeIn.duration(200)}
-          style={{ gap: theme.spacing.xl }}>
-          {employeesByService.map(({ service, employees: serviceEmployees }) => (
-            <View key={service.id} style={styles.serviceSection}>
-              <Text
-                size={theme.typography.fontSizes.lg}
-                weight="medium"
-                style={styles.serviceTitle}>
-                {service.name.toUpperCase()}
-              </Text>
+        <View style={styles.serviceSection}>
+          <Text size={theme.typography.fontSizes.lg} weight="medium" style={styles.serviceTitle}>
+            {service.name.toUpperCase()}
+          </Text>
+
+          {availableEmployees.length > 0 ? (
+            <View style={styles.professionalsGrid}>
+              {/* Anyone option for this service */}
+              <TouchableOpacity
+                style={[
+                  styles.professionalCard,
+                  !selectedEmployee && styles.professionalCardSelected,
+                ]}
+                onPress={() => onEmployeeSelect(undefined)}>
+                <View style={styles.professionalIconContainer}>
+                  <GroupIcon />
+                </View>
+                <Text
+                  size={theme.typography.fontSizes.sm}
+                  weight="semiBold"
+                  style={styles.professionalName}>
+                  Anyone
+                </Text>
+                <Text
+                  size={theme.typography.fontSizes.xs}
+                  color={theme.colors.darkText['50']}
+                  style={styles.professionalTitle}>
+                  {availableEmployees.length} available
+                </Text>
+              </TouchableOpacity>
+
+              {availableEmployees.map((employee) => {
+                // Generate different avatar background colors
+                const avatarColors = ['#4A882E26', '#41637526', '#269FDF26'];
+                const colorIndex = employee.name.length % avatarColors.length;
+                const avatarBgColor = avatarColors[colorIndex];
+
+                return (
+                  <TouchableOpacity
+                    key={employee._id}
+                    style={[
+                      styles.professionalCard,
+                      selectedEmployee?._id === employee._id && styles.professionalCardSelected,
+                    ]}
+                    onPress={() => onEmployeeSelect(employee)}>
+                    <View style={[styles.professionalAvatar, { backgroundColor: avatarBgColor }]}>
+                      <Text size={theme.typography.fontSizes.lg} weight="bold">
+                        {employee.name.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
 
               {serviceEmployees.length > 0 ? (
                 <View style={styles.professionalsGrid}>
@@ -224,8 +270,15 @@ const ProfessionalSelectionStep = ({
                 </Text>
               )}
             </View>
-          ))}
-        </Animated.View>
+          ) : (
+            <Text
+              size={theme.typography.fontSizes.sm}
+              color={theme.colors.darkText['50']}
+              style={styles.noEmployeesText}>
+              No professionals available for the selected time
+            </Text>
+          )}
+        </View>
       )}
     </View>
   );

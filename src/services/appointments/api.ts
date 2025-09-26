@@ -3,6 +3,7 @@ import type {
   CreateAppointmentReqType,
   CreateAppointmentResType,
   BookingDataResponse,
+  AvailabilityResponse,
 } from './types';
 
 /*** Create Appointment ***/
@@ -18,5 +19,23 @@ export const getLocationBookingData = async (locationId: string): Promise<Bookin
   const response = await apiClient.get<BookingDataResponse>(
     `/locations/${locationId}/booking-data`
   );
+  return response.data;
+};
+
+/*** Get Availabilities ***/
+export const getAvailabilities = async (
+  locationId: string,
+  date: string,
+  serviceId: string,
+  baseDurationMinutes: number
+): Promise<AvailabilityResponse> => {
+  const response = await apiClient.get<AvailabilityResponse>(`/appointments/availabilities`, {
+    params: {
+      locationId,
+      date,
+      serviceId,
+      baseDurationMinutes,
+    },
+  });
   return response.data;
 };
