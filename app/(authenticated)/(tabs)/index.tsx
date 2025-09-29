@@ -85,15 +85,15 @@ const HomePage = () => {
 
     return <ActivityIndicator color={theme.colors.primaryBlue[100]} />;
   }, [isFetchingNextPage]);
+  const RenderListEmptyComponent = useCallback(() => {
+    return <HomePageSkeleton />;
+  }, []);
+
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-  const RenderListEmptyComponent = useCallback(() => {
-    return <HomePageSkeleton />;
-  }, []);
-
   const handleRefresh = useCallback(() => {
     setIsRefetching(true);
     refetch().finally(() => {

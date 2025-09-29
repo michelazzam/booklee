@@ -41,10 +41,13 @@ export type {
 export type {
   CreateAppointmentReqType,
   CreateAppointmentResType,
-  BookingData,
-  BookingStep,
-  SelectedService,
-  Employee,
-  BookingService,
+  UserAppointmentsResType,
   BookingDataResponse,
+  SelectedService,
+  UserAppointment,
+  AppointmentItem,
+  BookingService,
+  BookingStep,
+  BookingData,
+  Employee,
 } from './appointments/types';
