@@ -113,12 +113,7 @@ const MapScreen = () => {
         provider={PROVIDER_GOOGLE}
         initialRegion={INITIAL_REGION}>
         {getMarkerDetails?.map((marker, index) => (
-          <Marker
-            data={marker}
-            key={marker._id + index}
-            onPress={handleMarkerPress}
-            isActive={selectedMarker === marker._id}
-          />
+          <Marker data={marker} key={marker._id + index} onPress={handleMarkerPress} />
         ))}
       </MapView>
 
