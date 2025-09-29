@@ -11,7 +11,6 @@ import { theme } from '~/src/constants/theme';
 import { LocationCardSkeleton, SearchHistory, LocationCard } from '~/src/components/preview';
 import { SearchInput, type SearchInputRef } from '~/src/components/textInputs';
 import { Icon, Text } from '~/src/components/base';
-import { Button } from '~/src/components/buttons';
 
 const Search = () => {
   /*** Refs ***/
