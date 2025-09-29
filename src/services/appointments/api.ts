@@ -51,6 +51,7 @@ export const getUserAppointments = async (page: number, filters?: UserAppointmen
   }
 
   return response?.data;
+};
 
 /*** Get Availabilities ***/
 export const getAvailabilities = async (
