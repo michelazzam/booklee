@@ -1,8 +1,8 @@
 import { View, StyleSheet, FlatList } from 'react-native';
-// import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useCallback } from 'react';
 
-// import { LocationServices } from '~/src/services';
+import { LocationServices } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants';
@@ -67,10 +67,10 @@ const FILTER_ITEMS = [
 const LocationRatingPage = () => {
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
-  // const { id } = useLocalSearchParams<{ id: string }>();
-  // const { data } = LocationServices.useGetLocationRatings({
-  //   locationId: id,
-  // });
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { data } = LocationServices.useGetLocationRatings({
+    locationId: id,
+  });
 
   const RenderHeaderItem = useCallback(() => {
     return (
