@@ -101,10 +101,10 @@ const Search = () => {
     await queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
   }, [queryClient]);
   const handleEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
+    if (hasNextPage && !isFetchingNextPage && !isSearchMode) {
       fetchNextPage();
     }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, isSearchMode]);
   const handleClearSearchHistory = useCallback(async () => {
     setIsSearchMode(false);
 

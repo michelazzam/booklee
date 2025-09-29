@@ -30,9 +30,7 @@ const SearchInput = forwardRef<SearchInputRef, SearchInputProps>(
 
     /***** Constants ******/
     const searchQuery = internalSearchQuery;
-
-    /***** Constants ******/
-    const debouncedQuery = useDebouncing(searchQuery);
+    const debouncedQuery = useDebouncing(internalSearchQuery);
 
     useEffect(() => {
       if (value !== undefined) {
