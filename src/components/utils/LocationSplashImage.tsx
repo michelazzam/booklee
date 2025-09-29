@@ -45,10 +45,14 @@ const LocationSplashImage = ({ imageUri, isLoading = true }: LocationSplashImage
         </View>
       )}
 
-      {isLoading && !imageUri && (
-        <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.white.DEFAULT} />
-        </Animated.View>
+      {isLoading && (
+        <>
+          <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.opacityOverlay} />
+
+          <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.white.DEFAULT} />
+          </Animated.View>
+        </>
       )}
     </Animated.View>
   );
@@ -74,8 +78,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  opacityOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
   loadingContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    ...StyleSheet.absoluteFillObject,
   },
 });

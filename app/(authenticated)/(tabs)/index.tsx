@@ -30,11 +30,11 @@ const HomePage = () => {
 
   const renderCategory = useCallback(
     ({ item }: { item: LocationCategoryType }) => {
-      const { title, _id } = item;
+      const { title, slug } = item;
 
       const handleSeeAllPress = () => {
         router.navigate({
-          params: { filter: _id },
+          params: { filterSlug: slug },
           pathname: '/(authenticated)/(tabs)/search',
         });
       };
@@ -85,15 +85,15 @@ const HomePage = () => {
 
     return <ActivityIndicator color={theme.colors.primaryBlue[100]} />;
   }, [isFetchingNextPage]);
+  const RenderListEmptyComponent = useCallback(() => {
+    return <HomePageSkeleton />;
+  }, []);
+
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-  const RenderListEmptyComponent = useCallback(() => {
-    return <HomePageSkeleton />;
-  }, []);
-
   const handleRefresh = useCallback(() => {
     setIsRefetching(true);
     refetch().finally(() => {

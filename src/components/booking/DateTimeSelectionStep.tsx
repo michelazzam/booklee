@@ -351,7 +351,9 @@ const DateTimeSelectionStep = ({
                       {!hasConflict && slot.isAvailable && (
                         <Text
                           size={theme.typography.fontSizes.xs}
-                          color={theme.colors.darkText['50']}>
+                          color={
+                            isSelected ? theme.colors.white.DEFAULT : theme.colors.darkText['50']
+                          }>
                           {slot.availableEmployeeCount} professional
                           {slot.availableEmployeeCount !== 1 ? 's' : ''} available
                         </Text>

@@ -4,8 +4,8 @@ import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 
 import { theme } from '~/src/constants/theme';
 import { Text } from '../base';
-import { AppointmentServices } from '~/src/services';
 import type { Employee, SelectedService, AvailabilityResponse } from '~/src/services';
+import { AppointmentServices } from '~/src/services';
 import { CoupleIcon, GroupIcon, StarIcon } from '~/src/assets/icons';
 
 type AnimatedButtonProps = {
@@ -285,7 +285,6 @@ const styles = StyleSheet.create({
   },
   professionalCardSelected: {
     borderColor: theme.colors.darkText['100'],
-    backgroundColor: theme.colors.lightText,
   },
   professionalAvatar: {
     width: 50,
