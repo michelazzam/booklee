@@ -3,7 +3,7 @@ import { View, StyleSheet, TextInput, Image } from 'react-native';
 import { theme } from '~/src/constants/theme';
 import { Text, Icon } from '../base';
 import type { BookingData, DetailedLocationType } from '~/src/services';
-import { AccountIcon } from '~/src/assets/icons';
+import { AccountIcon, BookingIcon, ClockIcon } from '~/src/assets/icons';
 
 type ConfirmationStepProps = {
   bookingData: BookingData;
@@ -74,13 +74,9 @@ const ConfirmationStep = ({ bookingData, location, onNotesChange }: Confirmation
 
       {/* Bookings Summary */}
       <View style={styles.card}>
-        <Text size={theme.typography.fontSizes.lg} weight="medium" style={styles.sectionTitle}>
-          Your Appointments
-        </Text>
         {bookingData.selectedServices.map((service) => {
           const booking = bookingData.serviceBookings[service.id];
           if (!booking?.selectedDate || !booking?.selectedTime) return null;
-
           return (
             <View key={service.id} style={styles.appointmentItem}>
               <Text size={theme.typography.fontSizes.md} weight="medium">
@@ -88,20 +84,20 @@ const ConfirmationStep = ({ bookingData, location, onNotesChange }: Confirmation
               </Text>
               <View style={styles.dateTimeContainer}>
                 <View style={styles.dateTimeItem}>
-                  <Icon name="calendar-month" size={16} color={theme.colors.darkText['100']} />
+                  <BookingIcon />
                   <Text size={theme.typography.fontSizes.sm}>
                     {formatDate(booking.selectedDate)}
                   </Text>
                 </View>
                 <View style={styles.dateTimeItem}>
-                  <Icon name="clock" size={16} color={theme.colors.darkText['100']} />
+                  <ClockIcon />
                   <Text size={theme.typography.fontSizes.sm}>
                     {formatTime(booking.selectedTime)} ({formatDuration(service.duration)})
                   </Text>
                 </View>
                 {booking.selectedEmployee && (
                   <View style={styles.dateTimeItem}>
-                    <AccountIcon width={16} height={16} />
+                    <AccountIcon />
                     <Text size={theme.typography.fontSizes.sm}>
                       {booking.selectedEmployee.name}
                     </Text>
@@ -216,9 +212,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: theme.spacing.xs,
   },
-  sectionTitle: {
-    marginBottom: theme.spacing.md,
-  },
+
   appointmentItem: {
     paddingVertical: theme.spacing.md,
     borderBottomWidth: 1,

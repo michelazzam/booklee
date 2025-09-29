@@ -250,8 +250,6 @@ const BookingFlow = () => {
         appointments.push(appointmentData);
       }
 
-      console.log('Creating appointments:', JSON.stringify(appointments, null, 2));
-
       // Create all appointments
       for (const appointmentData of appointments) {
         await createAppointmentMutation.mutateAsync(appointmentData);
