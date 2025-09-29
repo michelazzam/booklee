@@ -1,3 +1,4 @@
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { formatDate } from 'date-fns';
 import { useMemo } from 'react';
@@ -5,7 +6,7 @@ import { useMemo } from 'react';
 import { type UserAppointment } from '~/src/services';
 
 import { CheckCircleIcon, AppLogo, StarIcon } from '~/src/assets/icons';
-import { IMAGES, theme } from '~/src/constants';
+import { theme } from '~/src/constants';
 
 import { Text } from '~/src/components/base';
 import { Image } from 'expo-image';
@@ -16,18 +17,7 @@ type PastBookingsProps = {
 
 const PastBookings = ({ data }: PastBookingsProps) => {
   /*** Constants ***/
-  const {
-    id,
-    notes,
-    items,
-    status,
-    startAt,
-    clientName,
-    totalPrice,
-    location,
-    totalServices,
-    totalDurationMinutes,
-  } = data;
+  const { status, startAt, totalPrice, location, totalServices } = data;
 
   const statusConfig = useMemo(() => {
     switch (status) {
@@ -55,7 +45,7 @@ const PastBookings = ({ data }: PastBookingsProps) => {
   }, [status]);
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={styles.container} entering={FadeIn} exiting={FadeOut}>
       <View style={[styles.headerContainer, { backgroundColor: statusConfig.backgroundColor }]}>
         <CheckCircleIcon width={16} height={16} color={statusConfig.color} />
 
@@ -126,7 +116,7 @@ const PastBookings = ({ data }: PastBookingsProps) => {
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 

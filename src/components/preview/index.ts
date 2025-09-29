@@ -6,5 +6,7 @@ export { default as LocationCard } from './location';
 export { default as Services } from './Services';
 
 /*** Skeleton ***/
+export { default as UpcomingBookingsSkeleton } from './bookings/upcoming/skeleton';
+export { default as PastBookingsSkeleton } from './bookings/past/skeleton';
 export { default as LocationCardSkeleton } from './location/skeleton';
 export { default as HomePageSkeleton } from './HomePageSkeleton';

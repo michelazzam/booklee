@@ -7,7 +7,7 @@ import { AppointmentServices, type UserAppointment } from '~/src/services';
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
 
-import { Booking } from '~/src/components/preview';
+import { Booking, UpcomingBookingsSkeleton } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
@@ -20,6 +20,7 @@ const UpcomingBookingsPage = () => {
   const { bottom } = useAppSafeAreaInsets();
   const {
     refetch,
+    isLoading,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
@@ -34,8 +35,12 @@ const UpcomingBookingsPage = () => {
     ),
     []
   );
-  const RenderListEmptyComponent = useCallback(
-    () => (
+  const RenderListEmptyComponent = useCallback(() => {
+    if (isLoading) {
+      return Array.from({ length: 10 }).map((_, index) => <UpcomingBookingsSkeleton key={index} />);
+    }
+
+    return (
       <View style={styles.emptyStateContent}>
         <Image source={IMAGES.favorites.placeholder} style={styles.emptyStateImage} />
 
@@ -61,9 +66,8 @@ const UpcomingBookingsPage = () => {
           onPress={() => router.navigate('/(authenticated)/(tabs)/search')}
         />
       </View>
-    ),
-    [router]
-  );
+    );
+  }, [router, isLoading]);
   const RenderFooter = useCallback(() => {
     if (!isFetchingNextPage) return null;
 

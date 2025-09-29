@@ -1,3 +1,4 @@
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useCallback, useRef } from 'react';
 import { formatDate } from 'date-fns';
@@ -48,7 +49,7 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
 
   return (
     <>
-      <View style={styles.container}>
+      <Animated.View style={styles.container} entering={FadeIn} exiting={FadeOut}>
         <View style={[styles.headerContainer, styles.borderStyle]}>
           {location.photos?.[0] ? (
             <Image
@@ -130,7 +131,7 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
 
           <Text size={theme.typography.fontSizes.md}>Modify</Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       <ModifyBookingModal
         onCancel={onCancel}
