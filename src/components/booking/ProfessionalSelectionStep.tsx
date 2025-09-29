@@ -5,6 +5,7 @@ import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { theme } from '~/src/constants/theme';
 import { Text } from '../base';
 import type { Employee, SelectedService, AvailabilityResponse } from '~/src/services';
+import { AppointmentServices } from '~/src/services';
 import { CoupleIcon, GroupIcon, StarIcon } from '~/src/assets/icons';
 
 type AnimatedButtonProps = {
