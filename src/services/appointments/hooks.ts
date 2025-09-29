@@ -1,8 +1,13 @@
+
 import { useMutation, useQuery, useInfiniteQuery } from '@tanstack/react-query';
 
 import { createAppointment, getLocationBookingData, getUserAppointments } from './api';
 
 import type { ResErrorType } from '../axios/types';
+
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { createAppointment, getLocationBookingData, getAvailabilities } from './api';
+
 import type {
   CreateAppointmentReqType,
   CreateAppointmentResType,
@@ -10,6 +15,7 @@ import type {
   BookingDataResponse,
   UserAppointment,
   UserAppointmentsReqType,
+  AvailabilityResponse,
 } from './types';
 
 /*** Create Appointment Hook ***/
@@ -38,6 +44,19 @@ const useGetUserAppointments = (filters?: UserAppointmentsReqType) => {
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.appointments.length > 0 ? allPages.length + 1 : undefined;
     },
+    
+/*** Get Availabilities Hook ***/
+export const useGetAvailabilities = (
+  locationId: string,
+  date: string,
+  serviceId: string,
+  baseDurationMinutes: number,
+  enabled = true
+) => {
+  return useQuery<AvailabilityResponse, Error>({
+    queryKey: ['availabilities', locationId, date, serviceId, baseDurationMinutes],
+    queryFn: () => getAvailabilities(locationId, date, serviceId, baseDurationMinutes),
+    enabled: enabled && !!locationId && !!date && !!serviceId,
   });
 };
 
@@ -45,4 +64,5 @@ export const AppointmentServices = {
   useGetLocationBookingData,
   useGetUserAppointments,
   useCreateAppointment,
+  useGetAvailabilities,
 };
