@@ -159,3 +159,12 @@ export type LocationRatingResType = {
   reviews: LocationReviewType[];
   locations: LocationReviewLocationType[];
 };
+export type LocationRatingSubmitReqType = {
+  userId: string;
+  rating: number;
+  message: string;
+  appointmentId: string;
+};
+export type LocationRatingSubmitResType = {
+  ok: boolean;
+};

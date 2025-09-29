@@ -14,6 +14,8 @@ import type {
   GetLocationsResType,
   SearchReqType,
   SearchResType,
+  LocationRatingSubmitResType,
+  LocationRatingSubmitReqType,
 } from './types';
 
 export const DEFAULT_LOCATION_FIELDS = 'rating,price,geo,_id,slug,name,logo,city,tags,photos';
@@ -149,6 +151,24 @@ export const getLocationRatingsApi = async (filters?: LocationRatingReqType) => 
   }
 
   const [response, error] = await withErrorCatch(apiClient.get<LocationRatingResType>(url));
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API to submit location rating ***/
+export const submitLocationRatingApi = async (params: LocationRatingSubmitReqType) => {
+  const [response, error] = await withErrorCatch(
+    apiClient.post<LocationRatingSubmitResType>('reviews', params)
+  );
 
   if (error instanceof AxiosError) {
     throw {

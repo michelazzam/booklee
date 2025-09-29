@@ -1,12 +1,13 @@
 import { View, StyleSheet, FlatList } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { LocationServices } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants';
 
+import { RatingModal, type RatingModalRef } from '~/src/components/modals';
 import { DropDown, StarContainer } from '~/src/components/utils';
 import { HeaderNavigation, Text } from '~/src/components/base';
 import { Review } from '~/src/components/preview';
@@ -65,6 +66,9 @@ const FILTER_ITEMS = [
 ];
 
 const LocationRatingPage = () => {
+  /*** Refs ***/
+  const ratingModalRef = useRef<RatingModalRef>(null);
+
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -97,7 +101,7 @@ const LocationRatingPage = () => {
 
       <StarContainer
         data={starContainerData}
-        onButtonPress={() => {}}
+        onButtonPress={() => ratingModalRef.current?.present()}
         containerStyle={{ marginHorizontal: theme.spacing.md }}
       />
 
@@ -110,6 +114,8 @@ const LocationRatingPage = () => {
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
       />
+
+      <RatingModal ref={ratingModalRef} storeId={id} />
     </>
   );
 };

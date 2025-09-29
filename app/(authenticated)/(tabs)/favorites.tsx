@@ -8,21 +8,27 @@ import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
 
 import { Text, HeaderNavigation } from '~/src/components/base';
-import { LocationCard } from '~/src/components/preview';
+import { LocationCard, LocationCardSkeleton } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 
 const FavoritesPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
-  const { data: favorites, refetch, isFetching } = UserServices.useGetFavorites();
+  const { data: favorites, refetch, isFetching, isLoading } = UserServices.useGetFavorites();
 
   const RenderItem = useCallback(
     ({ item }: { item: LocationType }) => <LocationCard data={item} width={'48%'} />,
     []
   );
-  const RenderListEmptyComponent = useCallback(
-    () => (
+  const RenderListEmptyComponent = useCallback(() => {
+    if (isLoading) {
+      return Array.from({ length: 10 }).map((_, index) => (
+        <LocationCardSkeleton key={index} minWidth={230} />
+      ));
+    }
+
+    return (
       <View style={styles.emptyStateContent}>
         <Image source={IMAGES.favorites.placeholder} style={styles.emptyStateImage} />
 
@@ -48,9 +54,8 @@ const FavoritesPage = () => {
           onPress={() => router.navigate('/(authenticated)/(tabs)/search')}
         />
       </View>
-    ),
-    [router]
-  );
+    );
+  }, [router, isLoading]);
 
   return (
     <>
