@@ -1,5 +1,5 @@
 export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
-export type AppointmentSource = 'online' | 'phone' | 'walk-in';
+export type AppointmentSource = 'online' | 'phone' | 'walk-in' | 'mobile';
 export type AppointmentItem = {
   price: number;
   serviceId: string;
@@ -8,10 +8,6 @@ export type AppointmentItem = {
   employeeName?: string;
   durationMinutes: number;
 };
-
-/*** Create Appointment Type ***/
-export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
-export type AppointmentSource = 'online' | 'phone' | 'walk-in' | 'mobile';
 
 export type CreateAppointmentReqType = {
   notes?: string;
@@ -97,7 +93,7 @@ export type AvailabilityData = {
   eligibleEmployeeIds: string[];
   timeSlots: string[];
   slots: TimeSlot[];
-  busy: Record<string, Array<{ start: string; end: string }>>;
+  busy: Record<string, { start: string; end: string }[]>;
 };
 
 export type LocationData = {
@@ -116,7 +112,7 @@ export type LocationData = {
 export type AvailabilityResponse = {
   ok: boolean;
   organizationId: string;
-  locations: Array<{ id: string; name: string }>;
+  locations: { id: string; name: string }[];
   locationData: Record<string, LocationData>;
   filters: {
     locationId: string;
@@ -142,7 +138,10 @@ export type BookingData = {
   locationName: string;
   selectedDate?: string;
   selectedTime?: string;
+  source?: AppointmentSource;
+  currentServiceIndex: number;
   selectedServices: SelectedService[];
+  serviceBookings: Record<string, ServiceBooking>;
   selectedEmployeesByService?: Record<string, Employee | undefined>;
 };
 
