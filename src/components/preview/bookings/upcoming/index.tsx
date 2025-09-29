@@ -9,7 +9,8 @@ import { type AppointmentItem, type UserAppointment } from '~/src/services';
 import { theme } from '~/src/constants';
 
 import { AppLogo, BookingIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
-import { ModifyBookingModal, type ModalWrapperRef } from '../../../modals';
+import ModifyBookingModal from '../../../modals/ModifyBookingModal';
+import type { ModifyBookingModalRef } from '../../../modals/ModifyBookingModal';
 import { Icon, Text } from '~/src/components/base';
 
 type BookingProps = {
@@ -20,7 +21,7 @@ type BookingProps = {
 
 const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
   /***** Refs *****/
-  const modifyBookingModalRef = useRef<ModalWrapperRef>(null);
+  const modifyBookingModalRef = useRef<ModifyBookingModalRef>(null);
 
   /***** Constants *****/
   const { items, startAt, location, totalPrice, totalDurationMinutes } = data;

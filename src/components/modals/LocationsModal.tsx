@@ -7,7 +7,8 @@ import type { LocationType } from '~/src/services';
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { LocationCardSkeleton, LocationCard } from '../preview';
+import LocationCardSkeleton from '../preview/location/skeleton';
+import LocationCard from '../preview/location';
 import { Text } from '../base';
 
 type LocationsModalProps = {
