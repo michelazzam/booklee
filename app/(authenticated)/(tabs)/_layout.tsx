@@ -1,4 +1,5 @@
 import { Tabs, usePathname } from 'expo-router';
+import { Platform } from 'react-native';
 import { useMemo } from 'react';
 
 import { theme } from '~/src/constants/theme';
@@ -45,7 +46,7 @@ export default function TabLayout() {
   /*** Memoization ***/
   const tabMarginBottom = useMemo(() => {
     if (pathname === '/search') {
-      return 50;
+      return Platform.OS === 'ios' ? 50 : 100;
     }
 
     return 0;
@@ -58,6 +59,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: theme.colors.primaryBlue[100],
         tabBarStyle: {
           marginBottom: tabMarginBottom,
+          backgroundColor: theme.colors.white.DEFAULT,
         },
         sceneStyle: {
           backgroundColor: theme.colors.white.DEFAULT,

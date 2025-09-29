@@ -9,22 +9,22 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { LocationServices, type GetLocationsReqType } from '~/src/services';
 
 import { useAppSafeAreaInsets, usePermissions } from '~/src/hooks';
+import { FilterIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants/theme';
 
-import {
-  LocationsModal,
-  type LocationsModalRef,
-  FilterModal,
-  type ModalWrapperRef,
-} from '~/src/components/modals';
 import { SearchInput } from '~/src/components/textInputs';
+import {
+  type LocationsModalRef,
+  type ModalWrapperRef,
+  LocationsModal,
+  FilterModal,
+} from '~/src/components/modals';
 import {
   type MarkerDataType,
   FilterContainer,
   type FilterType,
   Marker,
 } from '~/src/components/utils';
-import { FilterIcon } from '~/src/assets/icons';
 
 /*** Beirut coordinates ***/
 const INITIAL_REGION = {
@@ -84,18 +84,20 @@ const MapScreen = () => {
       }));
   }, [locationsData]);
 
+  useMemo(() => {
+    if (filterSlug) {
+      setSelectedFilter((prev) => ({ ...prev, category: filterSlug }));
+    }
+  }, [filterSlug]);
+
   useFocusEffect(
     useCallback(() => {
-      if (filterSlug) {
-        setSelectedFilter((prev) => ({ ...prev, category: filterSlug }));
-      }
-
       locationsModalRef.current?.present();
 
       return () => {
         locationsModalRef.current?.dismiss();
       };
-    }, [filterSlug])
+    }, [])
   );
 
   const handleLocationPress = async () => {
@@ -135,7 +137,11 @@ const MapScreen = () => {
         provider={PROVIDER_GOOGLE}
         initialRegion={INITIAL_REGION}>
         {getMarkerDetails?.map((marker, index) => (
-          <Marker data={marker} key={marker._id + index} onPress={() => {}} />
+          <Marker
+            data={marker}
+            key={marker._id + index}
+            onPress={() => router.navigate(`/(authenticated)/(screens)/location/${marker._id}`)}
+          />
         ))}
       </MapView>
 
@@ -219,7 +225,7 @@ const styles = StyleSheet.create({
     right: 16,
     width: 60,
     height: 60,
-    bottom: 100,
+    bottom: 20,
     borderRadius: 30,
     position: 'absolute',
     alignItems: 'center',
