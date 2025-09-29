@@ -45,12 +45,14 @@ const LocationSplashImage = ({ imageUri, isLoading = true }: LocationSplashImage
         </View>
       )}
 
-      <View style={styles.opacityOverlay} />
-
       {isLoading && (
-        <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.white.DEFAULT} />
-        </Animated.View>
+        <>
+          <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.opacityOverlay} />
+
+          <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.white.DEFAULT} />
+          </Animated.View>
+        </>
       )}
     </Animated.View>
   );
