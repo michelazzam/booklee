@@ -285,7 +285,6 @@ const styles = StyleSheet.create({
   },
   professionalCardSelected: {
     borderColor: theme.colors.darkText['100'],
-    backgroundColor: theme.colors.lightText,
   },
   professionalAvatar: {
     width: 50,
