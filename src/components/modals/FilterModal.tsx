@@ -17,6 +17,7 @@ export type FilterModalRef = {
 };
 
 type FilterModalProps = {
+  onReset: () => void;
   initialFilters?: GetLocationsReqType;
   onApply: (filters: GetLocationsReqType) => void;
 };
@@ -29,7 +30,7 @@ const defaultFilters: GetLocationsReqType = {
 };
 
 const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
-  ({ onApply, initialFilters = defaultFilters }, ref) => {
+  ({ onApply, onReset, initialFilters = defaultFilters }, ref) => {
     /*** Constants ***/
     const { bottom } = useAppSafeAreaInsets();
     const { width: screenWidth } = useWindowDimensions();
@@ -61,7 +62,8 @@ const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
       onApply(appliedFilters);
     };
     const handleReset = () => {
-      setFilters(defaultFilters);
+      setFilters(initialFilters);
+      onReset();
       onApply({});
 
       modalRef.current?.dismiss();

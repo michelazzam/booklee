@@ -1,5 +1,5 @@
 export { default as ModifyBookingModal, type ModifyBookingModalRef } from './ModifyBookingModal';
-export { default as LocationModal, type LocationModalRef } from './LocationModal';
+export { default as LocationsModal, type LocationsModalRef } from './LocationsModal';
 export { default as FilterModal } from './FilterModal';
 export { type ModalWrapperRef } from './ModalWrapper';
 export {

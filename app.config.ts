@@ -43,7 +43,7 @@ const config: ExpoConfig = {
       ITSAppUsesNonExemptEncryption: false,
     },
     config: {
-      googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
     },
   },
   android: {
@@ -72,6 +72,17 @@ const config: ExpoConfig = {
       },
     ],
   ],
+  extra: {
+    eas: {
+      projectId: 'ae00c1a5-c13e-414f-9a35-2dcacf670b7e',
+    },
+  },
+  updates: {
+    url: 'https://u.expo.dev/ae00c1a5-c13e-414f-9a35-2dcacf670b7e',
+  },
+  runtimeVersion: {
+    policy: 'appVersion',
+  },
   experiments: {
     typedRoutes: true,
   },

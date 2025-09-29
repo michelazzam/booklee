@@ -30,11 +30,11 @@ const HomePage = () => {
 
   const renderCategory = useCallback(
     ({ item }: { item: LocationCategoryType }) => {
-      const { title, _id } = item;
+      const { title, slug } = item;
 
       const handleSeeAllPress = () => {
         router.navigate({
-          params: { filter: _id },
+          params: { filterSlug: slug },
           pathname: '/(authenticated)/(tabs)/search',
         });
       };

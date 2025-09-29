@@ -1,16 +1,22 @@
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { useRef, useMemo, useState, useCallback } from 'react';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
-import { useRef, useMemo, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Icon } from '~/src/components/base';
 import * as Location from 'expo-location';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import { LocationServices, type GetLocationsReqType } from '~/src/services';
 
 import { useAppSafeAreaInsets, usePermissions } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { type LocationModalRef, LocationModal } from '~/src/components/modals';
+import {
+  LocationsModal,
+  type LocationsModalRef,
+  FilterModal,
+  type ModalWrapperRef,
+} from '~/src/components/modals';
 import { SearchInput } from '~/src/components/textInputs';
 import {
   type MarkerDataType,
@@ -18,6 +24,7 @@ import {
   type FilterType,
   Marker,
 } from '~/src/components/utils';
+import { FilterIcon } from '~/src/assets/icons';
 
 /*** Beirut coordinates ***/
 const INITIAL_REGION = {
@@ -30,19 +37,29 @@ const INITIAL_REGION = {
 const MapScreen = () => {
   /*** Refs ***/
   const mapRef = useRef<MapView>(null);
-  const locationModalRef = useRef<LocationModalRef>(null);
+  const filterModalRef = useRef<ModalWrapperRef>(null);
+  const locationsModalRef = useRef<LocationsModalRef>(null);
 
   /*** States ***/
-  const [selectedMarker, setSelectedMarker] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<GetLocationsReqType>();
 
   /*** Constants ***/
   const { top } = useAppSafeAreaInsets();
+  const { filterSlug } = useLocalSearchParams<{ filterSlug: string }>();
   const { locationPermission, requestLocationPermission } = usePermissions();
   const { data: filtersData } = LocationServices.useGetLocationsCategorized();
-  const { data: locationsData } = LocationServices.useGetLocations(selectedFilter);
+  const { data: locationsData, isLoading } = LocationServices.useGetLocations(selectedFilter);
 
   /*** Memoization ***/
+  const isFilterApplied = useMemo(() => {
+    const keys = Object.keys(selectedFilter || {});
+
+    if (keys.includes('category') && keys.length === 1) {
+      return false;
+    }
+
+    return keys.length > 0;
+  }, [selectedFilter]);
   const filters: FilterType[] = useMemo(() => {
     if (!filtersData || filtersData.length === 0) return [{ slug: '', label: 'All' }];
 
@@ -66,6 +83,20 @@ const MapScreen = () => {
         longitude: location.geo?.lng || 0,
       }));
   }, [locationsData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (filterSlug) {
+        setSelectedFilter((prev) => ({ ...prev, category: filterSlug }));
+      }
+
+      locationsModalRef.current?.present();
+
+      return () => {
+        locationsModalRef.current?.dismiss();
+      };
+    }, [filterSlug])
+  );
 
   const handleLocationPress = async () => {
     try {
@@ -94,15 +125,6 @@ const MapScreen = () => {
       console.error('Error getting location:', error);
     }
   };
-  const handleMarkerPress = (_id: string) => {
-    if (selectedMarker === _id) {
-      setSelectedMarker(null);
-      locationModalRef.current?.dismiss();
-    } else {
-      setSelectedMarker(_id);
-      locationModalRef.current?.present(_id);
-    }
-  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -113,21 +135,37 @@ const MapScreen = () => {
         provider={PROVIDER_GOOGLE}
         initialRegion={INITIAL_REGION}>
         {getMarkerDetails?.map((marker, index) => (
-          <Marker data={marker} key={marker._id + index} onPress={handleMarkerPress} />
+          <Marker data={marker} key={marker._id + index} onPress={() => {}} />
         ))}
       </MapView>
 
       <View style={[styles.headerContainer, { top }]}>
-        <SearchInput
-          placeholder="Search for a location"
-          containerStyle={{ backgroundColor: theme.colors.white.DEFAULT }}
-          onPress={() => router.navigate('/(authenticated)/(tabs)/search/locationSearch')}
-        />
+        <View style={styles.searchContainer}>
+          <SearchInput
+            placeholder="Search for a location"
+            containerStyle={{ backgroundColor: theme.colors.white.DEFAULT }}
+            onPress={() => router.navigate('/(authenticated)/(tabs)/search/locationSearch')}
+          />
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => filterModalRef.current?.present()}
+            style={[
+              styles.filterButton,
+              isFilterApplied && { backgroundColor: theme.colors.primaryBlue[100] },
+            ]}>
+            <FilterIcon
+              color={isFilterApplied ? theme.colors.white.DEFAULT : theme.colors.darkText[100]}
+            />
+          </TouchableOpacity>
+        </View>
 
         <FilterContainer
           filters={filters}
           selectedFilter={selectedFilter?.category || ''}
-          setSelectedFilter={(filter) => setSelectedFilter({ ...selectedFilter, category: filter })}
+          setSelectedFilter={(filter) =>
+            setSelectedFilter((prev) => ({ ...prev, category: filter }))
+          }
         />
       </View>
 
@@ -138,7 +176,20 @@ const MapScreen = () => {
         <Icon size={24} name="crosshairs-gps" color={theme.colors.primaryBlue[100]} />
       </TouchableOpacity>
 
-      <LocationModal ref={locationModalRef} onDismiss={() => setSelectedMarker(null)} />
+      <LocationsModal
+        isLoading={isLoading}
+        ref={locationsModalRef}
+        locations={locationsData || []}
+        onLocationPress={(locationId) =>
+          router.navigate(`/(authenticated)/(screens)/location/${locationId}`)
+        }
+      />
+
+      <FilterModal
+        ref={filterModalRef}
+        onReset={() => setSelectedFilter((prev) => ({ category: prev?.category }))}
+        onApply={(filters) => setSelectedFilter((prev) => ({ ...prev, ...filters }))}
+      />
     </View>
   );
 };
@@ -152,6 +203,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     gap: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.lg,
+    justifyContent: 'space-between',
+  },
+  filterButton: {
+    padding: theme.spacing.md,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.white.DEFAULT,
   },
   locationButton: {
     right: 16,
