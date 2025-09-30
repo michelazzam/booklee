@@ -163,8 +163,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: theme.radii.md,
     borderBottomRightRadius: theme.radii.md,
     backgroundColor: theme.colors.white.DEFAULT,
-
-    ...theme.shadows.soft,
   },
   item: {
     minHeight: 50,

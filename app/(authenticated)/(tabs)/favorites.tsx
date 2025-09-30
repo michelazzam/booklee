@@ -7,8 +7,8 @@ import { UserServices, type LocationType } from '~/src/services';
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
 
-import { Text, HeaderNavigation } from '~/src/components/base';
 import { LocationCard, LocationCardSkeleton } from '~/src/components/preview';
+import { Text, HeaderNavigation } from '~/src/components/base';
 import { Button } from '~/src/components/buttons';
 
 const FavoritesPage = () => {
