@@ -14,13 +14,15 @@ export default function AuthenticatedLayout() {
   const { isAuthenticated } = AuthServices.useGetBetterAuthUser();
 
   // If not authenticated, redirect to login
-  if (!isAuthenticated || !userData) {
-    return <Redirect href="/(unauthenticated)/login" />;
-  }
+  // if (!isAuthenticated || !userData) {
+  //   return <Redirect href="/(unauthenticated)/login" />;
+  // }
 
-  if (!isOnboardingCompleted && pathname !== '/onboarding') {
-    return <Redirect href="/(unauthenticated)/onboarding" />;
-  }
+  // if (!isOnboardingCompleted && pathname !== '/onboarding') {
+  //   return <Redirect href="/(unauthenticated)/onboarding" />;
+  // }
+
+  return <Redirect href={'/(dashboard)/(tabs)' as any} />;
 
   return (
     <>
