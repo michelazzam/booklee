@@ -30,9 +30,7 @@ const UpcomingBookingsPage = () => {
   });
 
   const RenderItem = useCallback(
-    ({ item }: { item: UserAppointment }) => (
-      <Booking data={item} onCancel={() => {}} onChangeDateTime={() => {}} />
-    ),
+    ({ item }: { item: UserAppointment }) => <Booking data={item} />,
     []
   );
   const RenderListEmptyComponent = useCallback(() => {

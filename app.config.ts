@@ -1,5 +1,6 @@
 import { type AppVariantType } from '~/src/constants';
 import { type ExpoConfig } from 'expo/config';
+import 'dotenv/config';
 
 const appVariant = process.env.APP_VARIANT as AppVariantType;
 
@@ -41,6 +42,10 @@ const config: ExpoConfig = {
     icon: './src/assets/images/appImages/appleIcon.png',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+      NSLocationWhenInUseUsageDescription:
+        'This app requires your location to provide map services and find nearby locations.',
+      NSLocationAlwaysAndWhenInUseUsageDescription:
+        'This app requires your location to provide map services and find nearby locations.',
     },
     config: {
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
