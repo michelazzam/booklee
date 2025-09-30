@@ -1,5 +1,4 @@
 import { Redirect, Stack, usePathname } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 
 import { useUserProvider } from '~/src/store';
 import { AuthServices } from '~/src/services';

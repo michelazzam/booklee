@@ -11,6 +11,8 @@ import type {
   UserAppointmentsReqType,
   BookingDataResponse,
   AvailabilityResponse,
+  CancelAppointmentResType,
+  CancelAppointmentReqType,
 } from './types';
 
 /*** Create Appointment ***/
@@ -68,5 +70,25 @@ export const getAvailabilities = async (
       baseDurationMinutes,
     },
   });
+  return response.data;
+};
+
+/*** Cancel Appointment ***/
+export const cancelAppointment = async (
+  data: CancelAppointmentReqType
+): Promise<CancelAppointmentResType> => {
+  const [response, error] = await withErrorCatch(
+    apiClient.delete<CancelAppointmentResType>('/appointments', { data })
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
   return response.data;
 };
