@@ -1,12 +1,13 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
-  getLocationsCategorizedApi,
+  getLocationsCategoriesApi,
+  getLocationsByCategoryApi,
   deleteSearchHistoryApi,
   getSearchHistoryApi,
   searchLocationsApi,
-  getLocationsApi,
   getLocationByIdApi,
+  getLocationsApi,
 } from './api';
 
 import type { ResErrorType } from '../axios/types';
@@ -23,19 +24,43 @@ import type {
   SearchReqType,
   SearchResType,
   LocationType,
+  CategoryType,
 } from './types';
 
-const useGetLocationsCategorized = (filters?: GetLocationsReqType) => {
-  const categoriesFilters = { ...filters, categories: true };
+const useGetLocationsCategories = (filters?: GetLocationsReqType) => {
+  return useQuery<GetLocationsCategorizedResType, ResErrorType, CategoryType[]>({
+    queryKey: ['getLocationsCategories', filters],
+    queryFn: () => getLocationsCategoriesApi(filters),
+    select: ({ categories }) =>
+      categories.map((category) => {
+        const { locations, ...rest } = category;
+        return rest;
+      }),
+  });
+};
 
-  return useInfiniteQuery<GetLocationsCategorizedResType, ResErrorType, LocationCategoryType[]>({
+const useGetLocationsByCategory = (categorySlug: string, filters?: GetLocationsReqType) => {
+  return useInfiniteQuery<GetLocationsResType, ResErrorType, LocationType[]>({
     initialPageParam: 1,
-    queryKey: ['getLocationsCategorized', categoriesFilters],
-    select: ({ pages }) => pages.flatMap((page) => page.categories),
+    refetchOnMount: false,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: false,
+    queryKey: ['getLocationsByCategory', categorySlug, filters],
+    select: ({ pages }) => pages.flatMap((page) => page.locations),
     queryFn: ({ pageParam = 1 }) =>
-      getLocationsCategorizedApi(pageParam as number, categoriesFilters),
+      getLocationsByCategoryApi(categorySlug, pageParam as number, filters),
     getNextPageParam: (lastPage, allPages) => {
-      return lastPage.categories.length > 0 ? allPages.length + 1 : undefined;
+      if (lastPage && lastPage.locations.length > 0) {
+        return allPages.length + 1;
+      }
+      return undefined;
+    },
+    getPreviousPageParam: (_, allPages) => {
+      if (allPages.length > 1) {
+        return allPages.length - 1;
+      }
+      return undefined;
     },
   });
 };
@@ -43,11 +68,24 @@ const useGetLocationsCategorized = (filters?: GetLocationsReqType) => {
 const useGetLocations = (filters?: GetLocationsReqType) => {
   return useInfiniteQuery<GetLocationsResType, ResErrorType, LocationType[]>({
     initialPageParam: 1,
+    refetchOnMount: false,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: false,
     queryKey: ['getLocations', filters],
     select: ({ pages }) => pages.flatMap((page) => page.locations),
     queryFn: ({ pageParam = 1 }) => getLocationsApi(pageParam as number, filters),
     getNextPageParam: (lastPage, allPages) => {
-      return lastPage.locations.length > 0 ? allPages.length + 1 : undefined;
+      if (lastPage && lastPage.locations.length > 0) {
+        return allPages.length + 1;
+      }
+      return undefined;
+    },
+    getPreviousPageParam: (_, allPages) => {
+      if (allPages.length > 1) {
+        return allPages.length - 1;
+      }
+      return undefined;
     },
   });
 };
@@ -94,7 +132,8 @@ const useDeleteSearchHistory = () => {
 };
 
 export const LocationServices = {
-  useGetLocationsCategorized,
+  useGetLocationsCategories,
+  useGetLocationsByCategory,
   useDeleteSearchHistory,
   useGetSearchHistory,
   useSearchLocations,

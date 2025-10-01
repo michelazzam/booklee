@@ -25,6 +25,7 @@ export type {
   RoleType,
 } from './auth/types';
 export type {
+  CategoryType,
   LocationCategoryType,
   GetLocationsReqType,
   SearchHistoryType,
