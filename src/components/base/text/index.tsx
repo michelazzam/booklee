@@ -58,4 +58,5 @@ const CustomText = forwardRef<Animated.Text, TextProps>(
 );
 
 CustomText.displayName = 'CustomText';
+export type { WeightVariantType };
 export default CustomText;

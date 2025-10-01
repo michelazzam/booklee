@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Image } from 'expo-image';
 import { TouchableOpacity, StyleSheet, ViewStyle, StyleProp, View, Alert } from 'react-native';
 
-import Icon from '../base/icon';
+import Icon from '../../base/icon';
 
 export type ImageType = {
   uri: string;
