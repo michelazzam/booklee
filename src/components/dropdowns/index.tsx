@@ -45,7 +45,7 @@ const Dropdown = ({ options, selectedOption, onSelect }: DropdownProps) => {
   });
 
   /*** Memoization ***/
-  const maxHeight = useMemo(() => options.length * ITEM_HEIGHT, []);
+  const maxHeight = useMemo(() => options.length * ITEM_HEIGHT, [options]);
 
   const handleDropDownPress = useCallback(() => {
     if (!options.length) return;
