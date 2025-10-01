@@ -1,11 +1,12 @@
-import { useState, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
+import { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { type DateData } from 'react-native-calendars';
 
 import { AppointmentServices, type UserAppointment } from '~/src/services';
 import { theme } from '~/src/constants/theme';
 
 import ModalWrapper, { type ModalWrapperRef } from './ModalWrapper';
-import { CalendarScheduler } from '../utils';
+import { CustomCalendar } from '../calendars';
 import { Text, Icon } from '../base';
 
 export type RescheduleModalRef = {
@@ -36,52 +37,6 @@ const RescheduleModal = forwardRef<RescheduleModalRef, RescheduleModalProps>(
         items?.[0]?.durationMinutes || 60
       );
 
-    /*** Memoization ***/
-    const getMarkedDates = useMemo(() => {
-      const marked: any = {};
-
-      if (selectedDate) {
-        marked[selectedDate] = {
-          selected: true,
-          selectedColor: theme.colors.primaryBlue['100'],
-          selectedTextColor: theme.colors.white.DEFAULT,
-        };
-      }
-
-      // Mark today
-      const today = new Date().toISOString().split('T')[0];
-      marked[today] = {
-        ...marked[today],
-        marked: true,
-        dotColor: theme.colors.primaryBlue['100'],
-      };
-
-      return marked;
-    }, [selectedDate]);
-    const getDisabledDates = useMemo(() => {
-      const disabled: any = {};
-      const today = new Date();
-      const currentYear = today.getFullYear();
-
-      // Disable past dates
-      for (let month = 0; month < 12; month++) {
-        for (let day = 1; day <= 31; day++) {
-          const date = new Date(currentYear, month, day);
-          const dateString = date.toISOString().split('T')[0];
-
-          // Skip invalid dates
-          if (date.getMonth() !== month) continue;
-
-          // Disable past dates
-          if (date < today) {
-            disabled[dateString] = { disabled: true, disableTouchEvent: true };
-          }
-        }
-      }
-
-      return disabled;
-    }, []);
-
     useImperativeHandle(ref, () => ({
       present: () => {
         modalRef.current?.present();
@@ -93,7 +48,7 @@ const RescheduleModal = forwardRef<RescheduleModalRef, RescheduleModalProps>(
       },
     }));
 
-    const handleDaySelect = (day: any) => {
+    const handleDaySelect = (day: DateData) => {
       if (day && day.dateString) {
         setSelectedDate(day.dateString);
         setSelectedTime('');
@@ -124,11 +79,7 @@ const RescheduleModal = forwardRef<RescheduleModalRef, RescheduleModalProps>(
           CHANGE DATE & TIME
         </Text>
 
-        <CalendarScheduler
-          onDayPress={handleDaySelect}
-          getMarkedDates={getMarkedDates}
-          getDisabledDates={getDisabledDates}
-        />
+        <CustomCalendar onDayPress={handleDaySelect} />
 
         {selectedDate && (
           <View style={styles.timeSlotsCard}>

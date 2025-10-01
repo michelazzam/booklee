@@ -10,9 +10,9 @@ import { AppLogo, BookingIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants';
 
 import type { ModifyBookingModalRef } from '../../../modals/ModifyBookingModal';
-import type { RescheduleModalRef } from '../../../modals/rescheduleModal';
+import type { RescheduleModalRef } from '../../../modals/RescheduleModal';
 import ModifyBookingModal from '../../../modals/ModifyBookingModal';
-import RescheduleModal from '../../../modals/rescheduleModal';
+import RescheduleModal from '../../../modals/RescheduleModal';
 import { Icon, Text } from '~/src/components/base';
 
 type BookingProps = {
