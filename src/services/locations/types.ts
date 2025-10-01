@@ -22,10 +22,12 @@ export type LocationType = {
   photos?: string[];
   geo?: LocationGeolocationType;
 };
-export type LocationCategoryType = {
+export type CategoryType = {
   _id: string;
-  title: string;
   slug: string;
+  title: string;
+};
+export type LocationCategoryType = CategoryType & {
   locations: LocationType[];
 };
 export type LocationServiceType = {
@@ -88,6 +90,9 @@ export type GetLocationsCategorizedResType = {
 export type GetLocationByIdResType = {
   ok: boolean;
   location: DetailedLocationType;
+};
+export type GetLocationsCategoriesResType = {
+  categories: LocationCategoryType[];
 };
 
 /*** Search History Types ***/

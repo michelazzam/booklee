@@ -16,12 +16,13 @@ import type {
 
 export const DEFAULT_LOCATION_FIELDS = 'rating,price,geo,_id,slug,name,logo,city,tags,photos';
 
-/*** API for get locations categorized ***/
-export const getLocationsCategorizedApi = async (page: number, filters?: GetLocationsReqType) => {
-  let url = `locations?page=${page}&fields=${DEFAULT_LOCATION_FIELDS}`;
+/*** API for get locations categories ***/
+export const getLocationsCategoriesApi = async (filters?: GetLocationsReqType) => {
+  let url = `locations?page=1&fields=${DEFAULT_LOCATION_FIELDS}`;
+  const categoriesFilters = { ...filters, categories: true };
 
-  if (filters) {
-    url += `&${Object.entries(filters)
+  if (categoriesFilters) {
+    url += `&${Object.entries(categoriesFilters)
       .map(([key, value]) => `${key}=${value}`)
       .join('&')}`;
   }
@@ -29,6 +30,33 @@ export const getLocationsCategorizedApi = async (page: number, filters?: GetLoca
   const [response, error] = await withErrorCatch(
     apiClient.get<GetLocationsCategorizedResType>(url)
   );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+  return response?.data;
+};
+
+/*** API for get locations by category with pagination ***/
+export const getLocationsByCategoryApi = async (
+  categorySlug: string,
+  page: number,
+  filters?: GetLocationsReqType
+) => {
+  let url = `locations?page=${page}&category=${categorySlug}&fields=${DEFAULT_LOCATION_FIELDS}`;
+
+  if (filters) {
+    url += `&${Object.entries(filters)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&')}`;
+  }
+
+  const [response, error] = await withErrorCatch(apiClient.get<GetLocationsResType>(url));
 
   if (error instanceof AxiosError) {
     throw {

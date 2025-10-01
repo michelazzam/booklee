@@ -4,9 +4,11 @@ import { theme } from '../../../constants/theme';
 
 import { Text } from '../../base';
 import { useMemo } from 'react';
+import LoadingDots from '../../buttons/button/loadingDots';
 
 export type CardRowDataType = {
   label: string;
+  loading?: boolean;
   onPress?: () => void;
   leadingIcon?: React.ReactNode;
   trailingIcon?: React.ReactNode;
@@ -18,7 +20,7 @@ type CardRowProps = {
 
 const CardRow = ({ data }: CardRowProps) => {
   /*** Constants ***/
-  const { label, leadingIcon, trailingIcon, variant = 'primary', onPress } = data;
+  const { label, leadingIcon, trailingIcon, variant = 'primary', onPress, loading = false } = data;
 
   /*** Memoization ***/
   const textColor = useMemo(() => {
@@ -35,20 +37,23 @@ const CardRow = ({ data }: CardRowProps) => {
   return (
     <TouchableOpacity
       onPress={onPress}
-      disabled={!onPress}
       activeOpacity={0.7}
+      disabled={!onPress || loading}
       style={[styles.container, styles[variant]]}>
       <View style={styles.iconContainer}>{leadingIcon}</View>
 
-      <Text
-        weight="medium"
-        color={textColor}
-        numberOfLines={1}
-        style={{ flex: 1 }}
-        size={theme.typography.fontSizes.md}>
-        {label}
-      </Text>
-
+      {loading ? (
+        <LoadingDots />
+      ) : (
+        <Text
+          weight="medium"
+          color={textColor}
+          numberOfLines={1}
+          style={{ flex: 1 }}
+          size={theme.typography.fontSizes.md}>
+          {label}
+        </Text>
+      )}
       <View style={styles.iconContainer}>{trailingIcon}</View>
     </TouchableOpacity>
   );

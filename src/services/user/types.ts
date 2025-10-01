@@ -31,11 +31,21 @@ export type GetUserMeResType = {
 
 /*** Update user type ***/
 export type UpdateUserReqType = {
+  name?: string;
+  phone?: string;
   lastName?: string;
+  salonName?: string;
   firstName?: string;
-  image?: string | null;
 };
 export type UpdateUserResType = {
+  user: UserType;
+};
+
+/*** Update user Image type ***/
+export type UpdateUserImageReqType = {
+  image: string;
+};
+export type UpdateUserImageResType = {
   user: UserType;
 };
 
@@ -101,4 +111,10 @@ export type GetUserLocationsResType = {
   organizationId: string;
   locations: UserLocationItemType[];
   locationData: Record<string, UserLocationDataType>;
+};
+
+/*** Delete user type ***/
+export type DeleteUserResType = {
+  ok: boolean;
+  message?: string;
 };

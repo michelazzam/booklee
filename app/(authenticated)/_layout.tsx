@@ -1,5 +1,4 @@
 import { Redirect, Stack, usePathname } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 
 import { useUserProvider } from '~/src/store';
 import { AuthServices } from '~/src/services';
@@ -29,15 +28,11 @@ export default function AuthenticatedLayout() {
   }
 
   return (
-    <>
-      <StatusBar style="auto" />
-
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: theme.colors.white.DEFAULT },
-        }}
-      />
-    </>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: theme.colors.white.DEFAULT },
+      }}
+    />
   );
 }

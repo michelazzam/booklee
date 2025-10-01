@@ -1,37 +1,34 @@
-/*** Appointment Types ***/
-export type AppointmentItem = {
-  serviceId: string;
-  serviceName: string;
-  durationMinutes: number;
-  price: number;
-  employeeId: string;
-  employeeName: string;
-};
-
 export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 export type AppointmentSource = 'online' | 'phone' | 'walk-in' | 'mobile';
+export type AppointmentItem = {
+  price: number;
+  serviceId: string;
+  serviceName: string;
+  employeeId?: string;
+  employeeName?: string;
+  durationMinutes: number;
+};
 
 export type CreateAppointmentReqType = {
+  notes?: string;
+  startAt: string;
   locationId: string;
-  startAt: string; // ISO string
   items: AppointmentItem[];
   status: AppointmentStatus;
   source: AppointmentSource;
-  notes?: string;
 };
-
 export type CreateAppointmentResType = {
   ok: boolean;
   appointment: {
     _id: string;
-    locationId: string;
+    notes?: string;
     startAt: string;
+    updatedAt: string;
+    createdAt: string;
+    locationId: string;
     items: AppointmentItem[];
     status: AppointmentStatus;
     source: AppointmentSource;
-    notes?: string;
-    createdAt: string;
-    updatedAt: string;
   };
 };
 
@@ -40,39 +37,38 @@ export type Employee = {
   _id: string;
   name: string;
   rating: number;
-  specialties: string[];
   serviceIds: string[];
+  specialties: string[];
 };
 
 /*** Booking Service Types ***/
 export type BookingService = {
   _id: string;
   name: string;
-  duration: number;
   price: number;
+  duration: number;
 };
 
 /*** Booking Data Types ***/
 export type BookingDataResponse = {
   ok: boolean;
   data: {
-    hours: Record<string, any>; // Operating hours structure
-    services: BookingService[];
     employees: Employee[];
+    hours: Record<string, any>;
+    services: BookingService[];
   };
 };
 
 /*** Booking Flow Types ***/
 export type BookingStep = 'service' | 'professional' | 'datetime' | 'confirm';
-
 export type SelectedService = {
   id: string;
   name: string;
   price: number;
   duration: number;
-  priceType: 'fixed' | 'range' | 'starting';
   priceMin?: number;
   priceMax?: number;
+  priceType: 'fixed' | 'range' | 'starting';
 };
 
 /*** Availability Types ***/
@@ -97,7 +93,7 @@ export type AvailabilityData = {
   eligibleEmployeeIds: string[];
   timeSlots: string[];
   slots: TimeSlot[];
-  busy: Record<string, Array<{ start: string; end: string }>>;
+  busy: Record<string, { start: string; end: string }[]>;
 };
 
 export type LocationData = {
@@ -116,7 +112,7 @@ export type LocationData = {
 export type AvailabilityResponse = {
   ok: boolean;
   organizationId: string;
-  locations: Array<{ id: string; name: string }>;
+  locations: { id: string; name: string }[];
   locationData: Record<string, LocationData>;
   filters: {
     locationId: string;
@@ -137,11 +133,60 @@ export type ServiceBooking = {
 };
 
 export type BookingData = {
+  notes?: string;
   locationId: string;
   locationName: string;
+  selectedDate?: string;
+  selectedTime?: string;
+  source?: AppointmentSource;
+  currentServiceIndex: number;
+  selectedServices: SelectedService[];
+  serviceBookings: Record<string, ServiceBooking>;
+  selectedEmployeesByService?: Record<string, Employee | undefined>;
+};
+
+/*** User Appointments Type ***/
+export type UserAppointmentLocation = {
+  id: string;
+  name: string;
+  city: string;
+  rating: number;
+  photos: string[];
+  geoLocation: {
+    type: string;
+    coordinates: number[];
+  };
+};
+export type UserAppointment = {
+  id: string;
+  notes: string;
+  startAt: string;
+  clientName: string;
+  totalPrice: number;
+  totalServices: number;
+  items: AppointmentItem[];
+  status: AppointmentStatus;
+  totalDurationMinutes: number;
+  location: UserAppointmentLocation;
+};
+export type UserAppointmentsReqType = {
+  past?: boolean;
+  upcoming?: boolean;
+};
+export type UserAppointmentsResType = {
+  ok: boolean;
+  appointments: UserAppointment[];
   selectedServices: SelectedService[];
   // Track bookings per service
   serviceBookings: Record<string, ServiceBooking>;
   currentServiceIndex: number;
   notes?: string;
+};
+
+/*** Cancel Appointment Types ***/
+export type CancelAppointmentReqType = {
+  appointmentId: string;
+};
+export type CancelAppointmentResType = {
+  ok: boolean;
 };

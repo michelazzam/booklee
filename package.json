@@ -71,7 +71,8 @@
     "react-native-web": "^0.20.0",
     "reactotron-react-native": "^5.1.15",
     "toastify-react-native": "^7.2.3",
-    "zod": "^4.1.5"
+    "zod": "^4.1.5",
+    "expo-updates": "~0.28.17"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

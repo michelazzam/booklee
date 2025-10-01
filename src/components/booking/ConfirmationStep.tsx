@@ -3,7 +3,7 @@ import { View, StyleSheet, TextInput, Image } from 'react-native';
 import { theme } from '~/src/constants/theme';
 import { Text, Icon } from '../base';
 import type { BookingData, DetailedLocationType } from '~/src/services';
-import { AccountIcon, BookingIcon, ClockIcon } from '~/src/assets/icons';
+import { AccountIcon, BookingIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
 
 type ConfirmationStepProps = {
   bookingData: BookingData;
@@ -55,12 +55,13 @@ const ConfirmationStep = ({ bookingData, location, onNotesChange }: Confirmation
               <Icon name="store" size={24} color={theme.colors.primaryBlue['100']} />
             )}
           </View>
+
           <View style={styles.locationInfo}>
             <Text size={theme.typography.fontSizes.lg} weight="bold">
               {location?.name || bookingData.locationName}
             </Text>
             <View style={styles.ratingRow}>
-              <Icon name="star" size={14} color="#FFD700" />
+              <StarIcon width={16} height={16} />
               <Text size={theme.typography.fontSizes.sm} weight="medium">
                 {location?.rating ?? '-'}
               </Text>
@@ -188,10 +189,11 @@ const styles = StyleSheet.create({
   locationHeader: {
     flexDirection: 'row',
     gap: theme.spacing.md,
+    alignItems: 'center',
   },
   locationImage: {
-    width: 60,
-    height: 60,
+    width: 75,
+    height: 75,
     borderRadius: theme.radii.md,
     backgroundColor: theme.colors.primaryBlue['10'],
     alignItems: 'center',
@@ -251,10 +253,10 @@ const styles = StyleSheet.create({
   },
   dashedDivider: {
     height: 1,
+    borderWidth: 0.5,
     borderStyle: 'dashed',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
     marginVertical: theme.spacing.md,
+    borderColor: theme.colors.darkText['100'],
   },
   totalContainer: {
     flexDirection: 'row',

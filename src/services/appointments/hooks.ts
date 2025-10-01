@@ -1,21 +1,36 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { createAppointment, getLocationBookingData, getAvailabilities } from './api';
+import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+
+import {
+  createAppointment,
+  getLocationBookingData,
+  getUserAppointments,
+  getAvailabilities,
+  cancelAppointment,
+} from './api';
+
+import type { ResErrorType } from '../axios/types';
+
 import type {
   CreateAppointmentReqType,
   CreateAppointmentResType,
+  UserAppointmentsResType,
   BookingDataResponse,
+  UserAppointment,
+  UserAppointmentsReqType,
   AvailabilityResponse,
+  CancelAppointmentResType,
+  CancelAppointmentReqType,
 } from './types';
 
 /*** Create Appointment Hook ***/
-export const useCreateAppointment = () => {
+const useCreateAppointment = () => {
   return useMutation<CreateAppointmentResType, Error, CreateAppointmentReqType>({
     mutationFn: createAppointment,
   });
 };
 
 /*** Get Location Booking Data Hook ***/
-export const useGetLocationBookingData = (locationId: string) => {
+const useGetLocationBookingData = (locationId: string) => {
   return useQuery<BookingDataResponse, Error>({
     queryKey: ['location-booking-data', locationId],
     queryFn: () => getLocationBookingData(locationId),
@@ -23,8 +38,35 @@ export const useGetLocationBookingData = (locationId: string) => {
   });
 };
 
+/*** Get User Appointments Hook ***/
+const useGetUserAppointments = (filters?: UserAppointmentsReqType) => {
+  return useInfiniteQuery<UserAppointmentsResType, ResErrorType, UserAppointment[]>({
+    initialPageParam: 1,
+    refetchOnMount: false,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: false,
+    queryKey: ['getUserAppointments', filters],
+    select: (data) => data.pages.flatMap((page) => page.appointments),
+    queryFn: ({ pageParam, queryKey }) =>
+      getUserAppointments(pageParam as number, queryKey[1] ?? {}),
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage && lastPage.appointments.length > 0) {
+        return allPages.length + 1;
+      }
+      return undefined;
+    },
+    getPreviousPageParam: (_, allPages) => {
+      if (allPages.length > 1) {
+        return allPages.length - 1;
+      }
+      return undefined;
+    },
+  });
+};
+
 /*** Get Availabilities Hook ***/
-export const useGetAvailabilities = (
+const useGetAvailabilities = (
   locationId: string,
   date: string,
   serviceId: string,
@@ -38,8 +80,23 @@ export const useGetAvailabilities = (
   });
 };
 
+/*** Cancel Appointment Hook ***/
+const useCancelAppointment = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation<CancelAppointmentResType, ResErrorType, CancelAppointmentReqType>({
+    mutationFn: cancelAppointment,
+    onSuccess: () => {
+      queryClient.refetchQueries({ queryKey: ['getUserAppointments'] });
+    },
+  });
+};
+
 export const AppointmentServices = {
-  useCreateAppointment,
   useGetLocationBookingData,
+  useGetUserAppointments,
+  useCreateAppointment,
   useGetAvailabilities,
+  useCancelAppointment,
 };

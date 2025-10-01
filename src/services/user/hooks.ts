@@ -7,8 +7,10 @@ import {
   addToFavoritesApi,
   updateUserMeApi,
   getFavoritesApi,
+  deleteUserApi,
   getUserMeApi,
   getUserLocationsApi,
+  updateUserImageApi,
 } from './api';
 
 import type { LocationType } from '../locations/types';
@@ -19,6 +21,7 @@ import type {
   AddToFavoritesResType,
   AddToFavoritesReqType,
   GetFavoritesResType,
+  DeleteUserResType,
   GetUserMeResType,
   GetUserLocationsResType,
   UserLocationItemType,
@@ -47,6 +50,18 @@ const useUpdateUser = () => {
 
   return useMutation({
     mutationFn: updateUserMeApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['getMe'] });
+    },
+  });
+};
+
+const useUpdateUserImage = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateUserImageApi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['getMe'] });
     },
@@ -93,11 +108,25 @@ const useGetUserLocations = () => {
   });
 };
 
+const useDeleteUser = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation<DeleteUserResType, ResErrorType, void>({
+    mutationFn: deleteUserApi,
+    onSuccess: () => {
+      queryClient.clear();
+    },
+  });
+};
+
 export const UserServices = {
   useRemoveFromFavorites,
+  useUpdateUserImage,
   useAddToFavorites,
   useGetFavorites,
   useUpdateUser,
+  useDeleteUser,
   useGetMe,
   useGetUserLocations,
 };

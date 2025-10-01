@@ -11,9 +11,8 @@ import {
   LogoutIcon,
   PhoneIcon,
   TrashIcon,
-  GearIcon,
-  HomeIcon,
   BellIcon,
+  StarIcon,
 } from '~/src/assets/icons';
 
 import { AuthServices, UserServices } from '~/src/services';
@@ -26,10 +25,11 @@ const AccountPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { data: userData } = UserServices.useGetMe();
-  const { mutate: logout } = AuthServices.useLogout();
   const { isBusinessMode, setBusinessMode } = useUserProvider();
 
   const isOwner = userData?.user?.role === 'owner';
+  const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
+  const { mutate: deleteUser, isPending: isDeleteUserPending } = UserServices.useDeleteUser();
 
   /*** Memoization ***/
   const personalInformationData: CardRowDataType[] = useMemo(() => {
@@ -50,17 +50,20 @@ const AccountPage = () => {
         trailingIcon: <ChevronRightIcon />,
       },
       {
-        label: userData?.user?.phone || 'No phone number',
         leadingIcon: <PhoneIcon />,
         trailingIcon: <ChevronRightIcon />,
+        label: userData?.user?.phone || 'No phone number',
+        onPress: () => {
+          router.navigate('/(authenticated)/(screens)/settings/editPhone');
+        },
       },
     ];
   }, [userData, router]);
   const openBusinessData: CardRowDataType[] = useMemo(() => {
     return [
       {
-        label: 'Settings',
-        leadingIcon: <GearIcon />,
+        label: 'My Reviews',
+        leadingIcon: <StarIcon />,
         trailingIcon: <ChevronRightIcon />,
       },
       {
@@ -72,24 +75,27 @@ const AccountPage = () => {
   }, []);
   const appSettingsData: CardRowDataType[] = useMemo(() => {
     return [
-      {
-        variant: 'secondary',
-        label: 'OPEN A BUSINESS',
-        leadingIcon: <HomeIcon />,
-        trailingIcon: <ChevronRightIcon />,
-      },
+      // {
+      //   variant: 'secondary',
+      //   label: 'OPEN A BUSINESS',
+      //   leadingIcon: <HomeIcon />,
+      //   trailingIcon: <ChevronRightIcon />,
+      // },
       {
         onPress: logout,
         label: 'LOG OUT',
+        loading: isLogoutPending,
         leadingIcon: <LogoutIcon />,
       },
       {
         variant: 'danger',
+        onPress: deleteUser,
         label: 'DELETE ACCOUNT',
         leadingIcon: <TrashIcon />,
+        loading: isDeleteUserPending,
       },
     ];
-  }, [logout]);
+  }, [logout, deleteUser, isLogoutPending, isDeleteUserPending]);
 
   return (
     <View style={styles.container}>
