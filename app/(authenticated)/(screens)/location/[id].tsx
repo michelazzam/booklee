@@ -7,6 +7,7 @@ import { LocationServices, type SelectedService } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
+import { StarIcon } from '~/src/assets/icons';
 
 import { ImageCarousel, TabMenu, LocationSplashImage } from '~/src/components/utils';
 import { Services } from '~/src/components/preview';
@@ -160,12 +161,18 @@ const SalonDetailPage = () => {
 
             <View style={styles.storeInfoContainer}>
               <View style={styles.ratingContainer}>
-                <Icon name="star" size={16} color="#FFD700" />
+                <StarIcon width={18} height={18} />
 
                 <Text
                   weight={'bold'}
-                  size={theme.typography.fontSizes.xs}
-                  style={{ textDecorationLine: 'underline' }}>
+                  size={theme.typography.fontSizes.sm}
+                  style={{ textDecorationLine: 'underline' }}
+                  onPress={() =>
+                    router.navigate({
+                      params: { id },
+                      pathname: '/(authenticated)/(screens)/location/rating',
+                    })
+                  }>
                   {rating}
                 </Text>
               </View>
@@ -212,10 +219,10 @@ const SalonDetailPage = () => {
               }, 0)}
             </Text>
 
-              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
-                {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
-              </Text>
-            </View>
+            <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+              {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
+            </Text>
+          </View>
 
           <Button title="Next" onPress={handleBookingNext} width={180} />
         </Animated.View>
@@ -246,7 +253,6 @@ const styles = StyleSheet.create({
   },
   ratingContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: theme.spacing.xs,
   },
   tagContainer: {

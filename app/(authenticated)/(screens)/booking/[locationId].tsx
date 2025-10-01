@@ -255,8 +255,7 @@ const BookingFlow = () => {
         await createAppointmentMutation.mutateAsync(appointmentData);
       }
 
-      Toast.success('Booking confirmed');
-      router.push('/(authenticated)/(tabs)/bookings');
+      router.replace('/(authenticated)/(tabs)/bookings');
     } catch (error: any) {
       console.error('Booking error:', error);
 

@@ -135,3 +135,41 @@ export type LocationService = {
   };
   duration: number;
 };
+
+/*** Location Rating Types ***/
+export type LocationReviewLocationType = {
+  id: string;
+  name: string;
+};
+export type LocationReviewType = {
+  rating: number;
+  message: string;
+  employees: any[];
+  createdAt: string;
+  appointmentId: string;
+  userId: string;
+  location: LocationReviewLocationType;
+  organization: LocationReviewLocationType;
+};
+export type LocationRatingReqType = {
+  limit?: number;
+  countOnly?: boolean;
+  locationId?: string;
+};
+export type LocationRatingResType = {
+  ok: boolean;
+  count: number;
+  locationId: string;
+  organizationId: string;
+  reviews: LocationReviewType[];
+  locations: LocationReviewLocationType[];
+};
+export type LocationRatingSubmitReqType = {
+  userId: string;
+  rating: number;
+  message: string;
+  appointmentId: string;
+};
+export type LocationRatingSubmitResType = {
+  ok: boolean;
+};
