@@ -24,11 +24,21 @@ const DashboardHome = () => {
   const { data: appointmentsData } = DashboardServices.useGetUpcomingAppointments({
     locationId: selectedLocationId || locations[0]?.id,
   });
+  const { data: metricsData } = DashboardServices.useGetOwnerMetrics({
+    organizationId: userData?.organization?._id || '',
+    locationId: selectedLocationId || locations[0]?.id || 'all',
+  });
 
   /*** Computed Values ***/
   const businessName = userData?.organization?.name || 'Loading...';
-  const todayRevenue = { amount: 450, change: 20 }; // TODO: Implement when revenue endpoint is available
-  const todayAppointments = { count: 4, change: -5 }; // TODO: Implement when today's stats endpoint is available
+  const todayRevenue = {
+    amount: metricsData?.metrics.revenueThisMonth || 0,
+    change: metricsData?.metrics.revenueDeltaPct || 0,
+  };
+  const todayAppointments = {
+    count: metricsData?.metrics.bookingsToday || 0,
+    change: metricsData?.metrics.bookingsDeltaPct || 0,
+  };
   const upcomingAppointments = appointmentsData?.appointments || [];
 
   /*** Handlers ***/
@@ -153,7 +163,7 @@ const DashboardHome = () => {
             <Text
               size={theme.typography.fontSizes.sm}
               weight="medium"
-              color={theme.colors.green[100]}>
+              color={todayRevenue.change >= 0 ? theme.colors.green[100] : theme.colors.red[100]}>
               ({todayRevenue.change > 0 ? '+' : ''}
               {todayRevenue.change}%)
             </Text>
@@ -185,7 +195,9 @@ const DashboardHome = () => {
             <Text
               size={theme.typography.fontSizes.sm}
               weight="medium"
-              color={theme.colors.red[100]}>
+              color={
+                todayAppointments.change >= 0 ? theme.colors.green[100] : theme.colors.red[100]
+              }>
               ({todayAppointments.change > 0 ? '+' : ''}
               {todayAppointments.change}%)
             </Text>
