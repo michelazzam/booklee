@@ -5,14 +5,12 @@ import { useMemo } from 'react';
 import { theme } from '~/src/constants/theme';
 import {
   ChevronRightIcon,
-  QuestionMarkIcon,
   UserInfoIcon,
   EnvelopeIcon,
   LogoutIcon,
   PhoneIcon,
   TrashIcon,
   BellIcon,
-  StarIcon,
 } from '~/src/assets/icons';
 
 import { AuthServices, UserServices } from '~/src/services';
@@ -55,28 +53,8 @@ const AccountPage = () => {
       },
     ];
   }, [userData, router]);
-  const openBusinessData: CardRowDataType[] = useMemo(() => {
-    return [
-      {
-        label: 'My Reviews',
-        leadingIcon: <StarIcon />,
-        trailingIcon: <ChevronRightIcon />,
-      },
-      {
-        label: 'Users help center',
-        leadingIcon: <QuestionMarkIcon />,
-        trailingIcon: <ChevronRightIcon />,
-      },
-    ];
-  }, []);
   const appSettingsData: CardRowDataType[] = useMemo(() => {
     return [
-      // {
-      //   variant: 'secondary',
-      //   label: 'OPEN A BUSINESS',
-      //   leadingIcon: <HomeIcon />,
-      //   trailingIcon: <ChevronRightIcon />,
-      // },
       {
         onPress: logout,
         label: 'LOG OUT',
@@ -115,8 +93,6 @@ const AccountPage = () => {
 
       <AwareScrollView contentContainerStyle={styles.scrollContent}>
         <SettingsCard data={personalInformationData} title="PERSONAL INFORMATION" />
-
-        <SettingsCard data={openBusinessData} title="SETTINGS" />
 
         <SettingsCard data={appSettingsData} />
       </AwareScrollView>
