@@ -9,6 +9,11 @@ import { CustomCalendar } from '~/src/components/calendars';
 import { DashboardHeader } from '~/src/components/utils';
 import { Text } from '~/src/components/base';
 
+const TIME_SLOTS = Array.from({ length: 96 }, (_, index) => {
+  const hour = Math.floor(index / 4);
+  const minute = (index % 4) * 15;
+  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+});
 const dropdownOptions: DropDownItem[] = [{ value: '1', label: 'All Employees' }];
 
 const Calendar = () => {
@@ -32,18 +37,25 @@ const Calendar = () => {
       </View>
     );
   }, [selectedOption]);
+  const RenderItem = useCallback(({ item }: { item: string }) => {
+    return (
+      <View style={styles.dayRow}>
+        <Text>{item}</Text>
+      </View>
+    );
+  }, []);
 
   return (
-    <View style={{ gap: theme.spacing.md }}>
+    <View style={styles.container}>
       <DashboardHeader />
 
       <FlatList
-        data={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+        data={TIME_SLOTS}
+        renderItem={RenderItem}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={RenderHeaderItem}
-        ListHeaderComponentStyle={{ zIndex: 1 }}
-        renderItem={({ item }) => <Text>{item}</Text>}
-        contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
+        ListHeaderComponentStyle={styles.headerContainer}
+        contentContainerStyle={[styles.contentContainer, { paddingBottom: bottom }]}
       />
     </View>
   );
@@ -53,8 +65,25 @@ export default Calendar;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    gap: theme.spacing.md,
+  },
+  contentContainer: {
     flexGrow: 1,
     gap: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
+  },
+  headerContainer: {
+    zIndex: 1,
+    marginBottom: theme.spacing.xl,
+  },
+  dayRow: {
+    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.md,
+    borderBottomColor: theme.colors.border,
   },
 });
