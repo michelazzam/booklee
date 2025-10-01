@@ -3,14 +3,12 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import {
   getLocationsCategoriesApi,
   getLocationsByCategoryApi,
-  getLocationsCategorizedApi,
   submitLocationRatingApi,
   deleteSearchHistoryApi,
   getLocationRatingsApi,
   getSearchHistoryApi,
   searchLocationsApi,
   getLocationByIdApi,
-  getLocationsApi,
   getLocationsApi,
 } from './api';
 
@@ -24,7 +22,6 @@ import type {
   GetLocationByIdResType,
   LocationRatingResType,
   LocationRatingReqType,
-  LocationCategoryType,
   DetailedLocationType,
   GetLocationsReqType,
   GetLocationsResType,
@@ -155,7 +152,6 @@ const useSubmitLocationRating = () => {
 export const LocationServices = {
   useGetLocationsCategories,
   useGetLocationsByCategory,
-  useGetLocationsCategorized,
   useSubmitLocationRating,
   useDeleteSearchHistory,
   useGetLocationRatings,
