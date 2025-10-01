@@ -14,12 +14,10 @@ import type { ModifyBookingModalRef } from '../../../modals/ModifyBookingModal';
 import { Icon, Text } from '~/src/components/base';
 
 type BookingProps = {
-  onCancel: () => void;
   data: UserAppointment;
-  onChangeDateTime: () => void;
 };
 
-const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
+const Booking = ({ data }: BookingProps) => {
   /***** Refs *****/
   const modifyBookingModalRef = useRef<ModifyBookingModalRef>(null);
 
@@ -82,7 +80,7 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
               </View>
             </View>
 
-            <Text size={theme.typography.fontSizes.sm}>CityName is needed from BE</Text>
+            <Text size={theme.typography.fontSizes.sm}>{location.city}</Text>
           </View>
         </View>
 
@@ -134,11 +132,7 @@ const Booking = ({ data, onChangeDateTime, onCancel }: BookingProps) => {
         </TouchableOpacity>
       </Animated.View>
 
-      <ModifyBookingModal
-        onCancel={onCancel}
-        ref={modifyBookingModalRef}
-        onChangeDateTime={onChangeDateTime}
-      />
+      <ModifyBookingModal appointmentId={data.id} ref={modifyBookingModalRef} />
     </>
   );
 };

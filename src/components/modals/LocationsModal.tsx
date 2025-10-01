@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.border,
   },
   contentContainer: {
+    gap: theme.spacing.md,
     paddingTop: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
   },

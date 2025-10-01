@@ -1,12 +1,12 @@
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useRef, useMemo, useState, useCallback } from 'react';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Icon } from '~/src/components/base';
 import * as Location from 'expo-location';
-import { router, useLocalSearchParams } from 'expo-router';
 
-import { LocationServices, type GetLocationsReqType } from '~/src/services';
+import { LocationServices, type GetLocationsReqType, type CategoryType } from '~/src/services';
 
 import { useAppSafeAreaInsets, usePermissions } from '~/src/hooks';
 import { FilterIcon } from '~/src/assets/icons';
@@ -47,7 +47,7 @@ const MapScreen = () => {
   const { top } = useAppSafeAreaInsets();
   const { filterSlug } = useLocalSearchParams<{ filterSlug: string }>();
   const { locationPermission, requestLocationPermission } = usePermissions();
-  const { data: filtersData } = LocationServices.useGetLocationsCategorized();
+  const { data: filtersData } = LocationServices.useGetLocationsCategories();
   const { data: locationsData, isLoading } = LocationServices.useGetLocations(selectedFilter);
 
   /*** Memoization ***/
@@ -65,7 +65,7 @@ const MapScreen = () => {
 
     return [
       { slug: '', label: 'All' },
-      ...filtersData.map((category) => ({
+      ...filtersData.map((category: CategoryType) => ({
         slug: category.slug,
         label: category.title,
       })),

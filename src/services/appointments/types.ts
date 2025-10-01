@@ -149,6 +149,7 @@ export type BookingData = {
 export type UserAppointmentLocation = {
   id: string;
   name: string;
+  city: string;
   rating: number;
   photos: string[];
   geoLocation: {
@@ -180,4 +181,12 @@ export type UserAppointmentsResType = {
   serviceBookings: Record<string, ServiceBooking>;
   currentServiceIndex: number;
   notes?: string;
+};
+
+/*** Cancel Appointment Types ***/
+export type CancelAppointmentReqType = {
+  appointmentId: string;
+};
+export type CancelAppointmentResType = {
+  ok: boolean;
 };

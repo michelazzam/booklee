@@ -1,81 +1,42 @@
 import { StyleSheet, FlatList, View, ScrollView, ActivityIndicator } from 'react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, memo } from 'react';
 import { useRouter } from 'expo-router';
 
-import { LocationServices, type LocationCategoryType, UserServices } from '~/src/services';
+import { type CategoryType, LocationServices, UserServices, LocationType } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { LocationCard, HomePageSkeleton } from '~/src/components/preview';
+import { LocationCard, LocationCardSkeleton, HomePageSkeleton } from '~/src/components/preview';
 import { ScreenHeader } from '~/src/components/utils';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
-const HomePage = () => {
-  /*** States ***/
-  const [isRefetching, setIsRefetching] = useState(false);
-
+const CategorySection = memo(({ category }: { category: CategoryType }) => {
   /*** Constants ***/
   const router = useRouter();
-  const { bottom } = useAppSafeAreaInsets();
-  const { data: userData } = UserServices.useGetMe();
-  const {
-    refetch,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-    data: locationsData,
-  } = LocationServices.useGetLocationsCategorized();
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading } =
+    LocationServices.useGetLocationsByCategory(category.slug);
 
-  const renderCategory = useCallback(
-    ({ item }: { item: LocationCategoryType }) => {
-      const { title, slug } = item;
-
-      const handleSeeAllPress = () => {
-        router.navigate({
-          params: { filterSlug: slug },
-          pathname: '/(authenticated)/(tabs)/search',
-        });
-      };
-
+  const RenderItem = useCallback(
+    ({ item, index }: { item: LocationType; index: number }) => {
       return (
-        <View style={{ gap: theme.spacing.xs }}>
-          <View style={styles.sectionTitle}>
-            <Text
-              weight="semiBold"
-              color={theme.colors.darkText[100]}
-              size={theme.typography.fontSizes.xl}>
-              {title}
-            </Text>
-
-            <Button title="See All" variant="ghost" onPress={handleSeeAllPress} />
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.sectionContainer}>
-            {item.locations.map((store, index) => (
-              <LocationCard
-                width={230}
-                data={store}
-                delay={index * 150}
-                key={store._id + index}
-                animatedStyle="slideLeft"
-                onPress={() =>
-                  router.navigate({
-                    pathname: `/(authenticated)/(screens)/location/[id]`,
-                    params: {
-                      id: store._id,
-                      image: store.photos?.[0],
-                    },
-                  })
-                }
-              />
-            ))}
-          </ScrollView>
-        </View>
+        <LocationCard
+          width={230}
+          data={item}
+          delay={index * 150}
+          key={item._id + index}
+          animatedStyle="slideLeft"
+          onPress={() =>
+            router.navigate({
+              pathname: `/(authenticated)/(screens)/location/[id]`,
+              params: {
+                id: item._id,
+                image: item.photos?.[0],
+              },
+            })
+          }
+        />
       );
     },
     [router]
@@ -83,23 +44,79 @@ const HomePage = () => {
   const renderFooter = useCallback(() => {
     if (!isFetchingNextPage) return null;
 
-    return <ActivityIndicator color={theme.colors.primaryBlue[100]} />;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator color={theme.colors.primaryBlue[100]} />
+      </View>
+    );
   }, [isFetchingNextPage]);
   const RenderListEmptyComponent = useCallback(() => {
-    return <HomePageSkeleton />;
-  }, []);
+    if (isLoading) {
+      return Array.from({ length: 3 }).map((_, index) => <LocationCardSkeleton key={index} />);
+    }
+
+    return (
+      <Text
+        weight="medium"
+        style={styles.emptyTextStyle}
+        color={theme.colors.darkText['50']}
+        size={theme.typography.fontSizes.md}>
+        No locations found
+      </Text>
+    );
+  }, [isLoading]);
 
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-  const handleRefresh = useCallback(() => {
-    setIsRefetching(true);
-    refetch().finally(() => {
-      setIsRefetching(false);
-    });
-  }, [refetch]);
+
+  return (
+    <View style={{ gap: theme.spacing.xs }} key={category._id}>
+      <View style={styles.sectionTitle}>
+        <Text
+          weight="semiBold"
+          color={theme.colors.darkText[100]}
+          size={theme.typography.fontSizes.xl}>
+          {category.title}
+        </Text>
+
+        {!isLoading && data && data.length > 0 && (
+          <Button
+            title="See All"
+            variant="ghost"
+            onPress={() =>
+              router.navigate({
+                params: { filterSlug: category.slug },
+                pathname: '/(authenticated)/(tabs)/search',
+              })
+            }
+          />
+        )}
+      </View>
+
+      <FlatList
+        horizontal
+        data={data}
+        renderItem={RenderItem}
+        onEndReachedThreshold={0.5}
+        onEndReached={handleEndReached}
+        ListFooterComponent={renderFooter}
+        showsHorizontalScrollIndicator={false}
+        ListEmptyComponent={RenderListEmptyComponent}
+        contentContainerStyle={styles.sectionContainer}
+        keyExtractor={(item, index) => item._id + index}
+      />
+    </View>
+  );
+});
+
+const HomePage = () => {
+  /*** Constants ***/
+  const { bottom } = useAppSafeAreaInsets();
+  const { data: userData } = UserServices.useGetMe();
+  const { data: categories, isLoading } = LocationServices.useGetLocationsCategories();
 
   return (
     <>
@@ -123,19 +140,15 @@ const HomePage = () => {
         }
       />
 
-      <FlatList
-        data={locationsData}
-        onRefresh={handleRefresh}
-        refreshing={isRefetching}
-        renderItem={renderCategory}
-        onEndReachedThreshold={0.5}
-        onEndReached={handleEndReached}
-        ListFooterComponent={renderFooter}
+      <ScrollView
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={RenderListEmptyComponent}
-        keyExtractor={(item, index) => item._id + index}
-        contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
-      />
+        contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
+        {isLoading ? (
+          <HomePageSkeleton />
+        ) : (
+          categories?.map((category) => <CategorySection key={category._id} category={category} />)
+        )}
+      </ScrollView>
     </>
   );
 };
@@ -144,8 +157,8 @@ export default HomePage;
 
 const styles = StyleSheet.create({
   container: {
-    gap: 24,
     flexGrow: 1,
+    gap: theme.spacing.xl,
     paddingTop: theme.spacing.md,
   },
   sectionTitle: {
@@ -155,8 +168,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   sectionContainer: {
+    flexGrow: 1,
     gap: theme.spacing.xl,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.lg,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: theme.spacing['3xl'],
+  },
+  emptyTextStyle: {
+    flex: 1,
+    textAlign: 'center',
+    paddingTop: theme.spacing.xl,
+  },
+  footerLoader: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
