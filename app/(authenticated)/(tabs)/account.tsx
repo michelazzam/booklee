@@ -26,12 +26,11 @@ const AccountPage = () => {
   const router = useRouter();
   const { data: userData } = UserServices.useGetMe();
   const { isBusinessMode, setBusinessMode } = useUserProvider();
-
-  const isOwner = userData?.user?.role === 'owner';
   const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
   const { mutate: deleteUser, isPending: isDeleteUserPending } = UserServices.useDeleteUser();
 
   /*** Memoization ***/
+  const isOwner = useMemo(() => userData?.user?.role === 'owner', [userData]);
   const personalInformationData: CardRowDataType[] = useMemo(() => {
     if (!userData) return [];
 
