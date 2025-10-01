@@ -122,7 +122,7 @@ const AccountPage = () => {
             <Text
               weight="semiBold"
               color={theme.colors.darkText[100]}
-              size={theme.typography.fontSizes.sm}
+              size={theme.typography.fontSizes.xs}
               style={{ letterSpacing: 1 }}>
               SWITCH TO BUSINESS ACCOUNT
             </Text>
@@ -130,19 +130,18 @@ const AccountPage = () => {
               <Text
                 weight="medium"
                 color={theme.colors.darkText[100]}
-                size={theme.typography.fontSizes.xs}
-                style={{ marginRight: theme.spacing.sm }}>
+                size={theme.typography.fontSizes.xs}>
                 {isBusinessMode ? 'ON' : 'OFF'}
               </Text>
+
               <Switch
                 value={isBusinessMode}
                 onValueChange={setBusinessMode}
+                thumbColor={theme.colors.white.DEFAULT}
                 trackColor={{
                   false: theme.colors.grey[100],
                   true: theme.colors.primaryGreen[100],
                 }}
-                thumbColor={theme.colors.white.DEFAULT}
-                ios_backgroundColor={theme.colors.grey[100]}
               />
             </View>
           </View>
@@ -163,10 +162,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.white[100],
   },
-
   scrollContent: {
     flexGrow: 1,
     gap: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing['2xl'],
   },
   businessModeContainer: {
@@ -176,13 +175,11 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.white.DEFAULT,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
   },
   switchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: theme.spacing.sm,
   },
   sectionTitle: {
     ...theme.typography.textVariants.ctaSecondaryBold,
