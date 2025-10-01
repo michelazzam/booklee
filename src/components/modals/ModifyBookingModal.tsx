@@ -16,10 +16,11 @@ export type ModifyBookingModalRef = {
 
 type ModifyBookingModalProps = {
   appointmentId: string;
+  onReschedule: () => void;
 };
 
 const ModifyBookingModal = forwardRef<ModifyBookingModalRef, ModifyBookingModalProps>(
-  ({ appointmentId }, ref) => {
+  ({ appointmentId, onReschedule }, ref) => {
     /*** Refs ***/
     const modalRef = useRef<ModalWrapperRef>(null);
 
@@ -51,6 +52,9 @@ const ModifyBookingModal = forwardRef<ModifyBookingModalRef, ModifyBookingModalP
     };
     const handleChangeDateTime = () => {
       modalRef.current?.dismiss();
+      setTimeout(() => {
+        onReschedule();
+      }, 300);
     };
 
     return (
@@ -60,7 +64,12 @@ const ModifyBookingModal = forwardRef<ModifyBookingModalRef, ModifyBookingModalP
         snapPoints={['30%']}
         contentContainerStyle={styles.container}
         trailingIcon={
-          <Icon name="close" size={24} color={theme.colors.darkText[100]} onPress={handleCancel} />
+          <Icon
+            name="close"
+            size={24}
+            color={theme.colors.darkText[100]}
+            onPress={() => modalRef.current?.dismiss()}
+          />
         }>
         <TouchableOpacity onPress={handleChangeDateTime} style={styles.button}>
           <Icon name="clock-outline" size={24} color={theme.colors.darkText[100]} />
@@ -98,7 +107,6 @@ const ModifyBookingModal = forwardRef<ModifyBookingModalRef, ModifyBookingModalP
 );
 
 ModifyBookingModal.displayName = 'ModifyBookingModal';
-
 export default ModifyBookingModal;
 
 const styles = StyleSheet.create({
