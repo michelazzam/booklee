@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 
@@ -20,12 +20,16 @@ import { AuthServices, UserServices } from '~/src/services';
 
 import { SettingsCard, ScreenHeader, type CardRowDataType } from '~/src/components/utils';
 import { AwareScrollView, Text } from '~/src/components/base';
+import { useUserProvider } from '~/src/store';
 
 const AccountPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { data: userData } = UserServices.useGetMe();
   const { mutate: logout } = AuthServices.useLogout();
+  const { isBusinessMode, setBusinessMode } = useUserProvider();
+
+  const isOwner = userData?.user?.role === 'owner';
 
   /*** Memoization ***/
   const personalInformationData: CardRowDataType[] = useMemo(() => {
@@ -108,6 +112,37 @@ const AccountPage = () => {
       />
 
       <AwareScrollView contentContainerStyle={styles.scrollContent}>
+        {isOwner && (
+          <View style={styles.businessModeContainer}>
+            <Text
+              weight="semiBold"
+              color={theme.colors.darkText[100]}
+              size={theme.typography.fontSizes.sm}
+              style={{ letterSpacing: 1 }}>
+              SWITCH TO BUSINESS ACCOUNT
+            </Text>
+            <View style={styles.switchContainer}>
+              <Text
+                weight="medium"
+                color={theme.colors.darkText[100]}
+                size={theme.typography.fontSizes.xs}
+                style={{ marginRight: theme.spacing.sm }}>
+                {isBusinessMode ? 'ON' : 'OFF'}
+              </Text>
+              <Switch
+                value={isBusinessMode}
+                onValueChange={setBusinessMode}
+                trackColor={{
+                  false: theme.colors.grey[100],
+                  true: theme.colors.primaryGreen[100],
+                }}
+                thumbColor={theme.colors.white.DEFAULT}
+                ios_backgroundColor={theme.colors.grey[100]}
+              />
+            </View>
+          </View>
+        )}
+
         <SettingsCard data={personalInformationData} title="PERSONAL INFORMATION" />
 
         <SettingsCard data={openBusinessData} title="SETTINGS" />
@@ -128,6 +163,21 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     gap: theme.spacing.lg,
     paddingVertical: theme.spacing['2xl'],
+  },
+  businessModeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    backgroundColor: theme.colors.white.DEFAULT,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   sectionTitle: {
     ...theme.typography.textVariants.ctaSecondaryBold,

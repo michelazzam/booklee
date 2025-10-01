@@ -62,3 +62,43 @@ export type RemoveFromFavoritesResType = {
   ok: boolean;
   message?: string;
 };
+
+/*** User Locations Types ***/
+export type UserLocationEmployeeType = {
+  _id: string;
+  name: string;
+  rating: number;
+  specialties: string[];
+  serviceIds: string[];
+};
+
+export type UserLocationServiceType = {
+  _id: string;
+  name: string;
+  duration: number;
+  price: number;
+};
+
+export type UserLocationHoursType = {
+  open: string;
+  close: string;
+  closed: boolean;
+};
+
+export type UserLocationDataType = {
+  employees: UserLocationEmployeeType[];
+  services: UserLocationServiceType[];
+  hours: Record<string, UserLocationHoursType>;
+};
+
+export type UserLocationItemType = {
+  id: string;
+  name: string;
+};
+
+export type GetUserLocationsResType = {
+  ok: boolean;
+  organizationId: string;
+  locations: UserLocationItemType[];
+  locationData: Record<string, UserLocationDataType>;
+};

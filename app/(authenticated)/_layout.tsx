@@ -10,19 +10,23 @@ export default function AuthenticatedLayout() {
   /*** Constants ***/
   const pathname = usePathname();
   const { data: userData } = AuthServices.useGetMe();
-  const { isOnboardingCompleted } = useUserProvider();
+  const { isOnboardingCompleted, isBusinessMode } = useUserProvider();
   const { isAuthenticated } = AuthServices.useGetBetterAuthUser();
 
   // If not authenticated, redirect to login
-  // if (!isAuthenticated || !userData) {
-  //   return <Redirect href="/(unauthenticated)/login" />;
-  // }
+  if (!isAuthenticated || !userData) {
+    return <Redirect href="/(unauthenticated)/login" />;
+  }
 
-  // if (!isOnboardingCompleted && pathname !== '/onboarding') {
-  //   return <Redirect href="/(unauthenticated)/onboarding" />;
-  // }
+  if (!isOnboardingCompleted && pathname !== '/onboarding') {
+    return <Redirect href="/(unauthenticated)/onboarding" />;
+  }
 
-  return <Redirect href={'/(dashboard)/(tabs)' as any} />;
+  // Check if user is owner and business mode is enabled
+  const isOwner = userData?.role === 'owner';
+  if (isOwner && isBusinessMode) {
+    return <Redirect href={'/(dashboard)/(tabs)' as any} />;
+  }
 
   return (
     <>

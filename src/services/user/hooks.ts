@@ -8,6 +8,7 @@ import {
   updateUserMeApi,
   getFavoritesApi,
   getUserMeApi,
+  getUserLocationsApi,
 } from './api';
 
 import type { LocationType } from '../locations/types';
@@ -19,6 +20,8 @@ import type {
   AddToFavoritesReqType,
   GetFavoritesResType,
   GetUserMeResType,
+  GetUserLocationsResType,
+  UserLocationItemType,
 } from './types';
 
 const useGetMe = () => {
@@ -82,10 +85,19 @@ const useRemoveFromFavorites = () => {
   });
 };
 
+const useGetUserLocations = () => {
+  return useQuery<GetUserLocationsResType, ResErrorType, UserLocationItemType[]>({
+    queryKey: ['getUserLocations'],
+    queryFn: getUserLocationsApi,
+    select: ({ locations }) => locations,
+  });
+};
+
 export const UserServices = {
   useRemoveFromFavorites,
   useAddToFavorites,
   useGetFavorites,
   useUpdateUser,
   useGetMe,
+  useGetUserLocations,
 };

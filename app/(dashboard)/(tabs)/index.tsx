@@ -1,114 +1,86 @@
 import { useState } from 'react';
 import { View, StyleSheet, ScrollView, Switch, TouchableOpacity, FlatList } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { theme } from '~/src/constants/theme';
 import DashboardHeader from '~/src/components/DashboardHeader';
 import { Text } from '~/src/components/base';
 import ChevronRightIcon from '~/src/assets/icons/ChevronRightIcon';
 import { AddAppointmentIcon } from '~/src/assets/icons';
-
-// Mock data types
-interface Appointment {
-  id: string;
-  customerName: string;
-  dateTime: string;
-  servicesCount: number;
-  totalMinutes: number;
-}
+import { UserServices, DashboardServices } from '~/src/services';
+import type { DashboardAppointmentType } from '~/src/services';
+import { format } from 'date-fns';
 
 const DashboardHome = () => {
   /*** Constants ***/
   const router = useRouter();
 
   /*** State ***/
-  const [selectedBranch, setSelectedBranch] = useState('Naccache');
+  const [selectedLocationId, setSelectedLocationId] = useState<string>();
   const [workingMode, setWorkingMode] = useState(true);
 
-  /*** Mock Data ***/
-  const businessName = 'Salon Massoud';
-  const todayRevenue = { amount: 450, change: 20 };
-  const todayAppointments = { count: 4, change: -5 };
+  /*** Hooks ***/
+  const { data: userData } = UserServices.useGetMe();
+  const { data: locations = [] } = UserServices.useGetUserLocations();
+  const { data: appointmentsData } = DashboardServices.useGetUpcomingAppointments({
+    locationId: selectedLocationId || locations[0]?.id,
+  });
 
-  const upcomingAppointments: Appointment[] = [
-    {
-      id: '1',
-      customerName: 'John Doe',
-      dateTime: 'THU 23 AUG - 09:00',
-      servicesCount: 2,
-      totalMinutes: 20,
-    },
-    {
-      id: '2',
-      customerName: 'John Doe',
-      dateTime: 'THU 23 AUG - 09:00',
-      servicesCount: 2,
-      totalMinutes: 20,
-    },
-    {
-      id: '3',
-      customerName: 'John Doe',
-      dateTime: 'THU 23 AUG - 09:00',
-      servicesCount: 2,
-      totalMinutes: 20,
-    },
-    {
-      id: '4',
-      customerName: 'John Doe',
-      dateTime: 'THU 23 AUG - 09:00',
-      servicesCount: 2,
-      totalMinutes: 20,
-    },
-    {
-      id: '5',
-      customerName: 'John Doe',
-      dateTime: 'THU 23 AUG - 09:00',
-      servicesCount: 2,
-      totalMinutes: 20,
-    },
-    {
-      id: '6',
-      customerName: 'John Doe',
-      dateTime: 'THU 23 AUG - 09:00',
-      servicesCount: 2,
-      totalMinutes: 20,
-    },
-  ];
+  /*** Computed Values ***/
+  const businessName = userData?.organization?.name || 'Loading...';
+  const todayRevenue = { amount: 450, change: 20 }; // TODO: Implement when revenue endpoint is available
+  const todayAppointments = { count: 4, change: -5 }; // TODO: Implement when today's stats endpoint is available
+  const upcomingAppointments = appointmentsData?.appointments || [];
+
+  /*** Handlers ***/
+  const handleLocationChange = (locationId: string) => {
+    setSelectedLocationId(locationId);
+  };
 
   /*** Render Functions ***/
-  const renderAppointmentCard = ({ item }: { item: Appointment }) => (
-    <TouchableOpacity style={styles.appointmentCard} activeOpacity={0.7}>
-      <View style={styles.appointmentContent}>
-        <Text
-          size={theme.typography.fontSizes.md}
-          weight="semiBold"
-          color={theme.colors.darkText[100]}>
-          {item.customerName}
-        </Text>
-        <Text
-          size={theme.typography.fontSizes.xs}
-          weight="regular"
-          color={theme.colors.lightText}
-          style={{ marginTop: 2 }}>
-          {item.dateTime}
-        </Text>
-        <Text
-          size={theme.typography.fontSizes.xs}
-          weight="regular"
-          color={theme.colors.lightText}
-          style={{ marginTop: 4 }}>
-          {item.servicesCount} Services
-        </Text>
-        <Text size={theme.typography.fontSizes.xs} weight="regular" color={theme.colors.lightText}>
-          Total min: ${item.totalMinutes}
-        </Text>
-      </View>
-      <ChevronRightIcon color={theme.colors.lightText} width={20} height={20} />
-    </TouchableOpacity>
-  );
+  const renderAppointmentCard = ({ item }: { item: DashboardAppointmentType }) => {
+    const formattedDate = format(new Date(item.startAt), 'EEE dd MMM - HH:mm').toUpperCase();
+
+    return (
+      <TouchableOpacity style={styles.appointmentCard} activeOpacity={0.7}>
+        <View style={styles.appointmentContent}>
+          <Text
+            size={theme.typography.fontSizes.md}
+            weight="semiBold"
+            color={theme.colors.darkText[100]}>
+            {item.clientName}
+          </Text>
+          <Text
+            size={theme.typography.fontSizes.xs}
+            weight="regular"
+            color={theme.colors.lightText}
+            style={{ marginTop: 2 }}>
+            {formattedDate}
+          </Text>
+          <Text
+            size={theme.typography.fontSizes.xs}
+            weight="regular"
+            color={theme.colors.lightText}
+            style={{ marginTop: 4 }}>
+            {item.totalServices} Services
+          </Text>
+          <Text
+            size={theme.typography.fontSizes.xs}
+            weight="regular"
+            color={theme.colors.lightText}>
+            Total min: {item.totalDurationMinutes}
+          </Text>
+        </View>
+        <ChevronRightIcon color={theme.colors.lightText} width={20} height={20} />
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <DashboardHeader selectedBranch={selectedBranch} onBranchChange={setSelectedBranch} />
+      <DashboardHeader
+        selectedLocationId={selectedLocationId || locations[0]?.id}
+        onLocationChange={handleLocationChange}
+      />
 
       <ScrollView
         style={styles.content}
@@ -230,17 +202,22 @@ const DashboardHome = () => {
               style={{ letterSpacing: 1, textTransform: 'uppercase' }}>
               UPCOMING APPOINTMENTS
             </Text>
-            <Link href="/(dashboard)/(screens)/dashboard/appointments" asChild>
-              <TouchableOpacity activeOpacity={0.7}>
-                <Text
-                  size={theme.typography.fontSizes.sm}
-                  weight="semiBold"
-                  color={theme.colors.darkText[100]}
-                  style={{ textDecorationLine: 'underline' }}>
-                  see all
-                </Text>
-              </TouchableOpacity>
-            </Link>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() =>
+                router.push({
+                  pathname: '/(dashboard)/(screens)/dashboard/appointments',
+                  params: { locationId: selectedLocationId || locations[0]?.id },
+                })
+              }>
+              <Text
+                size={theme.typography.fontSizes.sm}
+                weight="semiBold"
+                color={theme.colors.darkText[100]}
+                style={{ textDecorationLine: 'underline' }}>
+                see all
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <FlatList
@@ -259,7 +236,7 @@ const DashboardHome = () => {
       <TouchableOpacity
         style={styles.fab}
         activeOpacity={0.8}
-        onPress={() => router.push('/(dashboard)/(screens)/dashboard/AddApointment')}>
+        onPress={() => router.push('/(dashboard)/(screens)/dashboard/AddAppointment')}>
         <AddAppointmentIcon color={theme.colors.white.DEFAULT} width={28} height={28} />
       </TouchableOpacity>
     </View>

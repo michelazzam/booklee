@@ -9,9 +9,12 @@ type UserProviderType = {
   isOnboardingCompleted: boolean;
   handleOnboardingCompleted: (isOnboardingCompleted: boolean) => void;
   resetOnboarding: () => Promise<void>;
+  isBusinessMode: boolean;
+  setBusinessMode: (isBusinessMode: boolean) => void;
 };
 const STORAGE_KEY = {
   onboardingCompleted: 'onboardingCompleted',
+  businessMode: 'businessMode',
 };
 
 const UserProviderContext = createContext<UserProviderType>({
@@ -19,6 +22,8 @@ const UserProviderContext = createContext<UserProviderType>({
   isOnboardingCompleted: false,
   handleOnboardingCompleted: () => {},
   resetOnboarding: async () => {},
+  isBusinessMode: false,
+  setBusinessMode: () => {},
 });
 
 export const useUserProvider = () => useContext(UserProviderContext);
@@ -27,6 +32,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   /*** States ***/
   const [isInitialized, setIsInitialized] = useState(false);
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState(false);
+  const [isBusinessMode, setIsBusinessModeState] = useState(false);
 
   useEffect(() => {
     const cookies = authClient.getCookie();
@@ -38,8 +44,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       try {
         const onboardingCompleted = await AsyncStorage.getItem(STORAGE_KEY.onboardingCompleted);
         setIsOnboardingCompleted(onboardingCompleted === 'true');
+
+        const businessMode = await AsyncStorage.getItem(STORAGE_KEY.businessMode);
+        setIsBusinessModeState(businessMode === 'true');
       } catch (error) {
-        console.error('Error getting onboarding completed', error);
+        console.error('Error getting persistent data', error);
       } finally {
         setIsInitialized(true);
       }
@@ -59,6 +68,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     await AsyncStorage.removeItem(STORAGE_KEY.onboardingCompleted);
   };
 
+  const setBusinessMode = async (isBusinessMode: boolean) => {
+    setIsBusinessModeState(isBusinessMode);
+    await AsyncStorage.setItem(STORAGE_KEY.businessMode, isBusinessMode.toString());
+  };
+
   return (
     <UserProviderContext.Provider
       value={{
@@ -66,6 +80,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         isOnboardingCompleted,
         handleOnboardingCompleted,
         resetOnboarding,
+        isBusinessMode,
+        setBusinessMode,
       }}>
       {children}
     </UserProviderContext.Provider>
