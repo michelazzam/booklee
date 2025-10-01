@@ -1,4 +1,5 @@
 export { default as ChevronRightIcon } from './ChevronRightIcon';
+export { default as ChevronDownIcon } from './ChevronDownIcon';
 export { default as QuestionMarkIcon } from './QuestionMarkIcon';
 export { default as ArrowLeftIcon } from './ArrowLeftIcon';
 export { default as FavoritesIcon } from './FavoritesIcon';
@@ -24,4 +25,8 @@ export { default as GroupIcon } from './GroupIcon';
 export { default as CoupleIcon } from './CoupleIcon';
 export { default as DoneStepIcon } from './DoneStepIcon';
 export { default as CurrentStepIcon } from './CurrentStepIcon';
+export { default as DashboardIcon } from './DashboardIcon';
+export { default as AnalyticsIcon } from './AnalyticsIcon';
+export { default as AddAppointmentIcon } from './AddAppointmentIcon';
+
 export { default as CheckCircleIcon } from './checkCircleIcon.svg';

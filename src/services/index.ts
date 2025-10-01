@@ -6,6 +6,7 @@ export { withErrorCatch } from './axios/error';
 export { AuthServices } from './auth/hooks';
 export { UserServices } from './user/hooks';
 export { AppointmentServices } from './appointments/hooks';
+export { DashboardServices } from './dashboard/hooks';
 
 /*** Types ***/
 export type { ResErrorType } from './axios/types';
@@ -38,6 +39,8 @@ export type {
   GetUserMeResType,
   OrganizationType,
   UserType,
+  GetUserLocationsResType,
+  UserLocationItemType,
 } from './user/types';
 export type {
   CreateAppointmentReqType,
@@ -52,3 +55,8 @@ export type {
   BookingData,
   Employee,
 } from './appointments/types';
+export type {
+  DashboardAppointmentType,
+  GetAppointmentsReqType,
+  GetAppointmentsResType,
+} from './dashboard/types';
