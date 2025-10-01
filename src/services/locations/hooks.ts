@@ -16,7 +16,6 @@ import type {
   DeleteSearchHistoryResType,
   GetSearchHistoryResType,
   GetLocationByIdResType,
-  LocationCategoryType,
   DetailedLocationType,
   GetLocationsReqType,
   GetLocationsResType,
