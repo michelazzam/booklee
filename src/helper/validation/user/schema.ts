@@ -52,4 +52,5 @@ export const updateUserSchema: z.ZodType<UpdateUserReqType> = z.object({
   lastName: z.string().optional(),
   firstName: z.string().optional(),
   image: z.string().optional().nullable(),
+  phone: phoneNumberValidation().optional(),
 });

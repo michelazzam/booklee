@@ -1,6 +1,6 @@
 import { StyleSheet, View, Keyboard } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
 import { Toast } from 'toastify-react-native';
-import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 
 import { UserServices, type UpdateUserReqType } from '~/src/services';
@@ -20,13 +20,8 @@ export const EditPersonalInfoPage = () => {
   const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
   const { mutate: updateUser, isPending: isUpdatePending } = UserServices.useUpdateUser();
-
-  /***** Refs *****/
-  const data = useRef<UpdateUserReqType>({
-    image: userData?.user?.image || null,
-    lastName: userData?.user?.lastName || '',
-    firstName: userData?.user?.firstName || '',
-  });
+  const { mutate: updateUserImage, isPending: isUpdateUserImagePending } =
+    UserServices.useUpdateUserImage();
 
   /*** States ***/
   const [selectedImage, setSelectedImage] = useState<string | null>(userData?.user?.image || null);
@@ -35,9 +30,34 @@ export const EditPersonalInfoPage = () => {
       success: false,
     }
   );
+  const [data, setData] = useState<UpdateUserReqType>({
+    lastName: userData?.user?.lastName || '',
+    firstName: userData?.user?.firstName || '',
+  });
+
+  /*** Memoization ***/
+  const isDataChanged = useMemo(() => {
+    const { lastName, firstName } = data;
+    const { lastName: lastNameUser, firstName: firstNameUser } = userData?.user || {};
+    return lastName !== lastNameUser || firstName !== firstNameUser;
+  }, [data, userData]);
+
+  useEffect(() => {
+    if (!userData) return;
+
+    const { lastName, firstName } = userData?.user;
+
+    setData({
+      lastName,
+      firstName,
+    });
+  }, [userData]);
 
   const onTextChange = (text: string, field: keyof UpdateUserReqType) => {
-    data.current[field] = text;
+    setData((prev) => ({
+      ...prev,
+      [field]: text,
+    }));
 
     setValidationErrors((prev) => ({
       ...prev,
@@ -48,21 +68,40 @@ export const EditPersonalInfoPage = () => {
     Keyboard.dismiss();
     setValidationErrors({ success: true });
 
-    const { success, errors } = await validateUpdateUser(data.current);
+    const { success, errors } = await validateUpdateUser(data);
     if (!success && errors) {
       setValidationErrors({ success: false, errors });
       return;
     }
 
-    updateUser(data.current, {
-      onSuccess: () => {
-        router.back();
-      },
-      onError: (error: any) => {
-        console.error('Update error:', error);
-        Toast.error('Failed to update personal information');
-      },
-    });
+    if (selectedImage) {
+      updateUserImage(
+        { image: selectedImage },
+        {
+          onSuccess: () => {
+            if (!isDataChanged) {
+              router.back();
+            }
+          },
+          onError: (error: any) => {
+            console.error('Update error:', error);
+            Toast.error('Failed to update your profile image');
+          },
+        }
+      );
+    }
+
+    if (isDataChanged) {
+      updateUser(data, {
+        onSuccess: () => {
+          router.back();
+        },
+        onError: (error: any) => {
+          console.error('Update error:', error);
+          Toast.error('Failed to update personal information');
+        },
+      });
+    }
   };
 
   return (
@@ -83,7 +122,7 @@ export const EditPersonalInfoPage = () => {
           <Input
             label="First Name*"
             placeholder="John"
-            value={data.current.firstName}
+            value={data.firstName}
             error={validationErrors.errors?.firstName}
             onChangeText={(value) => onTextChange(value, 'firstName')}
           />
@@ -91,13 +130,17 @@ export const EditPersonalInfoPage = () => {
           <Input
             label="Last Name*"
             placeholder="Doe"
-            value={data.current.lastName}
+            value={data.lastName}
             error={validationErrors.errors?.lastName}
             onChangeText={(value) => onTextChange(value, 'lastName')}
           />
         </View>
 
-        <Button title="Save Changes" onPress={handleSave} isLoading={isUpdatePending} />
+        <Button
+          title="Save Changes"
+          onPress={handleSave}
+          isLoading={isUpdatePending || isUpdateUserImagePending}
+        />
       </AwareScrollView>
     </>
   );

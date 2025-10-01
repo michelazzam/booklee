@@ -1,13 +1,7 @@
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { Marker as MapMarker } from 'react-native-maps';
-import { StyleSheet } from 'react-native';
-import { useEffect } from 'react';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-  withSpring,
-} from 'react-native-reanimated';
+import { useCallback, useState } from 'react';
+import { View } from 'react-native';
 
 import { theme } from '~/src/constants/theme';
 
@@ -17,115 +11,58 @@ export type MarkerDataType = {
   latitude: number;
   longitude: number;
 };
+
 type MarkerProps = {
-  isActive: boolean;
   data: MarkerDataType;
   onPress: (_id: string) => void;
 };
-
-const Marker = ({ data, isActive, onPress }: MarkerProps) => {
-  /***** Constants *****/
+const Marker = ({ data, onPress }: MarkerProps) => {
+  /*** Constants ***/
   const { _id, rating, latitude, longitude } = data;
 
-  /***** Animation *****/
-  const scale = useSharedValue(0);
-  const opacity = useSharedValue(0);
+  /*** States ***/
+  const [tracks, setTracks] = useState(true);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      transform: [{ scale: scale.value }],
-    };
-  });
-
-  useEffect(() => {
-    // Start animation immediately when component mounts
-    scale.value = withSpring(1, {
-      damping: 15,
-      stiffness: 150,
-    });
-    opacity.value = withTiming(1, { duration: 300 });
-  }, [scale, opacity]);
-  useEffect(() => {
-    if (isActive) {
-      scale.value = withSpring(1.2, {
-        damping: 15,
-        stiffness: 150,
-      });
-    } else {
-      scale.value = withSpring(1, {
-        damping: 15,
-        stiffness: 150,
-      });
-    }
-  }, [isActive, scale]);
+  const handleLayout = useCallback(() => {
+    requestAnimationFrame(() => setTimeout(() => setTracks(false), 50));
+  }, []);
 
   return (
-    <MapMarker onPress={() => onPress(_id)} coordinate={{ latitude, longitude }}>
-      <Animated.View
-        style={[styles.container, animatedStyle]}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-        <Svg width={40} height={44} viewBox="0 0 40 44" style={{ overflow: 'visible' }}>
-          {/* Drop shadow */}
+    <MapMarker
+      anchor={{ x: 0.5, y: 1 }}
+      tracksViewChanges={tracks}
+      onPress={() => onPress(_id)}
+      coordinate={{ latitude, longitude }}>
+      <View onLayout={handleLayout}>
+        <Svg width={32} height={40} viewBox="0 0 32 40">
           <Path
-            opacity="0.3"
-            transform="translate(2, 2)"
-            fill={isActive ? theme.colors.primaryBlue[100] : '#000000'}
-            d="M20 2C29.3888 2 37 9.61116 37 19C37 28.3888 20 42 20 42C20 42 3 28.3888 3 19C3 9.61116 10.6112 2 20 2Z"
+            fill="rgba(0,0,0,0.3)"
+            transform="translate(1, 1)"
+            d="M16 37C16 37 4 28 4 14C4 7.163 9.163 4 16 4C22.837 4 28 7.163 28 14C28 28 16 37 16 37Z"
           />
 
-          {/* Main pin body - more circular */}
           <Path
-            strokeWidth={3}
+            strokeWidth="2"
+            fill={theme.colors.darkText[100]}
             stroke={theme.colors.white.DEFAULT}
-            fill={isActive ? theme.colors.primaryBlue[100] : '#000000'}
-            d="M20 2C29.3888 2 37 9.61116 37 19C37 28.3888 20 42 20 42C20 42 3 28.3888 3 19C3 9.61116 10.6112 2 20 2Z"
+            d="M16 35C16 35 4 26 4 12C4 5.163 9.163 2 16 2C22.837 2 28 5.163 28 12C28 26 16 35 16 35Z"
           />
 
-          {/* Pin pointer - smaller and more proportional */}
-          <Path
-            strokeWidth={1}
-            d="M20 42L16 38L24 38L20 42Z"
-            stroke={theme.colors.white.DEFAULT}
-            fill={isActive ? theme.colors.primaryBlue[100] : '#000000'}
-          />
+          <Path d="M16 35L14 40L18 40Z" fill={theme.colors.darkText[100]} />
 
-          {/* Rating text */}
           <SvgText
-            x="20"
-            y="24"
-            fontSize="12"
+            x="16"
+            y="18"
+            fontSize="10"
             fontWeight="bold"
             textAnchor="middle"
             fill={theme.colors.white.DEFAULT}>
-            {rating.toFixed(1)}
+            {Number(rating ?? 0).toFixed(1)}
           </SvgText>
         </Svg>
-      </Animated.View>
+      </View>
     </MapMarker>
   );
 };
 
 export default Marker;
-
-const styles = StyleSheet.create({
-  container: {
-    width: 40,
-    height: 44,
-    zIndex: 1000,
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    // IOS Shadows
-    shadowColor: '#000',
-    shadowRadius: 3.84,
-    shadowOpacity: 0.25,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-
-    // Android Shadows
-    elevation: 5,
-  },
-});

@@ -1,10 +1,42 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useState, useMemo } from 'react';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 import { theme } from '~/src/constants/theme';
 import { Text } from '../base';
 import type { Employee, SelectedService, AvailabilityResponse } from '~/src/services';
+import { AppointmentServices } from '~/src/services';
 import { CoupleIcon, GroupIcon, StarIcon } from '~/src/assets/icons';
+
+type AnimatedButtonProps = {
+  style?: any;
+  isSelected?: boolean;
+  onPress?: () => void;
+  children: React.ReactNode;
+};
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedButton = ({ style, onPress, children, isSelected = false }: AnimatedButtonProps) => {
+  /*** Animations ***/
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      borderColor: withTiming(isSelected ? theme.colors.darkText['100'] : theme.colors.border, {
+        duration: 300,
+      }),
+      transform: [
+        {
+          scale: withTiming(isSelected ? 1.02 : 1, { duration: 300 }),
+        },
+      ],
+    };
+  });
+
+  return (
+    <AnimatedTouchableOpacity onPress={onPress} activeOpacity={0.8} style={[style, animatedStyle]}>
+      {children}
+    </AnimatedTouchableOpacity>
+  );
+};
 
 type ProfessionalSelectionStepProps = {
   locationId: string;
@@ -23,6 +55,12 @@ const ProfessionalSelectionStep = ({
   onEmployeeSelect,
   onOptionChosen,
 }: ProfessionalSelectionStepProps) => {
+  const { data: bookingData } = AppointmentServices.useGetLocationBookingData(locationId);
+  const employees = useMemo(
+    () => bookingData?.data?.employees || [],
+    [bookingData?.data?.employees]
+  );
+
   // UI state: initially only show the two options; reveal details if user chooses to select professional
   const [showDetailedSelection, setShowDetailedSelection] = useState(false);
   const [selectedOption, setSelectedOption] = useState<'any' | 'specific' | undefined>(undefined);
@@ -52,11 +90,17 @@ const ProfessionalSelectionStep = ({
     <View style={styles.container}>
       <View style={styles.optionsContainer}>
         {/* Any Professional Option */}
-        <TouchableOpacity
-          style={[styles.optionCard, selectedOption === 'any' && styles.optionCardSelected]}
+        <AnimatedButton
+          style={styles.optionCard}
+          isSelected={selectedOption === 'any'}
           onPress={() => {
-            // Select any available employee (will be chosen at booking time from available ones)
-            onEmployeeSelect(undefined);
+            // Select any available employee for the service
+            const serviceEmployees = employees.filter((emp) => emp.serviceIds.includes(service.id));
+            const pool = serviceEmployees.length > 0 ? serviceEmployees : employees;
+            const random =
+              pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
+            onEmployeeSelect(random);
+            // Keep the details hidden; user can proceed with Next
             setShowDetailedSelection(false);
             setSelectedOption('any');
             onOptionChosen?.(true);
@@ -73,14 +117,12 @@ const ProfessionalSelectionStep = ({
             style={styles.optionSubtitle}>
             for maximum availability
           </Text>
-        </TouchableOpacity>
+        </AnimatedButton>
 
         {/* Specific Professional Option */}
-        <TouchableOpacity
-          style={[
-            styles.optionCard,
-            (showDetailedSelection || selectedOption === 'specific') && styles.optionCardSelected,
-          ]}
+        <AnimatedButton
+          isSelected={selectedOption === 'specific'}
+          style={styles.optionCard}
           onPress={() => {
             setShowDetailedSelection(true);
             setSelectedOption('specific');
@@ -98,7 +140,7 @@ const ProfessionalSelectionStep = ({
             style={styles.optionSubtitle}>
             per service
           </Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
 
       {/* Professional List for Current Service */}
@@ -214,11 +256,6 @@ const styles = StyleSheet.create({
     minHeight: 200,
     justifyContent: 'center',
   },
-  optionCardSelected: {
-    borderColor: theme.colors.darkText['100'],
-    borderWidth: 1,
-    backgroundColor: theme.colors.white.DEFAULT,
-  },
   optionIconContainer: {
     marginBottom: theme.spacing.xl,
   },
@@ -248,13 +285,11 @@ const styles = StyleSheet.create({
   },
   professionalCardSelected: {
     borderColor: theme.colors.darkText['100'],
-    borderWidth: 1,
-    backgroundColor: theme.colors.white.DEFAULT,
   },
   professionalAvatar: {
     width: 50,
     height: 50,
-    borderRadius: '100%',
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
   },

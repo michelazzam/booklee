@@ -1,11 +1,13 @@
+import { ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
-import { StyleSheet } from 'react-native';
+import { Toast } from 'toastify-react-native';
+
+import { AppointmentServices } from '~/src/services';
 
 import { theme } from '~/src/constants/theme';
 
 import ModalWrapper, { type ModalWrapperRef } from './ModalWrapper';
-import { Button } from '~/src/components/buttons';
-import { Icon } from '~/src/components/base';
+import { Icon, Text } from '~/src/components/base';
 
 export type ModifyBookingModalRef = {
   present: () => void;
@@ -13,16 +15,18 @@ export type ModifyBookingModalRef = {
 };
 
 type ModifyBookingModalProps = {
-  onCancel: () => void;
-  onChangeDateTime: () => void;
+  appointmentId: string;
 };
 
 const ModifyBookingModal = forwardRef<ModifyBookingModalRef, ModifyBookingModalProps>(
-  ({ onCancel, onChangeDateTime }, ref) => {
+  ({ appointmentId }, ref) => {
     /*** Refs ***/
     const modalRef = useRef<ModalWrapperRef>(null);
 
-    /*** Expose methods ***/
+    /*** Constants ***/
+    const { mutate: cancelAppointment, isPending: isCancellingAppointment } =
+      AppointmentServices.useCancelAppointment();
+
     useImperativeHandle(ref, () => ({
       present: () => {
         modalRef.current?.present();
@@ -32,14 +36,21 @@ const ModifyBookingModal = forwardRef<ModifyBookingModalRef, ModifyBookingModalP
       },
     }));
 
-    /*** Handlers ***/
     const handleCancel = () => {
-      modalRef.current?.dismiss();
-      onCancel();
+      cancelAppointment(
+        { appointmentId: appointmentId },
+        {
+          onSuccess: () => {
+            modalRef.current?.dismiss();
+          },
+          onError: () => {
+            Toast.error('Failed to cancel appointment');
+          },
+        }
+      );
     };
     const handleChangeDateTime = () => {
       modalRef.current?.dismiss();
-      onChangeDateTime();
     };
 
     return (
@@ -51,20 +62,36 @@ const ModifyBookingModal = forwardRef<ModifyBookingModalRef, ModifyBookingModalP
         trailingIcon={
           <Icon name="close" size={24} color={theme.colors.darkText[100]} onPress={handleCancel} />
         }>
-        <Button
-          leadingIcon="clock"
-          title="Change Date & Time"
-          onPress={handleChangeDateTime}
-          containerStyle={styles.button}
-        />
+        <TouchableOpacity onPress={handleChangeDateTime} style={styles.button}>
+          <Icon name="clock-outline" size={24} color={theme.colors.darkText[100]} />
 
-        <Button
-          variant="outline"
+          <Text
+            size={theme.typography.fontSizes.md}
+            weight="medium"
+            color={theme.colors.darkText[100]}>
+            Change Date & Time
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           onPress={handleCancel}
-          title="Cancel Appointment"
-          containerStyle={styles.button}
-          leadingIcon="trash-can-outline"
-        />
+          disabled={isCancellingAppointment}
+          style={[styles.button, styles.cancelButton]}>
+          {isCancellingAppointment ? (
+            <ActivityIndicator size={24} color={theme.colors.red[100]} />
+          ) : (
+            <>
+              <Icon name="trash-can-outline" size={24} color={theme.colors.red[100]} />
+
+              <Text
+                weight="medium"
+                color={theme.colors.red[100]}
+                size={theme.typography.fontSizes.md}>
+                Cancel Appointment
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
       </ModalWrapper>
     );
   }
@@ -83,5 +110,16 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+    justifyContent: 'center',
+    padding: theme.spacing.md,
+  },
+  cancelButton: {
+    borderWidth: 1,
+    padding: theme.spacing.md,
+    borderRadius: theme.radii.md,
+    borderColor: theme.colors.red[100],
   },
 });

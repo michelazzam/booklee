@@ -26,6 +26,7 @@ export type {
   RoleType,
 } from './auth/types';
 export type {
+  CategoryType,
   LocationCategoryType,
   GetLocationsReqType,
   SearchHistoryType,
@@ -44,12 +45,15 @@ export type {
 export type {
   CreateAppointmentReqType,
   CreateAppointmentResType,
-  BookingData,
-  BookingStep,
-  SelectedService,
-  Employee,
-  BookingService,
+  UserAppointmentsResType,
   BookingDataResponse,
+  SelectedService,
+  UserAppointment,
+  AppointmentItem,
+  BookingService,
+  BookingStep,
+  BookingData,
+  Employee,
 } from './appointments/types';
 export type {
   DashboardAppointmentType,
