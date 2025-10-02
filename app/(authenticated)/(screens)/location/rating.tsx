@@ -8,8 +8,9 @@ import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants';
 
 import { RatingModal, type RatingModalRef } from '~/src/components/modals';
-import { DropDown, StarContainer } from '~/src/components/utils';
 import { HeaderNavigation, Text } from '~/src/components/base';
+import { StarContainer } from '~/src/components/utils';
+import { DropDown } from '~/src/components/dropdowns';
 import { Review } from '~/src/components/preview';
 
 const starContainerData = {

@@ -2,10 +2,9 @@ export { default as StarContainer, type StarContainerData } from './starContaine
 export { default as FilterContainer, type FilterType } from './filterContainer';
 export { default as SettingsCard, type CardRowDataType } from './settingsCard';
 export { default as LocationSplashImage } from './LocationSplashImage';
+export { default as DashboardHeader } from './headers/DashboardHeader';
 export { default as Marker, type MarkerDataType } from './map/Marker';
-export { default as CalendarScheduler } from './calendarSchedular';
+export { default as ScreenHeader } from './headers/ScreenHeader';
 export { default as ImageCarousel } from './UI/ImageCarousel';
 export { default as PhotoPicker } from './UI/photoPicker';
-export { default as ScreenHeader } from './ScreenHeader';
-export { default as DropDown } from './UI/DropDown';
 export { default as TabMenu } from './TabMenu';

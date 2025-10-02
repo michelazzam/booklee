@@ -1,9 +1,9 @@
 import { View, StyleSheet } from 'react-native';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
-import { theme } from '../../constants/theme';
+import { theme } from '../../../constants/theme';
 
-import { Text } from '../base';
+import { Text } from '../../base';
 
 interface ScreenHeaderProps {
   title?: React.ReactNode;

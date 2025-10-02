@@ -24,7 +24,7 @@ export default function AuthenticatedLayout() {
   // Check if user is owner and business mode is enabled
   const isOwner = userData?.role === 'owner';
   if (isOwner && isBusinessMode) {
-    return <Redirect href={'/(dashboard)/(tabs)' as any} />;
+    return <Redirect href={'/(dashboard)/(tabs)'} />;
   }
 
   return (

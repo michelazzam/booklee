@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, type ViewStyle } from 'react-native';
 import { useMemo, useState } from 'react';
 import Animated, {
   useAnimatedStyle,
@@ -10,9 +10,10 @@ import Animated, {
 
 import { theme } from '~/src/constants';
 
-import { Text, Icon, type WeightVariantType } from '~/src/components/base';
+import { Text, Icon } from '~/src/components/base';
+import DropdownItem from './item';
 
-type DropDownItem = {
+export type DropDownItem = {
   label: string;
   value: string;
 };
@@ -22,15 +23,19 @@ type DropDownProps = {
   placeholder?: string;
   items: DropDownItem[];
   selectedValue?: string;
+  width?: ViewStyle['width'];
+  containerHeight?: ViewStyle['height'];
   onSelect: (item: DropDownItem) => void;
 };
 
 const AnimatedIcon = Animated.createAnimatedComponent(Icon);
 const DropDown = ({
   items,
+  width,
   onSelect,
   selectedValue,
   disabled = false,
+  containerHeight = 36,
   placeholder = 'Select an option',
 }: DropDownProps) => {
   /***** States *****/
@@ -41,14 +46,6 @@ const DropDown = ({
   const placeHolderColor = useMemo(
     () => (selectedItem ? theme.colors.darkText[100] : theme.colors.darkText[50]),
     [selectedItem]
-  );
-  const optionConfig = useMemo(
-    () => ({
-      weight: selectedValue ? 'semiBold' : 'regular',
-      backgroundColor: selectedValue ? theme.colors.green[10] : theme.colors.white.DEFAULT,
-      color: selectedValue ? theme.colors.green[100] : theme.colors.darkText[100],
-    }),
-    [selectedValue]
   );
 
   /***** Animation *****/
@@ -87,12 +84,12 @@ const DropDown = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { width: width }]}>
       <TouchableOpacity
         activeOpacity={0.7}
         disabled={disabled}
         onPress={toggleDropdown}
-        style={[styles.trigger, disabled && styles.disabled]}>
+        style={[styles.trigger, disabled && styles.disabled, { height: containerHeight }]}>
         <Text color={placeHolderColor} size={theme.typography.fontSizes.xs}>
           {selectedItem?.label || placeholder}
         </Text>
@@ -106,23 +103,16 @@ const DropDown = ({
       </TouchableOpacity>
 
       <Animated.View style={[styles.dropdown, animatedContainerStyle]}>
-        {items.map((item) => (
-          <TouchableOpacity
-            key={item.value}
-            activeOpacity={0.7}
-            onPress={() => handleItemSelect(item)}
-            style={[styles.item, { backgroundColor: optionConfig.backgroundColor }]}>
-            <Text
-              color={optionConfig.color}
-              size={theme.typography.fontSizes.md}
-              weight={optionConfig.weight as WeightVariantType}>
-              {item.label}
-            </Text>
+        {items.map((item, index) => (
+          <View key={index}>
+            <DropdownItem
+              item={item}
+              handleItemSelect={handleItemSelect}
+              selectedValue={selectedValue ?? ''}
+            />
 
-            {selectedValue === item.value && (
-              <Icon name="check-circle" size={16} color={theme.colors.green[100]} />
-            )}
-          </TouchableOpacity>
+            {index !== items.length - 1 && <View style={styles.divider} />}
+          </View>
         ))}
       </Animated.View>
     </View>
@@ -137,8 +127,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   trigger: {
-    width: 140,
-    minHeight: 36,
+    flex: 1,
     borderWidth: 1,
     alignItems: 'center',
     flexDirection: 'row',
@@ -155,6 +144,7 @@ const styles = StyleSheet.create({
   dropdown: {
     top: '75%',
     zIndex: 1001,
+    width: '100%',
     borderWidth: 1,
     borderTopWidth: 0,
     overflow: 'hidden',
@@ -164,13 +154,9 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: theme.radii.md,
     backgroundColor: theme.colors.white.DEFAULT,
   },
-  item: {
-    minHeight: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.md,
-    borderBottomColor: theme.colors.border,
+  divider: {
+    height: 1,
+    width: '100%',
+    backgroundColor: theme.colors.border,
   },
 });
