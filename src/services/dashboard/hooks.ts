@@ -1,6 +1,11 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { getAppointmentsApi } from './api';
-import type { GetAppointmentsReqType, GetAppointmentsResType } from './types';
+import { getAppointmentsApi, getOwnerMetricsApi } from './api';
+import type {
+  GetAppointmentsReqType,
+  GetAppointmentsResType,
+  GetOwnerMetricsReqType,
+  GetOwnerMetricsResType,
+} from './types';
 import type { ResErrorType } from '../axios/types';
 
 /*** Get Upcoming Appointments Hook (for Dashboard Home) ***/
@@ -39,7 +44,17 @@ export const useGetAllAppointments = (params: Omit<GetAppointmentsReqType, 'page
   });
 };
 
+/*** Get Owner Metrics Hook ***/
+export const useGetOwnerMetrics = (params: GetOwnerMetricsReqType) => {
+  return useQuery<GetOwnerMetricsResType, ResErrorType>({
+    queryKey: ['ownerMetrics', params],
+    queryFn: () => getOwnerMetricsApi(params),
+    enabled: !!params.organizationId,
+  });
+};
+
 export const DashboardServices = {
   useGetUpcomingAppointments,
   useGetAllAppointments,
+  useGetOwnerMetrics,
 };
