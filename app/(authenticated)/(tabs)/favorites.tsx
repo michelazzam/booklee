@@ -21,8 +21,14 @@ const FavoritesPage = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const RenderItem = useCallback(
-    ({ item }: { item: LocationType }) => <LocationCard data={item} width={'48%'} />,
-    []
+    ({ item }: { item: LocationType }) => (
+      <LocationCard
+        data={item}
+        width={'48%'}
+        onPress={() => router.navigate(`/(authenticated)/(screens)/location/${item._id}`)}
+      />
+    ),
+    [router]
   );
   const RenderListEmptyComponent = useCallback(() => {
     if (isLoading) {

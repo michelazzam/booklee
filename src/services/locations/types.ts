@@ -155,6 +155,7 @@ export type LocationRatingReqType = {
   limit?: number;
   countOnly?: boolean;
   locationId?: string;
+  needsReview?: boolean;
 };
 export type LocationRatingResType = {
   ok: boolean;

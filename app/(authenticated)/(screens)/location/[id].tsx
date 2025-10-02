@@ -1,9 +1,13 @@
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet, Linking } from 'react-native';
 import { useMemo, useState } from 'react';
 
-import { LocationServices, type SelectedService } from '~/src/services';
+import {
+  type LocationOperatingHoursType,
+  type SelectedService,
+  LocationServices,
+} from '~/src/services';
 
 import { useAppSafeAreaInsets, useHandleFavorites } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
@@ -18,6 +22,11 @@ type SalonDetailPageProps = {
   id: string;
   image: string;
 };
+type AboutItemData = {
+  title: string;
+  onPress?: () => void;
+  value: string | LocationOperatingHoursType;
+};
 
 const SalonDetailPage = () => {
   /***** Constants *****/
@@ -25,7 +34,7 @@ const SalonDetailPage = () => {
   const { top, bottom } = useAppSafeAreaInsets();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { data: location, isLoading } = LocationServices.useGetLocationById(id || '');
-  const { photos, name, address, category, rating, phone, teamSize, bookable, tags } =
+  const { photos, name, address, category, rating, phone, tags, operatingHours, geo } =
     location || {};
   const {
     isInFavorites,
@@ -86,7 +95,10 @@ const SalonDetailPage = () => {
   const RenderServices = () => {
     return (
       <View style={{ gap: theme.spacing.md }}>
-        <Text size={theme.typography.fontSizes.md} weight={'medium'}>
+        <Text
+          weight={'medium'}
+          size={theme.typography.fontSizes.md}
+          style={{ textTransform: 'uppercase' }}>
           {category?.title}
         </Text>
 
@@ -104,36 +116,71 @@ const SalonDetailPage = () => {
     );
   };
   const RenderAbout = () => {
-    const formatData = [
-      { title: 'Address', value: address },
-      { title: 'Phone', value: phone },
-      { title: 'Team Size', value: `${teamSize} professionals` },
-      { title: 'Bookable', value: bookable ? 'Yes' : 'No' },
+    const aboutItemData: AboutItemData[] = [
+      {
+        title: 'CONTACT',
+        value: phone || '',
+        onPress: () => {
+          Linking.openURL(`tel:${phone}`);
+        },
+      },
+
+      {
+        title: 'DIRECTIONS',
+        value: address || '',
+        onPress: () => {
+          Linking.openURL(
+            `https://www.google.com/maps/dir/?api=1&destination=${geo?.lat},${geo?.lng}`
+          );
+        },
+      },
+
+      {
+        title: 'OPENING HOURS',
+        value: operatingHours || {},
+      },
     ];
 
-    return (
-      <View style={{ gap: theme.spacing.md }}>
-        <Text size={theme.typography.fontSizes.md} weight={'medium'}>
-          About {name}
+    return aboutItemData.map(({ title, value, onPress }, index) => (
+      <View
+        style={[
+          styles.aboutItemContainer,
+          { borderBottomWidth: index === aboutItemData.length - 1 ? 0 : 1 },
+        ]}
+        key={title}>
+        <Text size={theme.typography.fontSizes.md} weight={'semiBold'}>
+          {title}
         </Text>
 
-        <View style={{ gap: theme.spacing.md }}>
-          {formatData.map((item, index) => (
-            <View style={styles.infoRow} key={index}>
-              <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
-                {item.title}:
+        {typeof value === 'string' && (
+          <Text
+            key={value}
+            weight={'medium'}
+            onPress={onPress}
+            size={theme.typography.fontSizes.sm}
+            style={{ textDecorationLine: 'underline' }}
+            color={onPress ? theme.colors.primaryBlue[100] : theme.colors.darkText[100]}>
+            {value}
+          </Text>
+        )}
+
+        {typeof value === 'object' &&
+          Object.entries(value).map(([key, dayHours]) => (
+            <View key={key} style={styles.operatingHoursContainer}>
+              <Text
+                weight={'semiBold'}
+                size={theme.typography.fontSizes.sm}
+                style={{ textTransform: 'capitalize' }}>
+                {key}
               </Text>
 
-              <Text
-                size={theme.typography.fontSizes.sm}
-                style={{ width: '75%', textAlign: 'right' }}>
-                {item.value}
+              <Text size={theme.typography.fontSizes.sm}>
+                {dayHours.closed ? 'Closed' : `${dayHours.open} - ${dayHours.close}`}
               </Text>
             </View>
           ))}
-        </View>
       </View>
-    );
+    ));
   };
 
   return (
@@ -304,5 +351,16 @@ const styles = StyleSheet.create({
   bookingInfo: {
     flex: 1,
     gap: theme.spacing.xs,
+  },
+  aboutItemContainer: {
+    gap: theme.spacing.md,
+    alignItems: 'flex-start',
+    paddingVertical: theme.spacing.xl,
+    borderBottomColor: theme.colors.border,
+  },
+  operatingHoursContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
   },
 });
