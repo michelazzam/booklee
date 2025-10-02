@@ -1,6 +1,6 @@
-import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, ScrollView, StyleSheet } from 'react-native';
 import { useMemo, useState } from 'react';
 
 import { LocationServices, type SelectedService } from '~/src/services';
