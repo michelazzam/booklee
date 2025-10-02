@@ -46,7 +46,7 @@ const LabsLayout = () => {
     const tabIndex = TABS.findIndex((t) => t.key === tab.key);
     const tabWidth = width / TABS.length;
     activeLinePosition.value = withTiming(tabIndex * tabWidth, {
-      duration: 300,
+      duration: 100,
     });
   };
 

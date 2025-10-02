@@ -61,8 +61,8 @@ const DashboardHeader = ({ selectedLocationId, onLocationChange }: DashboardHead
     setIsDropdownOpen((prevState) => {
       const willOpen = !prevState;
 
-      height.value = withTiming(willOpen ? maxHeight : 0, { duration: 250 });
-      rotation.value = withTiming(willOpen ? 180 : 0, { duration: 250 });
+      height.value = withTiming(willOpen ? maxHeight : 0, { duration: 200 });
+      rotation.value = withTiming(willOpen ? 180 : 0, { duration: 200 });
 
       return willOpen;
     });

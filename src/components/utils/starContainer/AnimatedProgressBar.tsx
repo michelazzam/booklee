@@ -17,7 +17,7 @@ const AnimatedProgressBar = ({ percentage, delay = 0 }: { percentage: number; de
     width.value = withDelay(
       delay,
       withTiming(percentage, {
-        duration: 800,
+        duration: 500,
         easing: Easing.out(Easing.cubic),
       })
     );

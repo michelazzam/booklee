@@ -24,7 +24,7 @@ type LocationCardProps = {
   data: LocationType;
   onPress?: () => void;
   width?: ViewStyle['width'];
-  animatedStyle?: 'slideUp' | 'slideLeft' | 'none';
+  animatedStyle?: 'slideUp' | 'slideLeft' | 'fadeIn';
 };
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
@@ -33,8 +33,8 @@ const LocationCard = ({
   onPress,
   delay = 0,
   width = '100%',
-  duration = 300,
-  animatedStyle = 'none',
+  duration = 200,
+  animatedStyle = 'fadeIn',
 }: LocationCardProps) => {
   /***** Constants *****/
   const { _id, name, city, tags, rating, photos } = data;
@@ -72,7 +72,7 @@ const LocationCard = ({
         return SlideOutDown.duration(duration).delay(delay);
       case 'slideLeft':
         return SlideOutRight.duration(duration).delay(delay);
-      case 'none':
+      case 'fadeIn':
       default:
         return FadeOut.duration(duration).delay(delay);
     }

@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 
 import { LocationServices, type SelectedService } from '~/src/services';
 
-import { useAppSafeAreaInsets } from '~/src/hooks';
+import { useAppSafeAreaInsets, useHandleFavorites } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 import { StarIcon } from '~/src/assets/icons';
 
@@ -27,6 +27,11 @@ const SalonDetailPage = () => {
   const { data: location, isLoading } = LocationServices.useGetLocationById(id || '');
   const { photos, name, address, category, rating, phone, teamSize, bookable, tags } =
     location || {};
+  const {
+    isInFavorites,
+    handleToggleFavorites,
+    isLoading: isLoadingFavorites,
+  } = useHandleFavorites(id);
 
   /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -133,7 +138,7 @@ const SalonDetailPage = () => {
 
   return (
     <>
-      <LocationSplashImage imageUri={image} isLoading={isLoading} />
+      {!location && <LocationSplashImage imageUri={image} isLoading={isLoading} />}
 
       <ScrollView
         bounces={false}
@@ -141,13 +146,20 @@ const SalonDetailPage = () => {
         contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom * 2 }}>
         <View>
           <View style={[styles.headerComponent, { top }]}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Icon size={32} name="chevron-left" color={theme.colors.white.DEFAULT} />
-            </TouchableOpacity>
+            <Icon
+              size={32}
+              name="chevron-left"
+              onPress={() => router.back()}
+              color={theme.colors.white.DEFAULT}
+            />
 
-            <TouchableOpacity>
-              <Icon name="heart-outline" size={32} color={theme.colors.white.DEFAULT} />
-            </TouchableOpacity>
+            <Icon
+              size={28}
+              color="#FFFFFF"
+              loading={isLoadingFavorites}
+              onPress={handleToggleFavorites}
+              name={isInFavorites ? 'heart' : 'heart-outline'}
+            />
           </View>
 
           <ImageCarousel images={photos || []} />
@@ -206,9 +218,9 @@ const SalonDetailPage = () => {
 
       {selectedServices.length > 0 && (
         <Animated.View
-          style={[styles.bookingBar, { bottom: bottom }]}
-          exiting={FadeOut.duration(200)}
-          entering={FadeIn.duration(200)}>
+          exiting={FadeOut}
+          entering={FadeIn}
+          style={[styles.bookingBar, { bottom: bottom }]}>
           <View style={styles.bookingInfo}>
             <Text size={theme.typography.fontSizes.md} weight="bold">
               Starting $

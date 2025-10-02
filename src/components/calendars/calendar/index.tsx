@@ -44,8 +44,8 @@ const CustomCalendar = ({ onDayPress }: CalendarSchedulerProps) => {
   const [selectedDate, setSelectedDate] = useState<DateData | null>(null);
 
   /***** Animations *****/
-  const height = useSharedValue(INITIAL_HEIGHT);
   const rotation = useSharedValue(0);
+  const height = useSharedValue(INITIAL_HEIGHT);
   const animatedCalendarStyle = useAnimatedStyle(() => {
     return {
       height: height.value,
@@ -61,8 +61,8 @@ const CustomCalendar = ({ onDayPress }: CalendarSchedulerProps) => {
     const currentHeight = height.value;
     const willExpand = currentHeight === INITIAL_HEIGHT;
 
-    height.value = withTiming(willExpand ? EXPANDED_HEIGHT : INITIAL_HEIGHT, { duration: 300 });
-    rotation.value = withTiming(willExpand ? 180 : 0, { duration: 300 });
+    height.value = withTiming(willExpand ? EXPANDED_HEIGHT : INITIAL_HEIGHT, { duration: 200 });
+    rotation.value = withTiming(willExpand ? 180 : 0, { duration: 200 });
   };
 
   return (

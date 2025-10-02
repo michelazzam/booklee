@@ -24,9 +24,9 @@ const CategorySection = memo(({ category }: { category: CategoryType }) => {
         <LocationCard
           width={230}
           data={item}
-          delay={index * 150}
+          delay={index * 200}
           key={item._id + index}
-          animatedStyle="slideLeft"
+          // animatedStyle="slideLeft"
           onPress={() =>
             router.navigate({
               pathname: `/(authenticated)/(screens)/location/[id]`,
