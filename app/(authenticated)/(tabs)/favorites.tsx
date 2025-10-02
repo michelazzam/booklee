@@ -15,7 +15,7 @@ const FavoritesPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
-  const { data: favorites, refetch, isFetching, isLoading } = UserServices.useGetFavorites();
+  const { data: favorites, refetch, isLoading } = UserServices.useGetFavorites();
 
   /*** States ***/
   const [refreshing, setRefreshing] = useState(false);
