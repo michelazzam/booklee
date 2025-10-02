@@ -264,14 +264,14 @@ const DateTimeSelectionStep = ({
               ))}
             </View>
 
-            {/* Swipe indicator at bottom */}
+            {/* Click indicator at bottom */}
             <TouchableOpacity style={styles.swipeIndicator} onPress={handleExpandToMonthly}>
               <View style={styles.swipeHandle} />
               <Text
                 size={theme.typography.fontSizes.xs}
                 color={theme.colors.darkText['50']}
                 style={styles.swipeText}>
-                Swipe down to expand
+                Click to expand
               </Text>
             </TouchableOpacity>
           </Animated.View>
