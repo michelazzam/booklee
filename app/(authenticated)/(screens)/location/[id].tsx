@@ -1,4 +1,4 @@
-import { View, ScrollView, StyleSheet, Linking } from 'react-native';
+import { View, ScrollView, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -232,22 +232,24 @@ const SalonDetailPage = () => {
             </Text>
 
             <View style={styles.storeInfoContainer}>
-              <View style={styles.ratingContainer}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.ratingContainer}
+                onPress={() => {
+                  router.navigate({
+                    params: { id },
+                    pathname: '/(authenticated)/(screens)/location/rating',
+                  });
+                }}>
                 <StarIcon width={18} height={18} />
 
                 <Text
                   weight={'bold'}
                   size={theme.typography.fontSizes.sm}
-                  style={{ textDecorationLine: 'underline' }}
-                  onPress={() =>
-                    router.navigate({
-                      params: { id },
-                      pathname: '/(authenticated)/(screens)/location/rating',
-                    })
-                  }>
+                  style={{ textDecorationLine: 'underline' }}>
                   {rating}
                 </Text>
-              </View>
+              </TouchableOpacity>
 
               <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
             </View>
