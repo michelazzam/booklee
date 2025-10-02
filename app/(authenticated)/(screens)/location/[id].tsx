@@ -1,7 +1,7 @@
+import { View, ScrollView, StyleSheet, Linking } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, ScrollView, StyleSheet, Linking } from 'react-native';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import {
   type LocationOperatingHoursType,
@@ -75,14 +75,17 @@ const SalonDetailPage = () => {
       }));
   }, [location, selectedServices]);
 
-  const handleServiceToggle = (serviceId: string) => {
-    if (selectedServices.includes(serviceId)) {
-      setSelectedServices((prev) => prev.filter((id) => id !== serviceId));
-    } else {
-      setSelectedServices((prev) => [...prev, serviceId]);
-    }
-  };
-  const handleBookingNext = () => {
+  const handleServiceToggle = useCallback(
+    (serviceId: string) => {
+      if (selectedServices.includes(serviceId)) {
+        setSelectedServices((prev) => prev.filter((id) => id !== serviceId));
+      } else {
+        setSelectedServices((prev) => [...prev, serviceId]);
+      }
+    },
+    [selectedServices]
+  );
+  const handleBookingNext = useCallback(() => {
     router.navigate({
       pathname: '/(authenticated)/(screens)/booking/[locationId]',
       params: {
@@ -90,9 +93,9 @@ const SalonDetailPage = () => {
         services: JSON.stringify(selectedServiceData),
       },
     });
-  };
+  }, [id, router, selectedServiceData]);
 
-  const RenderServices = () => {
+  const RenderServices = useCallback(() => {
     return (
       <View style={{ gap: theme.spacing.md }}>
         <Text
@@ -114,8 +117,8 @@ const SalonDetailPage = () => {
         </View>
       </View>
     );
-  };
-  const RenderAbout = () => {
+  }, [location?.locationServices, handleServiceToggle, selectedServices, category?.title]);
+  const RenderAbout = useCallback(() => {
     const aboutItemData: AboutItemData[] = [
       {
         title: 'CONTACT',
@@ -181,7 +184,17 @@ const SalonDetailPage = () => {
           ))}
       </View>
     ));
-  };
+  }, [phone, address, geo?.lat, geo?.lng, operatingHours]);
+
+  /***** Memoization *****/
+  const TabItems = useMemo(() => {
+    return !!location?.locationServices.length
+      ? [
+          { tabName: { name: 'Services', value: 'services' }, tabChildren: RenderServices() },
+          { tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() },
+        ]
+      : [{ tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() }];
+  }, [RenderServices, RenderAbout, location?.locationServices]);
 
   return (
     <>
@@ -253,12 +266,9 @@ const SalonDetailPage = () => {
           </View>
 
           <TabMenu
+            tabs={TabItems}
             activeTab={activeTab}
             onTabChange={(tab) => setActiveTab(tab as 'services' | 'about')}
-            tabs={[
-              { tabName: { name: 'Services', value: 'services' }, tabChildren: RenderServices() },
-              { tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() },
-            ]}
           />
         </View>
       </ScrollView>

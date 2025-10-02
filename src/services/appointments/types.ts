@@ -172,6 +172,7 @@ export type UserAppointment = {
 export type UserAppointmentsReqType = {
   past?: boolean;
   upcoming?: boolean;
+  needsReview?: boolean;
 };
 export type UserAppointmentsResType = {
   ok: boolean;

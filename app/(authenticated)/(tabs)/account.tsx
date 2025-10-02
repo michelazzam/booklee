@@ -1,6 +1,6 @@
-import { View, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { theme } from '~/src/constants/theme';
 import {
@@ -20,6 +20,7 @@ import { AuthServices, UserServices } from '~/src/services';
 import { SettingsCard, ScreenHeader, type CardRowDataType } from '~/src/components/utils';
 import { AwareScrollView, Text } from '~/src/components/base';
 import { useUserProvider } from '~/src/store';
+import { Toast } from 'toastify-react-native';
 
 const AccountPage = () => {
   /*** Constants ***/
@@ -28,6 +29,14 @@ const AccountPage = () => {
   const { isBusinessMode, setBusinessMode } = useUserProvider();
   const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
   const { mutate: deleteUser, isPending: isDeleteUserPending } = UserServices.useDeleteUser();
+
+  const handleDeleteAccount = useCallback(() => {
+    deleteUser(undefined, {
+      onError: (error) => {
+        Toast.error(error.message);
+      },
+    });
+  }, [deleteUser]);
 
   /*** Memoization ***/
   const isOwner = useMemo(() => userData?.user?.role === 'owner', [userData]);
@@ -74,12 +83,6 @@ const AccountPage = () => {
   }, []);
   const appSettingsData: CardRowDataType[] = useMemo(() => {
     return [
-      // {
-      //   variant: 'secondary',
-      //   label: 'OPEN A BUSINESS',
-      //   leadingIcon: <HomeIcon />,
-      //   trailingIcon: <ChevronRightIcon />,
-      // },
       {
         onPress: logout,
         label: 'LOG OUT',
@@ -88,13 +91,17 @@ const AccountPage = () => {
       },
       {
         variant: 'danger',
-        onPress: deleteUser,
         label: 'DELETE ACCOUNT',
         leadingIcon: <TrashIcon />,
         loading: isDeleteUserPending,
+        onPress: () =>
+          Alert.alert('Delete Account', 'Are you sure you want to delete your account?', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Delete', style: 'destructive', onPress: handleDeleteAccount },
+          ]),
       },
     ];
-  }, [logout, deleteUser, isLogoutPending, isDeleteUserPending]);
+  }, [logout, isLogoutPending, isDeleteUserPending, handleDeleteAccount]);
 
   return (
     <View style={styles.container}>

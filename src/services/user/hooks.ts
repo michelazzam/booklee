@@ -116,6 +116,7 @@ const useDeleteUser = () => {
     mutationFn: deleteUserApi,
     onSuccess: () => {
       queryClient.clear();
+      authClient.signOut();
     },
   });
 };

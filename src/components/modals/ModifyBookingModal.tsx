@@ -62,15 +62,7 @@ const ModifyBookingModal = forwardRef<ModifyBookingModalRef, ModifyBookingModalP
         ref={modalRef}
         title="Modify"
         snapPoints={['30%']}
-        contentContainerStyle={styles.container}
-        trailingIcon={
-          <Icon
-            name="close"
-            size={24}
-            color={theme.colors.darkText[100]}
-            onPress={() => modalRef.current?.dismiss()}
-          />
-        }>
+        contentContainerStyle={styles.container}>
         <TouchableOpacity onPress={handleChangeDateTime} style={styles.button}>
           <Icon name="clock-outline" size={24} color={theme.colors.darkText[100]} />
 

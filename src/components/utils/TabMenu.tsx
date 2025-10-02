@@ -35,8 +35,8 @@ const TabMenu = ({ tabs, activeTab, onTabChange }: TabMenuProps) => {
   );
 
   /***** Animations *****/
-  const underlineWidth = useSharedValue(tabWidth);
-  const underlinePosition = useSharedValue(activeIndex * tabWidth);
+  const underlineWidth = useSharedValue(0);
+  const underlinePosition = useSharedValue(0);
   const animatedUnderlineStyle = useAnimatedStyle(() => {
     return {
       width: underlineWidth.value,
@@ -45,17 +45,39 @@ const TabMenu = ({ tabs, activeTab, onTabChange }: TabMenuProps) => {
   });
 
   useEffect(() => {
-    const newPosition = activeIndex * tabWidth;
-    underlinePosition.value = withSpring(newPosition, {
-      damping: 15,
-      stiffness: 150,
-    });
-  }, [activeIndex, tabWidth, underlinePosition]);
+    if (tabs.length > 1) {
+      const newWidth = tabWidth;
+      const newPosition = activeIndex * tabWidth;
+
+      underlineWidth.value = withSpring(newWidth, {
+        damping: 15,
+        stiffness: 150,
+      });
+      underlinePosition.value = withSpring(newPosition, {
+        damping: 15,
+        stiffness: 150,
+      });
+    }
+  }, [activeIndex, tabWidth, underlinePosition, underlineWidth, tabs.length]);
 
   const getActiveTabChildren = () => {
     const activeTabData = tabs.find(({ tabName }) => tabName.value === activeTab);
     return activeTabData?.tabChildren || null;
   };
+
+  if (tabs.length === 1) {
+    return (
+      <View>
+        <View style={{ gap: theme.spacing.md }}>
+          <Text style={styles.tabText}>{tabs[0].tabName.name}</Text>
+
+          <View style={[styles.singleTabUnderline]} />
+        </View>
+
+        {tabs[0].tabChildren}
+      </View>
+    );
+  }
 
   return (
     <View>
@@ -118,6 +140,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: 3,
     position: 'absolute',
+    borderRadius: theme.radii.xs,
+    backgroundColor: theme.colors.darkText[100],
+  },
+  singleTabUnderline: {
+    height: 3,
     borderRadius: theme.radii.xs,
     backgroundColor: theme.colors.darkText[100],
   },

@@ -39,7 +39,7 @@ const CardRow = ({ data }: CardRowProps) => {
       onPress={onPress}
       activeOpacity={0.7}
       disabled={!onPress || loading}
-      style={[styles.container, styles[variant]]}>
+      style={[styles.container, styles[variant], !onPress && { opacity: 0.5 }]}>
       <View style={styles.iconContainer}>{leadingIcon}</View>
 
       {loading ? (
