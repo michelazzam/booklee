@@ -1,6 +1,6 @@
 import { View, StyleSheet, Image, FlatList } from 'react-native';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { useCallback } from 'react';
 
 import { UserServices, type LocationType } from '~/src/services';
 
@@ -16,6 +16,9 @@ const FavoritesPage = () => {
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
   const { data: favorites, refetch, isFetching, isLoading } = UserServices.useGetFavorites();
+
+  /*** States ***/
+  const [refreshing, setRefreshing] = useState(false);
 
   const RenderItem = useCallback(
     ({ item }: { item: LocationType }) => <LocationCard data={item} width={'48%'} />,
@@ -57,6 +60,13 @@ const FavoritesPage = () => {
     );
   }, [router, isLoading]);
 
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    refetch().finally(() => {
+      setRefreshing(false);
+    });
+  }, [refetch]);
+
   return (
     <>
       <HeaderNavigation title="FAVORITES" showBackButton={false} />
@@ -64,9 +74,9 @@ const FavoritesPage = () => {
       <FlatList
         numColumns={2}
         data={favorites}
-        onRefresh={refetch}
-        refreshing={isFetching}
+        refreshing={refreshing}
         renderItem={RenderItem}
+        onRefresh={handleRefresh}
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={RenderListEmptyComponent}

@@ -1,7 +1,7 @@
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { Marker as MapMarker } from 'react-native-maps';
-import { TouchableOpacity, View } from 'react-native';
 import { useCallback, useState } from 'react';
+import { View } from 'react-native';
 
 import { theme } from '~/src/constants/theme';
 
