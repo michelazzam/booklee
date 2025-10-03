@@ -100,7 +100,6 @@ const BookingFlow = () => {
       }
     }
   };
-
   const handleBack = () => {
     if (currentStep === 'confirm') {
       // Go back to professional selection of last service
@@ -124,16 +123,12 @@ const BookingFlow = () => {
       }
     }
   };
-
   const handleCancelBooking = () => {
     cancelConfirmationModalRef.current?.present();
   };
-
   const handleConfirmCancel = () => {
     router.back();
   };
-
-  // Utility function to check for time conflicts
   const hasTimeConflict = (
     newDate: string,
     newTime: string,
@@ -162,7 +157,6 @@ const BookingFlow = () => {
 
     return false;
   };
-
   const handleConfirmBooking = async () => {
     try {
       // Validate that all services have been scheduled
@@ -255,8 +249,7 @@ const BookingFlow = () => {
         await createAppointmentMutation.mutateAsync(appointmentData);
       }
 
-      Toast.success('Booking confirmed');
-      router.push('/(authenticated)/(tabs)/bookings');
+      router.replace('/(authenticated)/(tabs)/bookings');
     } catch (error: any) {
       console.error('Booking error:', error);
 

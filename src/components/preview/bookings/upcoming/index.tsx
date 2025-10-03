@@ -6,11 +6,13 @@ import { Image } from 'expo-image';
 
 import { type AppointmentItem, type UserAppointment } from '~/src/services';
 
+import { AppLogo, BookingIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants';
 
-import { AppLogo, BookingIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
-import ModifyBookingModal from '../../../modals/ModifyBookingModal';
 import type { ModifyBookingModalRef } from '../../../modals/ModifyBookingModal';
+import type { RescheduleModalRef } from '../../../modals/ReschedulingModal';
+import ModifyBookingModal from '../../../modals/ModifyBookingModal';
+import RescheduleModal from '../../../modals/ReschedulingModal';
 import { Icon, Text } from '~/src/components/base';
 
 type BookingProps = {
@@ -19,6 +21,7 @@ type BookingProps = {
 
 const Booking = ({ data }: BookingProps) => {
   /***** Refs *****/
+  const rescheduleModalRef = useRef<RescheduleModalRef>(null);
   const modifyBookingModalRef = useRef<ModifyBookingModalRef>(null);
 
   /***** Constants *****/
@@ -132,7 +135,13 @@ const Booking = ({ data }: BookingProps) => {
         </TouchableOpacity>
       </Animated.View>
 
-      <ModifyBookingModal appointmentId={data.id} ref={modifyBookingModalRef} />
+      <ModifyBookingModal
+        appointmentId={data.id}
+        ref={modifyBookingModalRef}
+        onReschedule={() => rescheduleModalRef.current?.present()}
+      />
+
+      <RescheduleModal ref={rescheduleModalRef} appointment={data} />
     </>
   );
 };

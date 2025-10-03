@@ -8,10 +8,14 @@ import type {
   DeleteSearchHistoryResType,
   GetSearchHistoryResType,
   GetLocationByIdResType,
+  LocationRatingReqType,
+  LocationRatingResType,
   GetLocationsReqType,
   GetLocationsResType,
   SearchReqType,
   SearchResType,
+  LocationRatingSubmitResType,
+  LocationRatingSubmitReqType,
 } from './types';
 
 export const DEFAULT_LOCATION_FIELDS = 'rating,price,geo,_id,slug,name,logo,city,tags,photos';
@@ -150,6 +154,48 @@ export const searchLocationsApi = async (params: SearchReqType) => {
 export const deleteSearchHistoryApi = async () => {
   const [response, error] = await withErrorCatch(
     apiClient.delete<DeleteSearchHistoryResType>(`user/searchHistory`)
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API to get location ratings ***/
+export const getLocationRatingsApi = async (filters?: LocationRatingReqType) => {
+  let url = '/reviews';
+
+  if (filters) {
+    url += `?${Object.entries(filters)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&')}`;
+  }
+
+  const [response, error] = await withErrorCatch(apiClient.get<LocationRatingResType>(url));
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API to submit location rating ***/
+export const submitLocationRatingApi = async (params: LocationRatingSubmitReqType) => {
+  const [response, error] = await withErrorCatch(
+    apiClient.post<LocationRatingSubmitResType>('reviews', params)
   );
 
   if (error instanceof AxiosError) {

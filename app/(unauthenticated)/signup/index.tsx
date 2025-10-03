@@ -70,8 +70,7 @@ export const SignupPage = () => {
         });
       },
       onError: (error: any) => {
-        console.error('Sign up error:', error);
-        Toast.error('Oops! Something went wrong during signup');
+        Toast.error(error?.message || 'Failed to sign up');
       },
     });
   };

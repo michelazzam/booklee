@@ -1,12 +1,17 @@
-import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, ScrollView, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
-import { LocationServices, type SelectedService } from '~/src/services';
+import {
+  type LocationOperatingHoursType,
+  type SelectedService,
+  LocationServices,
+} from '~/src/services';
 
-import { useAppSafeAreaInsets } from '~/src/hooks';
+import { useAppSafeAreaInsets, useHandleFavorites } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
+import { StarIcon } from '~/src/assets/icons';
 
 import { ImageCarousel, TabMenu, LocationSplashImage } from '~/src/components/utils';
 import { Services } from '~/src/components/preview';
@@ -17,6 +22,11 @@ type SalonDetailPageProps = {
   id: string;
   image: string;
 };
+type AboutItemData = {
+  title: string;
+  onPress?: () => void;
+  value: string | LocationOperatingHoursType;
+};
 
 const SalonDetailPage = () => {
   /***** Constants *****/
@@ -24,8 +34,13 @@ const SalonDetailPage = () => {
   const { top, bottom } = useAppSafeAreaInsets();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { data: location, isLoading } = LocationServices.useGetLocationById(id || '');
-  const { photos, name, address, category, rating, phone, teamSize, bookable, tags } =
+  const { photos, name, address, category, rating, phone, tags, operatingHours, geo } =
     location || {};
+  const {
+    isInFavorites,
+    handleToggleFavorites,
+    isLoading: isLoadingFavorites,
+  } = useHandleFavorites(id);
 
   /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -60,14 +75,17 @@ const SalonDetailPage = () => {
       }));
   }, [location, selectedServices]);
 
-  const handleServiceToggle = (serviceId: string) => {
-    if (selectedServices.includes(serviceId)) {
-      setSelectedServices((prev) => prev.filter((id) => id !== serviceId));
-    } else {
-      setSelectedServices((prev) => [...prev, serviceId]);
-    }
-  };
-  const handleBookingNext = () => {
+  const handleServiceToggle = useCallback(
+    (serviceId: string) => {
+      if (selectedServices.includes(serviceId)) {
+        setSelectedServices((prev) => prev.filter((id) => id !== serviceId));
+      } else {
+        setSelectedServices((prev) => [...prev, serviceId]);
+      }
+    },
+    [selectedServices]
+  );
+  const handleBookingNext = useCallback(() => {
     router.navigate({
       pathname: '/(authenticated)/(screens)/booking/[locationId]',
       params: {
@@ -75,12 +93,15 @@ const SalonDetailPage = () => {
         services: JSON.stringify(selectedServiceData),
       },
     });
-  };
+  }, [id, router, selectedServiceData]);
 
-  const RenderServices = () => {
+  const RenderServices = useCallback(() => {
     return (
       <View style={{ gap: theme.spacing.md }}>
-        <Text size={theme.typography.fontSizes.md} weight={'medium'}>
+        <Text
+          weight={'medium'}
+          size={theme.typography.fontSizes.md}
+          style={{ textTransform: 'uppercase' }}>
           {category?.title}
         </Text>
 
@@ -96,43 +117,88 @@ const SalonDetailPage = () => {
         </View>
       </View>
     );
-  };
-  const RenderAbout = () => {
-    const formatData = [
-      { title: 'Address', value: address },
-      { title: 'Phone', value: phone },
-      { title: 'Team Size', value: `${teamSize} professionals` },
-      { title: 'Bookable', value: bookable ? 'Yes' : 'No' },
+  }, [location?.locationServices, handleServiceToggle, selectedServices, category?.title]);
+  const RenderAbout = useCallback(() => {
+    const aboutItemData: AboutItemData[] = [
+      {
+        title: 'CONTACT',
+        value: phone || '',
+        onPress: () => {
+          Linking.openURL(`tel:${phone}`);
+        },
+      },
+
+      {
+        title: 'DIRECTIONS',
+        value: address || '',
+        onPress: () => {
+          Linking.openURL(
+            `https://www.google.com/maps/dir/?api=1&destination=${geo?.lat},${geo?.lng}`
+          );
+        },
+      },
+
+      {
+        title: 'OPENING HOURS',
+        value: operatingHours || {},
+      },
     ];
 
-    return (
-      <View style={{ gap: theme.spacing.md }}>
-        <Text size={theme.typography.fontSizes.md} weight={'medium'}>
-          About {name}
+    return aboutItemData.map(({ title, value, onPress }, index) => (
+      <View
+        style={[
+          styles.aboutItemContainer,
+          { borderBottomWidth: index === aboutItemData.length - 1 ? 0 : 1 },
+        ]}
+        key={title}>
+        <Text size={theme.typography.fontSizes.md} weight={'semiBold'}>
+          {title}
         </Text>
 
-        <View style={{ gap: theme.spacing.md }}>
-          {formatData.map((item, index) => (
-            <View style={styles.infoRow} key={index}>
-              <Text size={theme.typography.fontSizes.sm} weight={'medium'}>
-                {item.title}:
+        {typeof value === 'string' && (
+          <Text
+            key={value}
+            weight={'medium'}
+            onPress={onPress}
+            size={theme.typography.fontSizes.sm}
+            style={{ textDecorationLine: 'underline' }}
+            color={onPress ? theme.colors.primaryBlue[100] : theme.colors.darkText[100]}>
+            {value}
+          </Text>
+        )}
+
+        {typeof value === 'object' &&
+          Object.entries(value).map(([key, dayHours]) => (
+            <View key={key} style={styles.operatingHoursContainer}>
+              <Text
+                weight={'semiBold'}
+                size={theme.typography.fontSizes.sm}
+                style={{ textTransform: 'capitalize' }}>
+                {key}
               </Text>
 
-              <Text
-                size={theme.typography.fontSizes.sm}
-                style={{ width: '75%', textAlign: 'right' }}>
-                {item.value}
+              <Text size={theme.typography.fontSizes.sm}>
+                {dayHours.closed ? 'Closed' : `${dayHours.open} - ${dayHours.close}`}
               </Text>
             </View>
           ))}
-        </View>
       </View>
-    );
-  };
+    ));
+  }, [phone, address, geo?.lat, geo?.lng, operatingHours]);
+
+  /***** Memoization *****/
+  const TabItems = useMemo(() => {
+    return !!location?.locationServices.length
+      ? [
+          { tabName: { name: 'Services', value: 'services' }, tabChildren: RenderServices() },
+          { tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() },
+        ]
+      : [{ tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() }];
+  }, [RenderServices, RenderAbout, location?.locationServices]);
 
   return (
     <>
-      <LocationSplashImage imageUri={image} isLoading={isLoading} />
+      {!location && <LocationSplashImage imageUri={image} isLoading={isLoading} />}
 
       <ScrollView
         bounces={false}
@@ -140,13 +206,20 @@ const SalonDetailPage = () => {
         contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom * 2 }}>
         <View>
           <View style={[styles.headerComponent, { top }]}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Icon size={32} name="chevron-left" color={theme.colors.white.DEFAULT} />
-            </TouchableOpacity>
+            <Icon
+              size={32}
+              name="chevron-left"
+              onPress={() => router.back()}
+              color={theme.colors.white.DEFAULT}
+            />
 
-            <TouchableOpacity>
-              <Icon name="heart-outline" size={32} color={theme.colors.white.DEFAULT} />
-            </TouchableOpacity>
+            <Icon
+              size={28}
+              color="#FFFFFF"
+              loading={isLoadingFavorites}
+              onPress={handleToggleFavorites}
+              name={isInFavorites ? 'heart' : 'heart-outline'}
+            />
           </View>
 
           <ImageCarousel images={photos || []} />
@@ -159,16 +232,24 @@ const SalonDetailPage = () => {
             </Text>
 
             <View style={styles.storeInfoContainer}>
-              <View style={styles.ratingContainer}>
-                <Icon name="star" size={16} color="#FFD700" />
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.ratingContainer}
+                onPress={() => {
+                  router.navigate({
+                    params: { id },
+                    pathname: '/(authenticated)/(screens)/location/rating',
+                  });
+                }}>
+                <StarIcon width={18} height={18} />
 
                 <Text
                   weight={'bold'}
-                  size={theme.typography.fontSizes.xs}
+                  size={theme.typography.fontSizes.sm}
                   style={{ textDecorationLine: 'underline' }}>
                   {rating}
                 </Text>
-              </View>
+              </TouchableOpacity>
 
               <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
             </View>
@@ -187,21 +268,18 @@ const SalonDetailPage = () => {
           </View>
 
           <TabMenu
+            tabs={TabItems}
             activeTab={activeTab}
             onTabChange={(tab) => setActiveTab(tab as 'services' | 'about')}
-            tabs={[
-              { tabName: { name: 'Services', value: 'services' }, tabChildren: RenderServices() },
-              { tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() },
-            ]}
           />
         </View>
       </ScrollView>
 
       {selectedServices.length > 0 && (
         <Animated.View
-          style={[styles.bookingBar, { bottom: bottom }]}
-          exiting={FadeOut.duration(200)}
-          entering={FadeIn.duration(200)}>
+          exiting={FadeOut}
+          entering={FadeIn}
+          style={[styles.bookingBar, { bottom: bottom }]}>
           <View style={styles.bookingInfo}>
             <Text size={theme.typography.fontSizes.md} weight="bold">
               Starting $
@@ -212,10 +290,10 @@ const SalonDetailPage = () => {
               }, 0)}
             </Text>
 
-              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
-                {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
-              </Text>
-            </View>
+            <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+              {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
+            </Text>
+          </View>
 
           <Button title="Next" onPress={handleBookingNext} width={180} />
         </Animated.View>
@@ -246,7 +324,6 @@ const styles = StyleSheet.create({
   },
   ratingContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: theme.spacing.xs,
   },
   tagContainer: {
@@ -286,5 +363,16 @@ const styles = StyleSheet.create({
   bookingInfo: {
     flex: 1,
     gap: theme.spacing.xs,
+  },
+  aboutItemContainer: {
+    gap: theme.spacing.md,
+    alignItems: 'flex-start',
+    paddingVertical: theme.spacing.xl,
+    borderBottomColor: theme.colors.border,
+  },
+  operatingHoursContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
   },
 });

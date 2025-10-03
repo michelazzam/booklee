@@ -39,15 +39,19 @@ const ServicesPreview = ({ data, onPress, isActive }: ServicesPreviewProps) => {
       </View>
 
       <View style={styles.infoContainer}>
-        <Text size={theme.typography.fontSizes.md} weight={'bold'}>
+        <Text size={theme.typography.fontSizes.md} weight={'medium'}>
           {service?.name ?? ''}
         </Text>
       </View>
 
       <View style={styles.pricingContainer}>
-        <Text size={theme.typography.fontSizes.sm}>{formatPrice}</Text>
+        <Text size={theme.typography.fontSizes.sm} weight={isActive ? 'medium' : 'regular'}>
+          {formatPrice}
+        </Text>
 
-        <Text size={theme.typography.fontSizes.sm}>{`${duration} min`}</Text>
+        <Text
+          size={theme.typography.fontSizes.sm}
+          weight={isActive ? 'medium' : 'regular'}>{`${duration} min`}</Text>
       </View>
     </TouchableOpacity>
   );

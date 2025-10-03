@@ -2,6 +2,8 @@ import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useMemo } from 'react';
 
 import { AccountIcon, BookingIcon, FavoritesIcon, HomeIcon, SearchIcon } from '~/src/assets/icons';
+import DashboardIcon from '~/src/assets/icons/DashboardIcon';
+import AnalyticsIcon from '~/src/assets/icons/AnalyticsIcon';
 
 type TabBarIconProps = {
   color: string;
@@ -14,10 +16,10 @@ const TabBarIcon = ({ icon, color, focused = false }: TabBarIconProps) => {
   /***** Animations *****/
   const iconAnimatedStyle = useAnimatedStyle(() => {
     const opacityValue = withTiming(focused ? 1 : 0.7, {
-      duration: 250,
+      duration: 200,
     });
     const scaleValue = withTiming(focused ? 1.2 : 1, {
-      duration: 250,
+      duration: 200,
     });
 
     return {
@@ -43,6 +45,10 @@ const TabBarIcon = ({ icon, color, focused = false }: TabBarIconProps) => {
         return <BookingIcon color={color} />;
       case 'account':
         return <AccountIcon color={color} />;
+      case 'dashboard':
+        return <DashboardIcon color={color} />;
+      case 'analytics':
+        return <AnalyticsIcon color={color} />;
       default:
         return null;
     }

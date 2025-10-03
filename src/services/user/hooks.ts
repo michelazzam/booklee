@@ -9,6 +9,7 @@ import {
   getFavoritesApi,
   deleteUserApi,
   getUserMeApi,
+  getUserLocationsApi,
   updateUserImageApi,
 } from './api';
 
@@ -22,6 +23,8 @@ import type {
   GetFavoritesResType,
   DeleteUserResType,
   GetUserMeResType,
+  GetUserLocationsResType,
+  UserLocationItemType,
 } from './types';
 
 const useGetMe = () => {
@@ -97,6 +100,14 @@ const useRemoveFromFavorites = () => {
   });
 };
 
+const useGetUserLocations = () => {
+  return useQuery<GetUserLocationsResType, ResErrorType, UserLocationItemType[]>({
+    queryKey: ['getUserLocations'],
+    queryFn: getUserLocationsApi,
+    select: ({ locations }) => locations,
+  });
+};
+
 const useDeleteUser = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
@@ -105,6 +116,7 @@ const useDeleteUser = () => {
     mutationFn: deleteUserApi,
     onSuccess: () => {
       queryClient.clear();
+      authClient.signOut();
     },
   });
 };
@@ -117,4 +129,5 @@ export const UserServices = {
   useUpdateUser,
   useDeleteUser,
   useGetMe,
+  useGetUserLocations,
 };

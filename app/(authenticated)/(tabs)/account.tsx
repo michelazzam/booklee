@@ -1,6 +1,6 @@
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { theme } from '~/src/constants/theme';
 import {
@@ -17,15 +17,27 @@ import { AuthServices, UserServices } from '~/src/services';
 
 import { SettingsCard, ScreenHeader, type CardRowDataType } from '~/src/components/utils';
 import { AwareScrollView, Text } from '~/src/components/base';
+import { useUserProvider } from '~/src/store';
+import { Toast } from 'toastify-react-native';
 
 const AccountPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { data: userData } = UserServices.useGetMe();
+  const { isBusinessMode, setBusinessMode } = useUserProvider();
   const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
   const { mutate: deleteUser, isPending: isDeleteUserPending } = UserServices.useDeleteUser();
 
+  const handleDeleteAccount = useCallback(() => {
+    deleteUser(undefined, {
+      onError: (error) => {
+        Toast.error(error.message);
+      },
+    });
+  }, [deleteUser]);
+
   /*** Memoization ***/
+  const isOwner = useMemo(() => userData?.user?.role === 'owner', [userData]);
   const personalInformationData: CardRowDataType[] = useMemo(() => {
     if (!userData) return [];
 
@@ -63,13 +75,17 @@ const AccountPage = () => {
       },
       {
         variant: 'danger',
-        onPress: deleteUser,
         label: 'DELETE ACCOUNT',
         leadingIcon: <TrashIcon />,
         loading: isDeleteUserPending,
+        onPress: () =>
+          Alert.alert('Delete Account', 'Are you sure you want to delete your account?', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Delete', style: 'destructive', onPress: handleDeleteAccount },
+          ]),
       },
     ];
-  }, [logout, deleteUser, isLogoutPending, isDeleteUserPending]);
+  }, [logout, isLogoutPending, isDeleteUserPending, handleDeleteAccount]);
 
   return (
     <View style={styles.container}>
@@ -92,6 +108,36 @@ const AccountPage = () => {
       />
 
       <AwareScrollView contentContainerStyle={styles.scrollContent}>
+        {isOwner && (
+          <View style={styles.businessModeContainer}>
+            <Text
+              weight="semiBold"
+              color={theme.colors.darkText[100]}
+              size={theme.typography.fontSizes.xs}
+              style={{ letterSpacing: 1 }}>
+              SWITCH TO BUSINESS ACCOUNT
+            </Text>
+            <View style={styles.switchContainer}>
+              <Text
+                weight="medium"
+                color={theme.colors.darkText[100]}
+                size={theme.typography.fontSizes.xs}>
+                {isBusinessMode ? 'ON' : 'OFF'}
+              </Text>
+
+              <Switch
+                value={isBusinessMode}
+                onValueChange={setBusinessMode}
+                thumbColor={theme.colors.white.DEFAULT}
+                trackColor={{
+                  false: theme.colors.grey[100],
+                  true: theme.colors.primaryGreen[100],
+                }}
+              />
+            </View>
+          </View>
+        )}
+
         <SettingsCard data={personalInformationData} title="PERSONAL INFORMATION" />
 
         <SettingsCard data={appSettingsData} />
@@ -105,11 +151,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.white[100],
   },
-
   scrollContent: {
     flexGrow: 1,
     gap: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing['2xl'],
+  },
+  businessModeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    backgroundColor: theme.colors.white.DEFAULT,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
   },
   sectionTitle: {
     ...theme.typography.textVariants.ctaSecondaryBold,

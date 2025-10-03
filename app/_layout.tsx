@@ -16,7 +16,7 @@ import { Slot } from 'expo-router';
 import { UserProvider, useUserProvider } from '~/src/store';
 import { AuthServices } from '~/src/services';
 
-import { CustomToast } from '~/src/components/base/toast';
+import { CustomToast } from '~/src/components/base';
 
 // Allow Reactotron to be used in development mode
 if (__DEV__) {
@@ -118,8 +118,8 @@ export default function RootLayout() {
           <BottomSheetModalProvider>
             <KeyboardProvider>
               <UserProvider>
-                <ToastManager config={toastConfig} />
                 <Navigation />
+                <ToastManager config={toastConfig} useModal={false} />
               </UserProvider>
             </KeyboardProvider>
           </BottomSheetModalProvider>

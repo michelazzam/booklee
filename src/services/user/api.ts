@@ -12,6 +12,7 @@ import {
   UpdateUserReqType,
   UpdateUserResType,
   GetUserMeResType,
+  GetUserLocationsResType,
   DeleteUserResType,
   UpdateUserImageResType,
   UpdateUserImageReqType,
@@ -123,9 +124,27 @@ export const getFavoritesApi = async () => {
   return response?.data;
 };
 
+/*** API for get user locations ***/
+export const getUserLocationsApi = async () => {
+  const [response, error] = await withErrorCatch(
+    apiClient.get<GetUserLocationsResType>('/user/locations')
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
 /*** API for delete user ***/
 export const deleteUserApi = async () => {
-  const [response, error] = await withErrorCatch(apiClient.delete<DeleteUserResType>('/user'));
+  const [response, error] = await withErrorCatch(apiClient.delete<DeleteUserResType>('/user/me'));
 
   if (error instanceof AxiosError) {
     throw {
