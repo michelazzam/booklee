@@ -7,6 +7,7 @@ import {
   useWindowDimensions,
   Modal,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -15,7 +16,7 @@ import { theme } from '~/src/constants/theme';
 import DashboardHeader from '~/src/components/DashboardHeader';
 import { Text } from '~/src/components/base';
 import ChevronDownIcon from '~/src/assets/icons/ChevronDownIcon';
-import { UserServices } from '~/src/services';
+import { UserServices, AnalyticsServices, type AnalyticsPeriod } from '~/src/services';
 import { useEffect } from 'react';
 import { DateRangePicker } from '~/src/components/analytics';
 import { format } from 'date-fns';
@@ -24,7 +25,7 @@ const Analytics = () => {
   /*** State ***/
   const [selectedLocationId, setSelectedLocationId] = useState<string>();
   const [activeTab, setActiveTab] = useState<'global' | 'employee'>('global');
-  const [selectedPeriod, setSelectedPeriod] = useState('4-months');
+  const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod | 'custom'>('3m');
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
   const [fromDate, setFromDate] = useState<string | null>(null);
   const [toDate, setToDate] = useState<string | null>(null);
@@ -34,7 +35,15 @@ const Analytics = () => {
 
   /*** Hooks ***/
   const { data: locations = [] } = UserServices.useGetUserLocations();
+  const { data: locationsWithData } = UserServices.useGetUserLocationsWithData();
   const { width: screenWidth } = useWindowDimensions();
+  
+  // Fetch analytics data
+  const { data: analyticsData, isLoading: isLoadingAnalytics } = AnalyticsServices.useGetAnalytics({
+    period: selectedPeriod === 'custom' ? '3m' : selectedPeriod,
+    locationId: selectedLocationId,
+    employeeId: activeTab === 'employee' ? selectedEmployee || undefined : undefined,
+  });
 
   /*** Constants ***/
   const tabs = [
@@ -43,27 +52,34 @@ const Analytics = () => {
   ];
 
   const periodOptions = [
-    { label: '1 week', value: '1-week' },
-    { label: '1 month', value: '1-month' },
-    { label: '4 months', value: '4-months' },
-    { label: '12 months', value: '12-months' },
-    { label: 'Custom range', value: 'custom' },
+    { label: '1 week', value: '7d' as AnalyticsPeriod },
+    { label: '3 months', value: '3m' as AnalyticsPeriod },
+    { label: '1 year', value: '1y' as AnalyticsPeriod },
+    { label: 'Custom range', value: 'custom' as const },
   ];
 
-  // Sample employees - replace with real API data
-  const employees = [
-    { id: '1', name: 'Samir Abi Frem' },
-    { id: '2', name: 'John Doe' },
-    { id: '3', name: 'Jane Smith' },
-    { id: '4', name: 'Maria Garcia' },
-  ];
-
-  // Set default employee if not selected
-  useEffect(() => {
-    if (!selectedEmployee && employees.length > 0) {
-      setSelectedEmployee(employees[0].id);
+  // Get employees from the selected location
+  const employees = useMemo(() => {
+    if (!selectedLocationId || !locationsWithData?.locationData) {
+      return [];
     }
-  }, [selectedEmployee, employees]);
+    const locationData = locationsWithData.locationData[selectedLocationId];
+    return locationData?.employees?.map((emp) => ({
+      id: emp._id,
+      name: emp.name,
+    })) || [];
+  }, [selectedLocationId, locationsWithData]);
+
+  // Set default employee when switching to employee tab or when location changes
+  useEffect(() => {
+    if (activeTab === 'employee' && employees.length > 0) {
+      // If no employee selected or selected employee not in current location's employees
+      const isEmployeeInList = employees.some((emp) => emp.id === selectedEmployee);
+      if (!selectedEmployee || !isEmployeeInList) {
+        setSelectedEmployee(employees[0].id);
+      }
+    }
+  }, [activeTab, employees, selectedEmployee]);
 
   // Format date range display
   const getDateRangeDisplay = () => {
@@ -74,52 +90,64 @@ const Analytics = () => {
     }
 
     // Map period values to display labels
-    const periodLabels: Record<string, string> = {
-      '1-week': '1 week',
-      '1-month': '1 month',
-      '4-months': '4 months',
-      '12-months': '12 months',
+    const periodLabels: Record<AnalyticsPeriod, string> = {
+      '7d': '1 week',
+      '3m': '3 months',
+      '1y': '1 year',
     };
 
-    return periodLabels[selectedPeriod] || '4 months';
+    return selectedPeriod === 'custom' ? '3 months' : periodLabels[selectedPeriod] || '3 months';
   };
 
   // Get selected employee name
   const getSelectedEmployeeName = () => {
+    if (employees.length === 0) {
+      return 'No employees available';
+    }
     const employee = employees.find((emp) => emp.id === selectedEmployee);
     return employee?.name || 'Select employee';
   };
 
-  // Sample data for charts - replace with real API data
-  const chartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-    datasets: [
-      {
-        data: [1000, 2500, 1000, 2500, 4000],
-        strokeWidth: 2,
-      },
-    ],
-  };
+  // Transform API data for charts
+  const chartData = useMemo(() => {
+    if (!analyticsData?.revenue?.series || analyticsData.revenue.series.length === 0) {
+      return {
+        labels: [''],
+        datasets: [{ data: [0], strokeWidth: 2 }],
+      };
+    }
+    return {
+      labels: analyticsData.revenue.series.map((item) => item.label),
+      datasets: [
+        {
+          data: analyticsData.revenue.series.map((item) => item.value),
+          strokeWidth: 2,
+        },
+      ],
+    };
+  }, [analyticsData?.revenue?.series]);
 
-  const appointmentsChartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-    datasets: [
-      {
-        data: [30, 55, 25, 50, 70],
-        strokeWidth: 2,
-      },
-    ],
-  };
+  const appointmentsChartData = useMemo(() => {
+    if (!analyticsData?.appointments?.series || analyticsData.appointments.series.length === 0) {
+      return {
+        labels: [''],
+        datasets: [{ data: [0], strokeWidth: 2 }],
+      };
+    }
+    return {
+      labels: analyticsData.appointments.series.map((item) => item.label),
+      datasets: [
+        {
+          data: analyticsData.appointments.series.map((item) => item.value),
+          strokeWidth: 2,
+        },
+      ],
+    };
+  }, [analyticsData?.appointments?.series]);
 
-  const serviceDistributionChartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-    datasets: [
-      {
-        data: [30, 55, 25, 50, 70],
-        strokeWidth: 2,
-      },
-    ],
-  };
+  const serviceDistributionData = useMemo(() => {
+    return analyticsData?.services || [];
+  }, [analyticsData?.services]);
 
   /*** Animations ***/
   const tabWidth = useMemo(() => screenWidth / tabs.length, [screenWidth]);
@@ -167,24 +195,26 @@ const Analytics = () => {
   /*** Handlers ***/
   const handleLocationChange = (locationId: string) => {
     setSelectedLocationId(locationId);
+    // Reset selected employee when location changes
+    setSelectedEmployee(null);
   };
 
   const handlePeriodSelect = (period: string) => {
     if (period === 'custom') {
       setPeriodDropdownVisible(false);
       setDateRangePickerVisible(true);
+      setSelectedPeriod('custom');
     } else {
-      setSelectedPeriod(period);
+      setSelectedPeriod(period as AnalyticsPeriod);
       setPeriodDropdownVisible(false);
-      // Here you would typically refetch the analytics data with the new period
     }
   };
 
   const handleDateRangeSelect = (from: string, to: string) => {
     setFromDate(from);
     setToDate(to);
-    setSelectedPeriod('custom');
-    // Here you would typically refetch the analytics data with the new date range
+    // Note: Custom date range is not supported by the API yet,
+    // so we'll keep using the last selected period
   };
 
   /*** Render Functions ***/
@@ -309,38 +339,48 @@ const Analytics = () => {
             color={theme.colors.darkText[100]}>
             Service Distribution
           </Text>
-          <View style={styles.metricValueContainer}>
+        </View>
+        {isLoadingAnalytics ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.darkText[100]} />
+          </View>
+        ) : serviceDistributionData.length > 0 ? (
+          <View style={styles.serviceList}>
+            {serviceDistributionData.map((service, index) => (
+              <View key={service.serviceId || index} style={styles.serviceItem}>
+                <View style={styles.serviceInfo}>
+                  <Text
+                    size={theme.typography.fontSizes.md}
+                    weight="semiBold"
+                    color={theme.colors.darkText[100]}>
+                    {service.name}
+                  </Text>
+                  <Text
+                    size={theme.typography.fontSizes.sm}
+                    weight="regular"
+                    color={theme.colors.lightText}>
+                    {service.appointments} appointment{service.appointments !== 1 ? 's' : ''}
+                  </Text>
+                </View>
+                <Text
+                  size={theme.typography.fontSizes.lg}
+                  weight="bold"
+                  color={theme.colors.darkText[100]}>
+                  ${service.revenue.toLocaleString()}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <View style={styles.emptyState}>
             <Text
-              size={theme.typography.fontSizes['2xl']}
-              weight="bold"
-              color={theme.colors.darkText[100]}>
-              67
-            </Text>
-            <Text
-              size={theme.typography.fontSizes.sm}
-              weight="medium"
-              color={theme.colors.green[100]}
-              style={{ marginLeft: theme.spacing.sm }}>
-              (+20%)
+              size={theme.typography.fontSizes.md}
+              weight="regular"
+              color={theme.colors.lightText}>
+              No service data available
             </Text>
           </View>
-        </View>
-        <LineChart
-          data={serviceDistributionChartData}
-          width={screenWidth}
-          height={200}
-          chartConfig={chartConfig}
-          bezier
-          style={styles.chart}
-          withInnerLines={true}
-          withOuterLines={false}
-          withVerticalLabels={true}
-          withHorizontalLabels={true}
-          withDots={false}
-          segments={4}
-          yAxisSuffix=""
-          yAxisInterval={1}
-        />
+        )}
       </View>
     </ScrollView>
   );
@@ -388,44 +428,49 @@ const Analytics = () => {
             Revenue ($)
           </Text>
           <View style={styles.metricValueContainer}>
-            <Text
-              size={theme.typography.fontSizes['2xl']}
-              weight="bold"
-              color={theme.colors.darkText[100]}>
-              2,400
-            </Text>
-            <Text
-              size={theme.typography.fontSizes.sm}
-              weight="medium"
-              color={theme.colors.green[100]}
-              style={{ marginLeft: theme.spacing.sm }}>
-              (+20%)
-            </Text>
+            {isLoadingAnalytics ? (
+              <ActivityIndicator size="small" color={theme.colors.darkText[100]} />
+            ) : (
+              <>
+                <Text
+                  size={theme.typography.fontSizes['2xl']}
+                  weight="bold"
+                  color={theme.colors.darkText[100]}>
+                  {analyticsData?.revenue?.total?.toLocaleString() || '0'}
+                </Text>
+              </>
+            )}
           </View>
         </View>
-        <LineChart
-          data={chartData}
-          width={screenWidth}
-          height={200}
-          chartConfig={chartConfig}
-          bezier
-          style={styles.chart}
-          withInnerLines={true}
-          withOuterLines={false}
-          withVerticalLabels={true}
-          withHorizontalLabels={true}
-          withDots={false}
-          segments={4}
-          yAxisSuffix=""
-          yAxisInterval={1}
-          formatYLabel={(value) => {
-            const num = parseFloat(value);
-            if (num >= 1000) {
-              return `${(num / 1000).toFixed(0)}k`;
-            }
-            return value;
-          }}
-        />
+        {isLoadingAnalytics ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.darkText[100]} />
+          </View>
+        ) : (
+          <LineChart
+            data={chartData}
+            width={screenWidth}
+            height={200}
+            chartConfig={chartConfig}
+            bezier
+            style={styles.chart}
+            withInnerLines={true}
+            withOuterLines={false}
+            withVerticalLabels={true}
+            withHorizontalLabels={true}
+            withDots={false}
+            segments={4}
+            yAxisSuffix=""
+            yAxisInterval={1}
+            formatYLabel={(value) => {
+              const num = parseFloat(value);
+              if (num >= 1000) {
+                return `${(num / 1000).toFixed(0)}k`;
+              }
+              return value;
+            }}
+          />
+        )}
       </View>
 
       {/* Appointments Card */}
@@ -438,37 +483,40 @@ const Analytics = () => {
             Appointments
           </Text>
           <View style={styles.metricValueContainer}>
-            <Text
-              size={theme.typography.fontSizes['2xl']}
-              weight="bold"
-              color={theme.colors.darkText[100]}>
-              67
-            </Text>
-            <Text
-              size={theme.typography.fontSizes.sm}
-              weight="medium"
-              color={theme.colors.green[100]}
-              style={{ marginLeft: theme.spacing.sm }}>
-              (+20%)
-            </Text>
+            {isLoadingAnalytics ? (
+              <ActivityIndicator size="small" color={theme.colors.darkText[100]} />
+            ) : (
+              <Text
+                size={theme.typography.fontSizes['2xl']}
+                weight="bold"
+                color={theme.colors.darkText[100]}>
+                {analyticsData?.appointments?.total || '0'}
+              </Text>
+            )}
           </View>
         </View>
-        <LineChart
-          data={appointmentsChartData}
-          width={screenWidth}
-          height={200}
-          chartConfig={chartConfig}
-          bezier
-          style={styles.chart}
-          withInnerLines={true}
-          withOuterLines={false}
-          withVerticalLabels={true}
-          withHorizontalLabels={true}
-          withDots={false}
-          segments={4}
-          yAxisSuffix=""
-          yAxisInterval={1}
-        />
+        {isLoadingAnalytics ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.darkText[100]} />
+          </View>
+        ) : (
+          <LineChart
+            data={appointmentsChartData}
+            width={screenWidth}
+            height={200}
+            chartConfig={chartConfig}
+            bezier
+            style={styles.chart}
+            withInnerLines={true}
+            withOuterLines={false}
+            withVerticalLabels={true}
+            withHorizontalLabels={true}
+            withDots={false}
+            segments={4}
+            yAxisSuffix=""
+            yAxisInterval={1}
+          />
+        )}
       </View>
     </ScrollView>
   );
@@ -543,26 +591,38 @@ const Analytics = () => {
         onRequestClose={() => setEmployeeDropdownVisible(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => setEmployeeDropdownVisible(false)}>
           <View style={styles.dropdownContainer}>
-            {employees.map((employee) => (
-              <TouchableOpacity
-                key={employee.id}
-                style={[
-                  styles.dropdownItem,
-                  selectedEmployee === employee.id && styles.selectedDropdownItem,
-                ]}
-                onPress={() => {
-                  setSelectedEmployee(employee.id);
-                  setEmployeeDropdownVisible(false);
-                }}
-                activeOpacity={0.7}>
+            {employees.length > 0 ? (
+              employees.map((employee) => (
+                <TouchableOpacity
+                  key={employee.id}
+                  style={[
+                    styles.dropdownItem,
+                    selectedEmployee === employee.id && styles.selectedDropdownItem,
+                  ]}
+                  onPress={() => {
+                    setSelectedEmployee(employee.id);
+                    setEmployeeDropdownVisible(false);
+                  }}
+                  activeOpacity={0.7}>
+                  <Text
+                    size={theme.typography.fontSizes.md}
+                    weight={selectedEmployee === employee.id ? 'semiBold' : 'regular'}
+                    color={theme.colors.darkText[100]}>
+                    {employee.name}
+                  </Text>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View style={styles.dropdownItem}>
                 <Text
                   size={theme.typography.fontSizes.md}
-                  weight={selectedEmployee === employee.id ? 'semiBold' : 'regular'}
-                  color={theme.colors.darkText[100]}>
-                  {employee.name}
+                  weight="regular"
+                  color={theme.colors.lightText}
+                  style={{ textAlign: 'center' }}>
+                  No employees available for this location
                 </Text>
-              </TouchableOpacity>
-            ))}
+              </View>
+            )}
           </View>
         </Pressable>
       </Modal>
@@ -677,5 +737,30 @@ const styles = StyleSheet.create({
   },
   selectedDropdownItem: {
     backgroundColor: theme.colors.primaryGreen[10],
+  },
+  loadingContainer: {
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  serviceList: {
+    marginTop: theme.spacing.sm,
+  },
+  serviceItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  serviceInfo: {
+    flex: 1,
+    gap: theme.spacing.xs,
+  },
+  emptyState: {
+    paddingVertical: theme.spacing['2xl'],
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -108,6 +108,13 @@ const useGetUserLocations = () => {
   });
 };
 
+const useGetUserLocationsWithData = () => {
+  return useQuery<GetUserLocationsResType, ResErrorType>({
+    queryKey: ['getUserLocations'],
+    queryFn: getUserLocationsApi,
+  });
+};
+
 const useDeleteUser = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
@@ -129,4 +136,5 @@ export const UserServices = {
   useDeleteUser,
   useGetMe,
   useGetUserLocations,
+  useGetUserLocationsWithData,
 };
