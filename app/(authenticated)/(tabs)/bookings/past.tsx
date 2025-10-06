@@ -30,7 +30,7 @@ const PastBookingsPage = () => {
   });
 
   const RenderItem = useCallback(
-    ({ item }: { item: UserAppointment }) => <PastBookings data={item} />,
+    ({ item }: { item: UserAppointment }) => <PastBookings data={item} onBookAgain={() => {}} />,
     []
   );
   const RenderListEmptyComponent = useCallback(() => {

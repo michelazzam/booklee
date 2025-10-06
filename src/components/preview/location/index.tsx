@@ -118,7 +118,7 @@ const LocationCard = ({
               {name}
             </Text>
 
-            {rating && (
+            {!!rating && (
               <View style={styles.ratingContainer}>
                 <StarIcon />
 

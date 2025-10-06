@@ -13,9 +13,10 @@ import { Image } from 'expo-image';
 
 type PastBookingsProps = {
   data: UserAppointment;
+  onBookAgain: () => void;
 };
 
-const PastBookings = ({ data }: PastBookingsProps) => {
+const PastBookings = ({ data, onBookAgain }: PastBookingsProps) => {
   /*** Constants ***/
   const { status, startAt, totalPrice, location, totalServices } = data;
 
@@ -110,7 +111,7 @@ const PastBookings = ({ data }: PastBookingsProps) => {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.buttonContainer} onPress={() => {}} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.buttonContainer} onPress={onBookAgain} activeOpacity={0.8}>
           <Text size={theme.typography.fontSizes.sm} weight="semiBold">
             Book Again
           </Text>
