@@ -16,7 +16,6 @@ export const searchInputStyles = StyleSheet.create({
     flex: 1,
     fontWeight: '400',
     marginLeft: theme.spacing.sm,
-    paddingBottom: theme.spacing.xs,
     fontFamily: 'Montserrat-Regular',
     color: theme.colors.darkText[100],
     fontSize: theme.typography.fontSizes.md,
