@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     gap: theme.spacing.xl,
-    paddingTop: theme.spacing.md,
+    paddingTop: theme.spacing['2xl'],
   },
   sectionTitle: {
     alignItems: 'center',

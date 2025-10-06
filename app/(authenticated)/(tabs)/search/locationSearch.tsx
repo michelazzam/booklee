@@ -81,7 +81,7 @@ const Search = () => {
             Your Recent Searches
           </Text>
 
-          {!isDeletingSearchHistory && searchHistory?.length ? (
+          {!isDeletingSearchHistory ? (
             <Text
               weight="medium"
               color={theme.colors.lightText}

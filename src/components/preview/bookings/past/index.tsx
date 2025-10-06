@@ -53,7 +53,7 @@ const PastBookings = ({ data, onBookAgain }: PastBookingsProps) => {
         <Text
           weight="semiBold"
           color={statusConfig.color}
-          size={theme.typography.fontSizes.sm}
+          size={theme.typography.fontSizes.xs}
           style={{ textTransform: 'capitalize' }}>
           {status}
         </Text>
@@ -72,33 +72,31 @@ const PastBookings = ({ data, onBookAgain }: PastBookingsProps) => {
           <View style={styles.locationInfo}>
             <View style={styles.locationInfoHeader}>
               <Text
-                size={theme.typography.fontSizes.sm}
                 weight="semiBold"
-                style={{ flexShrink: 1 }}>
+                style={{ flexShrink: 1 }}
+                size={theme.typography.fontSizes.sm}>
                 {location.name}
               </Text>
 
               <View style={styles.ratingContainer}>
-                <StarIcon />
+                <StarIcon width={18} height={18} />
 
                 <Text
                   weight="semiBold"
                   color={theme.colors.darkText[100]}
-                  size={theme.typography.fontSizes.md}>
+                  size={theme.typography.fontSizes.xs}>
                   {location.rating}
                 </Text>
               </View>
             </View>
 
-            <View style={{ gap: theme.spacing.xs }}>
-              <Text size={theme.typography.fontSizes.sm} color={theme.colors.lightText}>
-                {formatDate(startAt, 'EEEE dd MMM')}
-              </Text>
+            <Text size={theme.typography.fontSizes.xs} color={theme.colors.lightText}>
+              {formatDate(startAt, 'EEEE dd MMM')}
+            </Text>
 
-              <Text size={theme.typography.fontSizes.sm} color={theme.colors.lightText}>
-                {totalServices} Services | Total: ${totalPrice}
-              </Text>
-            </View>
+            <Text size={theme.typography.fontSizes.xs} color={theme.colors.lightText}>
+              {totalServices} Services | Total: ${totalPrice}
+            </Text>
 
             <Text
               weight="bold"
@@ -151,8 +149,9 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   locationImage: {
-    width: 100,
-    height: 100,
+    width: 90,
+    height: 90,
+    borderRadius: theme.radii.md,
   },
   locationImagePlaceholder: {
     flex: 1,
@@ -164,7 +163,7 @@ const styles = StyleSheet.create({
   },
   locationInfo: {
     flex: 1,
-    gap: theme.spacing.sm,
+    gap: theme.spacing.xs,
     justifyContent: 'space-between',
   },
   locationInfoHeader: {
@@ -178,7 +177,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xs,
   },
   buttonContainer: {
-    height: 60,
+    height: 45,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

@@ -105,7 +105,7 @@ const LocationCard = ({
           style={styles.favoriteButton}
           onPress={handleToggleFavorites}>
           {isInFavorites ? (
-            <HeartIconFilled width={38} height={38} />
+            <HeartIconFilled width={38} height={38} color={theme.colors.white.DEFAULT} />
           ) : (
             <HeartIcon width={38} height={38} />
           )}
