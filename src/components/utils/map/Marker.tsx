@@ -34,26 +34,25 @@ const Marker = ({ data, onPress }: MarkerProps) => {
       onPress={() => onPress(_id)}
       coordinate={{ latitude, longitude }}>
       <View onLayout={handleLayout}>
-        <Svg width={32} height={40} viewBox="0 0 32 40">
+        <Svg width={40} height={40} viewBox="0 0 68 58">
           <Path
-            fill="rgba(0,0,0,0.3)"
-            transform="translate(1, 1)"
-            d="M16 37C16 37 4 28 4 14C4 7.163 9.163 4 16 4C22.837 4 28 7.163 28 14C28 28 16 37 16 37Z"
-          />
-
-          <Path
-            strokeWidth="2"
             fill={theme.colors.darkText[100]}
             stroke={theme.colors.white.DEFAULT}
-            d="M16 35C16 35 4 26 4 12C4 5.163 9.163 2 16 2C22.837 2 28 5.163 28 12C28 26 16 35 16 35Z"
+            strokeWidth={2}
+            strokeLinejoin="round"
+            d="
+                M34 56
+                C34 48 22 40 14 20
+                A20 20 0 1 1 54 20
+                C46 40 34 48 34 56
+                Z"
           />
 
-          <Path d="M16 35L14 40L18 40Z" fill={theme.colors.darkText[100]} />
-
+          {/* Rating text */}
           <SvgText
-            x="16"
-            y="18"
-            fontSize="10"
+            y="24"
+            x="34"
+            fontSize="12"
             fontWeight="bold"
             textAnchor="middle"
             fill={theme.colors.white.DEFAULT}>

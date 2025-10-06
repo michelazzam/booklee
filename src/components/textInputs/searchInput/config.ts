@@ -14,10 +14,12 @@ export const searchInputStyles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    fontWeight: '400',
     marginLeft: theme.spacing.sm,
-    paddingBottom: theme.spacing.sm,
+    paddingBottom: theme.spacing.xs,
+    fontFamily: 'Montserrat-Regular',
     color: theme.colors.darkText[100],
-    ...theme.typography.textVariants.bodyPrimaryRegular,
+    fontSize: theme.typography.fontSizes.md,
   },
   icon: {
     padding: theme.spacing.xs,

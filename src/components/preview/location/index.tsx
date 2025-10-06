@@ -16,7 +16,7 @@ import { StarIcon, AppLogo, HeartIcon, HeartIconFilled } from '~/src/assets/icon
 import { useHandleFavorites } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { Text, Icon } from '../../base';
+import { Text } from '../../base';
 
 type LocationCardProps = {
   delay?: number;
@@ -38,7 +38,7 @@ const LocationCard = ({
 }: LocationCardProps) => {
   /***** Constants *****/
   const { _id, name, city, tags, rating, photos } = data;
-  const { isInFavorites, handleToggleFavorites, isLoading } = useHandleFavorites(_id);
+  const { isInFavorites, handleToggleFavorites } = useHandleFavorites(_id);
 
   /***** Memoization *****/
   const getEnteringAnimation = useMemo(() => {

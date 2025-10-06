@@ -19,6 +19,7 @@ const SearchInput = forwardRef<SearchInputRef, SearchInputProps>(
       containerStyle,
       autoFocus = false,
       placeholder = searchInputConfig.placeholder,
+      placeholderTextColor = searchInputConfig.placeholderTextColor,
     },
     ref
   ) => {
@@ -80,7 +81,7 @@ const SearchInput = forwardRef<SearchInputRef, SearchInputProps>(
           autoCapitalize="none"
           autoFocus={autoFocus}
           placeholder={placeholder}
-          placeholderTextColor={searchInputConfig.placeholderTextColor}
+          placeholderTextColor={placeholderTextColor}
           style={[searchInputStyles.input, { pointerEvents: !onPress ? 'auto' : 'none' }]}
           onChangeText={(text) => {
             setInternalSearchQuery(text);

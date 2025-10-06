@@ -10,6 +10,7 @@ export type SearchInputProps = {
   onFocus?: () => void;
   onPress?: () => void;
   containerStyle?: ViewStyle;
+  placeholderTextColor?: string;
   onSearch?: (query: string) => void;
 };
 

@@ -31,7 +31,9 @@ const FilterItem = ({ filter, isSelected, onPress }: FilterItemProps) => {
       onPress={onPress}
       activeOpacity={0.7}
       style={[styles.tagContainer, animatedStyle]}>
-      <Text color={isSelected ? theme.colors.white.DEFAULT : theme.colors.darkText[100]}>
+      <Text
+        size={theme.typography.fontSizes.xs}
+        color={isSelected ? theme.colors.white.DEFAULT : theme.colors.darkText[100]}>
         {filter.label}
       </Text>
     </AnimatedTouchableOpacity>
@@ -42,10 +44,12 @@ export default FilterItem;
 
 const styles = StyleSheet.create({
   tagContainer: {
+    height: 28,
     borderWidth: 1,
-    borderRadius: theme.radii.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radii.sm,
     borderColor: theme.colors.border,
-    paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.white.DEFAULT,
   },
