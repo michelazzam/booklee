@@ -90,7 +90,7 @@ const SearchInput = forwardRef<SearchInputRef, SearchInputProps>(
         activeOpacity={0.8}
         disabled={!onPress}
         style={[searchInputStyles.container, animatedContainerStyle, containerStyle, ,]}>
-        <TouchableOpacity activeOpacity={1} onPress={onIconPress} disabled={!onIconPress}>
+        <TouchableOpacity activeOpacity={0.8} onPress={onIconPress} disabled={!onIconPress}>
           {icon || (
             <SearchIcon
               width={searchInputConfig.iconSize}

@@ -10,8 +10,8 @@ import { theme } from '~/src/constants/theme';
 
 import { LocationCardSkeleton, SearchHistory, LocationCard } from '~/src/components/preview';
 import { SearchInput, type SearchInputRef } from '~/src/components/textInputs';
-import { Icon, Text } from '~/src/components/base';
 import { BackIcon } from '~/src/assets/icons';
+import { Text } from '~/src/components/base';
 
 const Search = () => {
   /*** Refs ***/
@@ -155,6 +155,7 @@ const Search = () => {
         renderItem={RenderItem}
         onEndReachedThreshold={0.5}
         showsVerticalScrollIndicator={false}
+        style={{ marginTop: theme.spacing.xl }}
         ListEmptyComponent={RenderEmptyComponent}
         keyExtractor={(item, index) => item._id + index}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
