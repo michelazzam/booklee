@@ -8,6 +8,7 @@ const BookingIcon: FC<IconType> = ({ color = '#1F1F1F', width = 24, height = 24 
       <Path
         d="M8 2v3m8-3v3M3.5 9.09h17m-4.805 4.61h.009m-.01 3h.01m-3.709-3h.01m-.01 3h.01m-3.71-3h.008m-.009 3h.01M7 22h10a4 4 0 004-4V8a4 4 0 00-4-4H7a4 4 0 00-4 4v10a4 4 0 004 4z"
         stroke={color}
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

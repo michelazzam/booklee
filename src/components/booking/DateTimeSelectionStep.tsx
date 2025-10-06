@@ -5,7 +5,6 @@ import {
   ScrollView,
   PanResponder,
   Animated,
-  Alert,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { useState, useRef } from 'react';
@@ -95,6 +94,21 @@ const DateTimeSelectionStep = ({
 
   // Get time slots from availability data
   const timeSlots = availabilityData?.availability.slots || [];
+
+  // Check if selected date is today
+  const isToday = selectedDate === new Date().toISOString().split('T')[0];
+
+  // Helper function to check if a time slot has passed
+  const isTimeSlotPassed = (timeValue: string) => {
+    if (!isToday) return false;
+
+    const now = new Date();
+    const [hours, minutes] = timeValue.split(':').map(Number);
+    const slotTime = new Date();
+    slotTime.setHours(hours, minutes, 0, 0);
+
+    return now >= slotTime;
+  };
 
   const handleDateSelect = (day: any) => {
     if (day && day.dateString) {
@@ -255,10 +269,9 @@ const DateTimeSelectionStep = ({
             hideArrows={false}
             renderArrow={(direction) => (
               <Icon
-                name="chevron-right"
                 size={20}
                 color={theme.colors.darkText['100']}
-                style={direction === 'left' ? { transform: [{ rotate: '180deg' }] } : {}}
+                name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
               />
             )}
             theme={{
@@ -389,7 +402,8 @@ const DateTimeSelectionStep = ({
                   service.duration,
                   service.id
                 );
-                const isDisabled = !slot.isAvailable || hasConflict;
+                const isPassed = isTimeSlotPassed(slot.value);
+                const isDisabled = !slot.isAvailable || hasConflict || isPassed;
                 const isSelected = selectedTime === slot.value;
 
                 return (
@@ -402,13 +416,6 @@ const DateTimeSelectionStep = ({
                     ]}
                     disabled={isDisabled}
                     onPress={() => {
-                      if (hasConflict) {
-                        Alert.alert(
-                          'Time Conflict',
-                          'This time slot conflicts with another service booking. Please choose a different time.'
-                        );
-                        return;
-                      }
                       if (availabilityData) {
                         onTimeSelect(slot.value, availabilityData);
                       }
@@ -425,19 +432,14 @@ const DateTimeSelectionStep = ({
                         }>
                         {slot.label}
                       </Text>
-                      {hasConflict && (
-                        <Text size={theme.typography.fontSizes.xs} color={theme.colors.red['100']}>
-                          Conflicts with other service
-                        </Text>
-                      )}
-                      {!hasConflict && !slot.isAvailable && (
+                      {!isPassed && !hasConflict && !slot.isAvailable && (
                         <Text
                           size={theme.typography.fontSizes.xs}
                           color={theme.colors.darkText['50']}>
                           {slot.reason || 'Not available'}
                         </Text>
                       )}
-                      {!hasConflict && slot.isAvailable && (
+                      {!isPassed && !hasConflict && slot.isAvailable && (
                         <Text
                           size={theme.typography.fontSizes.xs}
                           color={
@@ -569,7 +571,9 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   timeSlotContent: {
+    height: 30,
     alignItems: 'center',
+    justifyContent: 'center',
     gap: theme.spacing.xs,
   },
   loadingContainer: {

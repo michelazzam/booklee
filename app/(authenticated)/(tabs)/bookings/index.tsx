@@ -18,6 +18,9 @@ const UpcomingBookingsPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
+  const { data: needsReviewAppointments } = AppointmentServices.useGetUserAppointments({
+    needsReview: true,
+  });
   const {
     refetch,
     isLoading,

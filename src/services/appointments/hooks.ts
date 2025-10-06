@@ -24,8 +24,16 @@ import type {
 
 /*** Create Appointment Hook ***/
 const useCreateAppointment = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
   return useMutation<CreateAppointmentResType, Error, CreateAppointmentReqType>({
     mutationFn: createAppointment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['getUserAppointments'],
+      });
+    },
   });
 };
 
@@ -47,7 +55,14 @@ const useGetUserAppointments = (filters?: UserAppointmentsReqType) => {
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
     queryKey: ['getUserAppointments', filters],
-    select: (data) => data.pages.flatMap((page) => page.appointments),
+    select: (data) =>
+      data.pages.flatMap((page) => {
+        if (filters?.upcoming) {
+          return page.appointments.filter((appointment) => appointment.status === 'confirmed');
+        }
+
+        return page.appointments;
+      }),
     queryFn: ({ pageParam, queryKey }) =>
       getUserAppointments(pageParam as number, queryKey[1] ?? {}),
     getNextPageParam: (lastPage, allPages) => {
@@ -88,7 +103,9 @@ const useCancelAppointment = () => {
   return useMutation<CancelAppointmentResType, ResErrorType, CancelAppointmentReqType>({
     mutationFn: cancelAppointment,
     onSuccess: () => {
-      queryClient.refetchQueries({ queryKey: ['getUserAppointments'] });
+      queryClient.invalidateQueries({
+        queryKey: ['getUserAppointments'],
+      });
     },
   });
 };

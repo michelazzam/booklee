@@ -67,6 +67,10 @@ const useGetLocations = (filters?: GetLocationsReqType) => {
 const useGetLocationById = (id: string) => {
   return useQuery<GetLocationByIdResType, ResErrorType, DetailedLocationType>({
     enabled: !!id,
+    gcTime: 3 * 60 * 1000,
+    refetchOnMount: false,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
     queryKey: ['getLocationById', id],
     select: ({ location }) => location,
     queryFn: () => getLocationByIdApi(id),

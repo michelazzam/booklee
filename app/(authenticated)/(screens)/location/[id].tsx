@@ -238,7 +238,7 @@ const SalonDetailPage = () => {
                 onPress={() => {
                   router.navigate({
                     params: { id },
-                    pathname: '/(authenticated)/(screens)/location/rating',
+                    pathname: '/(authenticated)/(screens)/location/reviews',
                   });
                 }}>
                 <StarIcon width={18} height={18} />
