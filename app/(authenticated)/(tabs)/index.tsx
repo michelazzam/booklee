@@ -1,22 +1,25 @@
-import { StyleSheet, FlatList, View, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, FlatList, View, ScrollView } from 'react-native';
 import { useCallback, memo } from 'react';
 import { useRouter } from 'expo-router';
 
-import { type CategoryType, LocationServices, UserServices, LocationType } from '~/src/services';
+import {
+  type LocationCategoryType,
+  LocationServices,
+  UserServices,
+  LocationType,
+} from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { LocationCard, LocationCardSkeleton } from '~/src/components/preview';
+import { LocationCard, HomePageSkeleton } from '~/src/components/preview';
 import { ScreenHeader } from '~/src/components/utils';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
-const CategorySection = memo(({ category }: { category: CategoryType }) => {
+const CategorySection = memo(({ category }: { category: LocationCategoryType }) => {
   /*** Constants ***/
   const router = useRouter();
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading } =
-    LocationServices.useGetLocationsByCategory(category.slug);
 
   const RenderItem = useCallback(
     ({ item }: { item: LocationType }) => {
@@ -41,20 +44,7 @@ const CategorySection = memo(({ category }: { category: CategoryType }) => {
     },
     [router]
   );
-  const renderFooter = useCallback(() => {
-    if (!isFetchingNextPage) return null;
-
-    return (
-      <View style={styles.footerLoader}>
-        <ActivityIndicator color={theme.colors.primaryBlue[100]} />
-      </View>
-    );
-  }, [isFetchingNextPage]);
   const RenderListEmptyComponent = useCallback(() => {
-    if (isLoading) {
-      return Array.from({ length: 3 }).map((_, index) => <LocationCardSkeleton key={index} />);
-    }
-
     return (
       <Text
         weight="medium"
@@ -64,13 +54,7 @@ const CategorySection = memo(({ category }: { category: CategoryType }) => {
         No locations found
       </Text>
     );
-  }, [isLoading]);
-
-  const handleEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, []);
 
   return (
     <View style={{ gap: theme.spacing.xs }} key={category._id}>
@@ -82,7 +66,7 @@ const CategorySection = memo(({ category }: { category: CategoryType }) => {
           {category.title}
         </Text>
 
-        {!isLoading && data && data.length > 0 && (
+        {category.locations.length > 0 && (
           <Button
             title="See All"
             variant="ghost"
@@ -98,12 +82,9 @@ const CategorySection = memo(({ category }: { category: CategoryType }) => {
 
       <FlatList
         horizontal
-        data={data}
         renderItem={RenderItem}
-        onEndReachedThreshold={0.5}
-        onEndReached={handleEndReached}
+        data={category.locations}
         keyExtractor={(item) => item._id}
-        ListFooterComponent={renderFooter}
         showsHorizontalScrollIndicator={false}
         ListEmptyComponent={RenderListEmptyComponent}
         contentContainerStyle={styles.sectionContainer}
@@ -116,7 +97,7 @@ const HomePage = () => {
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
-  const { data: categories } = LocationServices.useGetLocationsCategories();
+  const { data: categories, isLoading } = LocationServices.useGetLocationsCategories();
 
   return (
     <>
@@ -143,9 +124,11 @@ const HomePage = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
-        {categories?.map((category) => (
-          <CategorySection key={category._id} category={category} />
-        ))}
+        {isLoading ? (
+          <HomePageSkeleton />
+        ) : (
+          categories?.map((category) => <CategorySection key={category._id} category={category} />)
+        )}
       </ScrollView>
     </>
   );

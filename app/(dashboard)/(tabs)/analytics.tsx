@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -13,11 +13,10 @@ import { LineChart } from 'react-native-chart-kit';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { theme } from '~/src/constants/theme';
-import DashboardHeader from '~/src/components/DashboardHeader';
+import DashboardHeader from '~/src/components/utils/headers/DashboardHeader';
 import { Text } from '~/src/components/base';
 import ChevronDownIcon from '~/src/assets/icons/ChevronDownIcon';
 import { UserServices, AnalyticsServices, type AnalyticsPeriod } from '~/src/services';
-import { useEffect } from 'react';
 import { DateRangePicker } from '~/src/components/analytics';
 import { format } from 'date-fns';
 
@@ -37,7 +36,7 @@ const Analytics = () => {
   const { data: locations = [] } = UserServices.useGetUserLocations();
   const { data: locationsWithData } = UserServices.useGetUserLocationsWithData();
   const { width: screenWidth } = useWindowDimensions();
-  
+
   // Fetch analytics data
   const { data: analyticsData, isLoading: isLoadingAnalytics } = AnalyticsServices.useGetAnalytics({
     period: selectedPeriod === 'custom' ? '3m' : selectedPeriod,
@@ -64,10 +63,12 @@ const Analytics = () => {
       return [];
     }
     const locationData = locationsWithData.locationData[selectedLocationId];
-    return locationData?.employees?.map((emp) => ({
-      id: emp._id,
-      name: emp.name,
-    })) || [];
+    return (
+      locationData?.employees?.map((emp) => ({
+        id: emp._id,
+        name: emp.name,
+      })) || []
+    );
   }, [selectedLocationId, locationsWithData]);
 
   // Set default employee when switching to employee tab or when location changes
