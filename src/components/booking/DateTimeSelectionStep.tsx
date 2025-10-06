@@ -350,7 +350,7 @@ const DateTimeSelectionStep = ({
               ))}
             </View>
 
-            {/* Swipe indicator at bottom */}
+            {/* Click indicator at bottom */}
             <TouchableOpacity style={styles.swipeIndicator} onPress={handleExpandToMonthly}>
               <View style={styles.swipeHandle} />
 

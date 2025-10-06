@@ -8,9 +8,14 @@ import { theme } from '~/src/constants/theme';
 export default function AuthenticatedLayout() {
   /*** Constants ***/
   const pathname = usePathname();
-  const { data: userData } = AuthServices.useGetMe();
+  const { data: userData, isLoading: isUserDataLoading } = AuthServices.useGetMe();
   const { isOnboardingCompleted, isBusinessMode } = useUserProvider();
-  const { isAuthenticated } = AuthServices.useGetBetterAuthUser();
+  const { isAuthenticated, isLoading: isAuthLoading } = AuthServices.useGetBetterAuthUser();
+
+  // Wait for auth check to complete
+  if (isAuthLoading || isUserDataLoading) {
+    return null;
+  }
 
   // If not authenticated, redirect to login
   if (!isAuthenticated || !userData) {
