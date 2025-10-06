@@ -1,6 +1,13 @@
-import { StyleSheet, FlatList, View, ScrollView, RefreshControl } from 'react-native';
 import { useCallback, memo, useState } from 'react';
 import { useRouter } from 'expo-router';
+import {
+  TouchableOpacity,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  FlatList,
+  View,
+} from 'react-native';
 
 import {
   type LocationCategoryType,
@@ -14,7 +21,6 @@ import { theme } from '~/src/constants/theme';
 
 import { LocationCard, HomePageSkeleton } from '~/src/components/preview';
 import { ScreenHeader } from '~/src/components/utils';
-import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
 const CategorySection = memo(({ category }: { category: LocationCategoryType }) => {
@@ -23,22 +29,24 @@ const CategorySection = memo(({ category }: { category: LocationCategoryType }) 
 
   const RenderItem = useCallback(
     ({ item }: { item: LocationType }) => {
+      const handlePress = () => {
+        router.navigate({
+          pathname: `/(authenticated)/(screens)/location/[id]`,
+          params: {
+            id: item._id,
+            image: item.photos?.[0],
+          },
+        });
+      };
+
       return (
         <LocationCard
           width={230}
           data={item}
           duration={0}
           key={item._id}
+          onPress={handlePress}
           animatedStyle="slideLeft"
-          onPress={() =>
-            router.navigate({
-              pathname: `/(authenticated)/(screens)/location/[id]`,
-              params: {
-                id: item._id,
-                image: item.photos?.[0],
-              },
-            })
-          }
         />
       );
     },
@@ -57,26 +65,33 @@ const CategorySection = memo(({ category }: { category: LocationCategoryType }) 
   }, []);
 
   return (
-    <View style={{ gap: theme.spacing.xs }} key={category._id}>
+    <View style={{ gap: theme.spacing.md }} key={category._id}>
       <View style={styles.sectionTitle}>
         <Text
-          weight="semiBold"
+          weight="medium"
           color={theme.colors.darkText[100]}
-          size={theme.typography.fontSizes.xl}>
+          size={theme.typography.fontSizes.sm}
+          style={{ textTransform: 'uppercase', flex: 1 }}>
           {category.title}
         </Text>
 
         {category.locations.length > 0 && (
-          <Button
-            title="See All"
-            variant="ghost"
+          <TouchableOpacity
+            activeOpacity={0.8}
             onPress={() =>
               router.navigate({
                 params: { filterSlug: category.slug },
                 pathname: '/(authenticated)/(tabs)/search',
               })
-            }
-          />
+            }>
+            <Text
+              weight="semiBold"
+              color={theme.colors.darkText[100]}
+              size={theme.typography.fontSizes.sm}
+              style={{ textDecorationLine: 'underline' }}>
+              see all
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
 
@@ -115,14 +130,14 @@ const HomePage = () => {
         title={
           <View style={{ gap: theme.spacing.xs }}>
             <Text
-              weight="bold"
+              weight="semiBold"
               color={theme.colors.white.DEFAULT}
-              size={theme.typography.fontSizes.xl}>
-              Hello {`${userData?.user?.firstName || 'User'} ${userData?.user?.lastName || ''}`}!
+              size={theme.typography.fontSizes.xs}>
+              Hello {`${userData?.user?.firstName || 'User'}!`}
             </Text>
 
             <Text
-              weight="medium"
+              weight="semiBold"
               color={theme.colors.white.DEFAULT}
               size={theme.typography.fontSizes.sm}>
               What would you like to do today?
