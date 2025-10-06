@@ -96,7 +96,7 @@ const SalonDetailPage = () => {
       <View style={{ gap: theme.spacing.md }}>
         <Text
           weight={'medium'}
-          size={theme.typography.fontSizes.md}
+          size={theme.typography.fontSizes.sm}
           style={{ textTransform: 'uppercase' }}>
           {category?.title}
         </Text>
@@ -145,7 +145,10 @@ const SalonDetailPage = () => {
         key={title}
         style={[
           styles.aboutItemContainer,
-          { borderBottomWidth: index === aboutItemData.length - 1 ? 0 : 1 },
+          {
+            paddingTop: index !== 0 ? theme.spacing.xl : 0,
+            borderBottomWidth: index === aboutItemData.length - 1 ? 0 : 1,
+          },
         ]}>
         <Text size={theme.typography.fontSizes.md} weight={'medium'}>
           {title}
@@ -272,7 +275,7 @@ const SalonDetailPage = () => {
           entering={FadeIn}
           style={[styles.bookingBar, { bottom: bottom }]}>
           <View style={styles.bookingInfo}>
-            <Text size={theme.typography.fontSizes.md} weight="bold">
+            <Text size={theme.typography.fontSizes.xs} weight="bold">
               Starting $
               {selectedServiceData.reduce((total, service) => {
                 if (service.priceType === 'fixed') return total + service.price;
@@ -281,7 +284,7 @@ const SalonDetailPage = () => {
               }, 0)}
             </Text>
 
-            <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+            <Text size={theme.typography.fontSizes.xs} color={theme.colors.darkText['50']}>
               {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
             </Text>
           </View>

@@ -138,18 +138,18 @@ const styles = StyleSheet.create({
   },
   underline: {
     bottom: 0,
-    height: 3,
+    height: 2,
     position: 'absolute',
     borderRadius: theme.radii.xs,
     backgroundColor: theme.colors.darkText[100],
   },
   singleTabUnderline: {
-    height: 3,
+    height: 2,
     borderRadius: theme.radii.xs,
     backgroundColor: theme.colors.darkText[100],
   },
   animatedContent: {
     flex: 1,
-    paddingTop: theme.spacing.lg,
+    paddingTop: theme.spacing['3xl'],
   },
 });

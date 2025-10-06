@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   emptyStateContent: {
     flex: 1,
     gap: theme.spacing.xl,
-    marginTop: theme.spacing.xl + 20,
+    paddingTop: theme.spacing.xl + 20,
     paddingHorizontal: theme.spacing.xl,
   },
   emptyStateImage: {
