@@ -1,5 +1,5 @@
-import { StyleSheet, FlatList, View, ScrollView } from 'react-native';
-import { useCallback, memo } from 'react';
+import { StyleSheet, FlatList, View, ScrollView, RefreshControl } from 'react-native';
+import { useCallback, memo, useState } from 'react';
 import { useRouter } from 'expo-router';
 
 import {
@@ -97,7 +97,17 @@ const HomePage = () => {
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
-  const { data: categories, isLoading } = LocationServices.useGetLocationsCategories();
+  const { data: categories, isLoading, refetch } = LocationServices.useGetLocationsCategories();
+
+  /*** States ***/
+  const [isRefetching, setIsRefetching] = useState(false);
+
+  const handleRefresh = useCallback(() => {
+    setIsRefetching(true);
+    refetch().finally(() => {
+      setIsRefetching(false);
+    });
+  }, [refetch]);
 
   return (
     <>
@@ -123,8 +133,9 @@ const HomePage = () => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
-        {isLoading ? (
+        {isLoading || isRefetching ? (
           <HomePageSkeleton />
         ) : (
           categories?.map((category) => <CategorySection key={category._id} category={category} />)
