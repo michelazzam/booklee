@@ -1,4 +1,5 @@
-import { StyleSheet, StyleProp, ViewStyle, Keyboard, View } from "react-native";
+import { StyleSheet, StyleProp, ViewStyle, Keyboard, View } from 'react-native';
+import Animated, { FadeOut, FadeIn } from 'react-native-reanimated';
 import React, {
   useImperativeHandle,
   useCallback,
@@ -6,15 +7,15 @@ import React, {
   useState,
   useMemo,
   useRef,
-} from "react";
+} from 'react';
 import {
   type BottomSheetBackdropProps,
   BottomSheetScrollView,
   BottomSheetBackdrop,
   BottomSheetModal,
-} from "@gorhom/bottom-sheet";
+} from '@gorhom/bottom-sheet';
 
-import { Text } from "../base";
+import { Text } from '../base';
 
 export type ModalWrapperRef = {
   present: () => void;
@@ -25,6 +26,7 @@ type ModalWrapperProps = {
   disable?: boolean;
   snapPoints: string[];
   onDismiss?: () => void;
+  footer?: React.ReactNode;
   children: React.ReactNode;
   leadingIcon?: React.ReactNode;
   trailingIcon?: React.ReactNode;
@@ -38,6 +40,7 @@ const ModalWrapper = forwardRef<ModalWrapperRef, ModalWrapperProps>(
   (
     {
       title,
+      footer,
       disable,
       children,
       onChange,
@@ -62,6 +65,14 @@ const ModalWrapper = forwardRef<ModalWrapperRef, ModalWrapperProps>(
       () => leadingIcon || trailingIcon || title,
       [leadingIcon, trailingIcon, title]
     );
+    const getFooterBottom = useMemo(() => {
+      const largestSnapPoint = snapPoints.reduce((max, point) => {
+        return Math.max(max, parseFloat(point));
+      }, 0);
+
+      const riseAmount = 100 - largestSnapPoint;
+      return riseAmount === 0 ? 0 : `${riseAmount}%`;
+    }, [snapPoints]);
 
     useImperativeHandle(ref, () => ({
       present: () => {
@@ -75,7 +86,7 @@ const ModalWrapper = forwardRef<ModalWrapperRef, ModalWrapperProps>(
         bottomSheetModalRef.current?.dismiss();
         setTimeout(() => {
           setIsVisible(false);
-        }, 300);
+        }, 100);
       },
     }));
 
@@ -101,7 +112,7 @@ const ModalWrapper = forwardRef<ModalWrapperRef, ModalWrapperProps>(
           appearsOnIndex={0}
           disappearsOnIndex={-1}
           enableTouchThrough={disable}
-          pressBehavior={disable ? "none" : "close"}
+          pressBehavior={disable ? 'none' : 'close'}
           {...props}
         />
       ),
@@ -124,35 +135,47 @@ const ModalWrapper = forwardRef<ModalWrapperRef, ModalWrapperProps>(
         backdropComponent={renderBackdrop}
         enableHandlePanningGesture={!disable}
         enableContentPanningGesture={!disable}
-        handleIndicatorStyle={handleIndicatorStyle}
-      >
-        <BottomSheetScrollView
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ flexGrow: 1 }}
-        >
-          {hasHeader ? (
-            <View style={styles.headerContainer}>
-              <View style={styles.leadingIconContainer}>{leadingIcon}</View>
+        handleIndicatorStyle={handleIndicatorStyle}>
+        <View style={{ flex: 1 }}>
+          <BottomSheetScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingBottom: footer ? 80 : 0,
+            }}>
+            {hasHeader ? (
+              <View style={styles.headerContainer}>
+                <View style={styles.leadingIconContainer}>{leadingIcon}</View>
 
-              {title && (
-                <Text size={24} weight="medium" color="#000000">
-                  {title}
-                </Text>
-              )}
+                {title && (
+                  <Text size={24} weight="medium" color="#000000">
+                    {title}
+                  </Text>
+                )}
 
-              <View style={styles.trailingIconContainer}>{trailingIcon}</View>
-            </View>
-          ) : null}
+                <View style={styles.trailingIconContainer}>{trailingIcon}</View>
+              </View>
+            ) : null}
 
-          <View style={[{ flex: 1 }, contentContainerStyle]}>{children}</View>
-        </BottomSheetScrollView>
+            <View style={[{ flex: 1 }, contentContainerStyle]}>{children}</View>
+          </BottomSheetScrollView>
+
+          {footer && (
+            <Animated.View
+              exiting={FadeOut}
+              entering={FadeIn}
+              style={[styles.footerContainer, { bottom: getFooterBottom as any }]}>
+              {footer}
+            </Animated.View>
+          )}
+        </View>
       </BottomSheetModal>
     );
   }
 );
 
-ModalWrapper.displayName = "ModalWrapper";
+ModalWrapper.displayName = 'ModalWrapper';
 export default ModalWrapper;
 
 const styles = StyleSheet.create({
@@ -163,21 +186,29 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 1000,
-    position: "absolute",
+    position: 'absolute',
   },
   headerContainer: {
     marginBottom: 20,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
   },
   leadingIconContainer: {
     flex: 1,
-    alignItems: "flex-start",
+    alignItems: 'flex-start',
   },
   trailingIconContainer: {
     flex: 1,
-    alignItems: "flex-end",
+    alignItems: 'flex-end',
+  },
+  footerContainer: {
+    left: 0,
+    right: 0,
+    paddingVertical: 16,
+    position: 'absolute',
+    paddingHorizontal: 16,
+    backgroundColor: '#ffffff',
   },
 });

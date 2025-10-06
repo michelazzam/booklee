@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
-  createAppointment,
   getLocationBookingData,
+  rescheduleAppointment,
   getUserAppointments,
+  createAppointment,
   getAvailabilities,
   cancelAppointment,
 } from './api';
@@ -11,15 +12,17 @@ import {
 import type { ResErrorType } from '../axios/types';
 
 import type {
+  RescheduleAppointmentResType,
+  RescheduleAppointmentReqType,
   CreateAppointmentReqType,
   CreateAppointmentResType,
-  UserAppointmentsResType,
-  BookingDataResponse,
-  UserAppointment,
-  UserAppointmentsReqType,
-  AvailabilityResponse,
   CancelAppointmentResType,
   CancelAppointmentReqType,
+  UserAppointmentsResType,
+  UserAppointmentsReqType,
+  AvailabilityResponse,
+  BookingDataResponse,
+  UserAppointment,
 } from './types';
 
 /*** Create Appointment Hook ***/
@@ -110,8 +113,24 @@ const useCancelAppointment = () => {
   });
 };
 
+/*** Reschedule Appointment Hook ***/
+const useRescheduleAppointment = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation<RescheduleAppointmentResType, ResErrorType, RescheduleAppointmentReqType>({
+    mutationFn: rescheduleAppointment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['getUserAppointments'],
+      });
+    },
+  });
+};
+
 export const AppointmentServices = {
   useGetLocationBookingData,
+  useRescheduleAppointment,
   useGetUserAppointments,
   useCreateAppointment,
   useGetAvailabilities,
