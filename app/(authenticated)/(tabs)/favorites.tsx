@@ -1,28 +1,43 @@
 import { View, StyleSheet, Image, FlatList } from 'react-native';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { useCallback } from 'react';
 
 import { UserServices, type LocationType } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
 
+import { LocationCard, LocationCardSkeleton } from '~/src/components/preview';
 import { Text, HeaderNavigation } from '~/src/components/base';
-import { LocationCard } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
 
 const FavoritesPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
-  const { data: favorites, refetch, isFetching } = UserServices.useGetFavorites();
+  const { data: favorites, refetch, isLoading } = UserServices.useGetFavorites();
+
+  /*** States ***/
+  const [refreshing, setRefreshing] = useState(false);
 
   const RenderItem = useCallback(
-    ({ item }: { item: LocationType }) => <LocationCard data={item} width={'48%'} />,
-    []
+    ({ item }: { item: LocationType }) => (
+      <LocationCard
+        data={item}
+        width={'48%'}
+        onPress={() => router.navigate(`/(authenticated)/(screens)/location/${item._id}`)}
+      />
+    ),
+    [router]
   );
-  const RenderListEmptyComponent = useCallback(
-    () => (
+  const RenderListEmptyComponent = useCallback(() => {
+    if (isLoading) {
+      return Array.from({ length: 10 }).map((_, index) => (
+        <LocationCardSkeleton key={index} minWidth={230} />
+      ));
+    }
+
+    return (
       <View style={styles.emptyStateContent}>
         <Image source={IMAGES.favorites.placeholder} style={styles.emptyStateImage} />
 
@@ -48,9 +63,15 @@ const FavoritesPage = () => {
           onPress={() => router.navigate('/(authenticated)/(tabs)/search')}
         />
       </View>
-    ),
-    [router]
-  );
+    );
+  }, [router, isLoading]);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    refetch().finally(() => {
+      setRefreshing(false);
+    });
+  }, [refetch]);
 
   return (
     <>
@@ -59,9 +80,9 @@ const FavoritesPage = () => {
       <FlatList
         numColumns={2}
         data={favorites}
-        onRefresh={refetch}
-        refreshing={isFetching}
+        refreshing={refreshing}
         renderItem={RenderItem}
+        onRefresh={handleRefresh}
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={RenderListEmptyComponent}

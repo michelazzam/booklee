@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
     padding: theme.spacing.lg,
     borderRadius: theme.radii.lg,
-    marginHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.white.DEFAULT,
     ...theme.shadows.soft,
   },

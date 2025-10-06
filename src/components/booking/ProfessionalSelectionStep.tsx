@@ -25,7 +25,7 @@ const AnimatedButton = ({ style, onPress, children, isSelected = false }: Animat
       }),
       transform: [
         {
-          scale: withTiming(isSelected ? 1.02 : 1, { duration: 300 }),
+          scale: withTiming(isSelected ? 1.02 : 1, { duration: 200 }),
         },
       ],
     };

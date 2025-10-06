@@ -138,8 +138,8 @@ const Button = ({
 
       {error && (
         <Animated.Text
-          entering={FadeIn.duration(200)}
-          exiting={FadeOut.duration(200)}
+          entering={FadeIn}
+          exiting={FadeOut}
           style={[
             styles.errorText,
             {

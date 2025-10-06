@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, StyleSheet, ScrollView, Switch, TouchableOpacity, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { theme } from '~/src/constants/theme';
-import DashboardHeader from '~/src/components/DashboardHeader';
+import DashboardHeader from '~/src/components/utils/headers/DashboardHeader';
 import { Text } from '~/src/components/base';
 import ChevronRightIcon from '~/src/assets/icons/ChevronRightIcon';
 import { AddAppointmentIcon } from '~/src/assets/icons';
@@ -125,12 +125,11 @@ const DashboardHome = () => {
             <Switch
               value={workingMode}
               onValueChange={setWorkingMode}
+              thumbColor={theme.colors.white.DEFAULT}
               trackColor={{
                 false: theme.colors.grey[100],
                 true: theme.colors.primaryGreen[100],
               }}
-              thumbColor={theme.colors.white.DEFAULT}
-              ios_backgroundColor={theme.colors.grey[100]}
             />
           </View>
         </View>
@@ -144,7 +143,7 @@ const DashboardHome = () => {
               weight="regular"
               color={theme.colors.lightText}
               style={{ marginBottom: theme.spacing.sm }}>
-              Today's
+              Today&apos;s
             </Text>
             <Text
               size={theme.typography.fontSizes.md}
@@ -176,7 +175,7 @@ const DashboardHome = () => {
               weight="regular"
               color={theme.colors.lightText}
               style={{ marginBottom: theme.spacing.sm }}>
-              Today's
+              Today&apos;s
             </Text>
             <Text
               size={theme.typography.fontSizes.md}

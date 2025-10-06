@@ -144,7 +144,7 @@ export const getUserLocationsApi = async () => {
 
 /*** API for delete user ***/
 export const deleteUserApi = async () => {
-  const [response, error] = await withErrorCatch(apiClient.delete<DeleteUserResType>('/user'));
+  const [response, error] = await withErrorCatch(apiClient.delete<DeleteUserResType>('/user/me'));
 
   if (error instanceof AxiosError) {
     throw {

@@ -12,9 +12,9 @@ export { AnalyticsServices } from './analytics/hooks';
 /*** Types ***/
 export type { ResErrorType } from './axios/types';
 export type {
-  ServiceBooking,
-  AvailabilityData,
   AvailabilityResponse,
+  AvailabilityData,
+  ServiceBooking,
   TimeSlot,
 } from './appointments/types';
 export type {
@@ -28,6 +28,7 @@ export type {
 } from './auth/types';
 export type {
   CategoryType,
+  LocationOperatingHoursType,
   LocationCategoryType,
   GetLocationsReqType,
   SearchHistoryType,

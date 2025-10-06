@@ -3,7 +3,9 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import {
   getLocationsCategoriesApi,
   getLocationsByCategoryApi,
+  submitLocationRatingApi,
   deleteSearchHistoryApi,
+  getLocationRatingsApi,
   getSearchHistoryApi,
   searchLocationsApi,
   getLocationByIdApi,
@@ -13,9 +15,13 @@ import {
 import type { ResErrorType } from '../axios/types';
 import type {
   GetLocationsCategorizedResType,
+  LocationRatingSubmitResType,
+  LocationRatingSubmitReqType,
   DeleteSearchHistoryResType,
   GetSearchHistoryResType,
   GetLocationByIdResType,
+  LocationRatingResType,
+  LocationRatingReqType,
   DetailedLocationType,
   GetLocationsReqType,
   GetLocationsResType,
@@ -130,10 +136,25 @@ const useDeleteSearchHistory = () => {
   });
 };
 
+const useGetLocationRatings = (filters?: LocationRatingReqType) => {
+  return useQuery<LocationRatingResType, ResErrorType, LocationRatingResType>({
+    queryKey: ['getLocationRatings', filters],
+    queryFn: () => getLocationRatingsApi(filters),
+  });
+};
+
+const useSubmitLocationRating = () => {
+  return useMutation<LocationRatingSubmitResType, ResErrorType, LocationRatingSubmitReqType>({
+    mutationFn: (params) => submitLocationRatingApi(params),
+  });
+};
+
 export const LocationServices = {
   useGetLocationsCategories,
   useGetLocationsByCategory,
+  useSubmitLocationRating,
   useDeleteSearchHistory,
+  useGetLocationRatings,
   useGetSearchHistory,
   useSearchLocations,
   useGetLocationById,

@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, ImageBackground, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 
-import { useUserProvider } from '~/src/store';
 import { usePermissions } from '~/src/hooks';
 
 import { IMAGES } from '~/src/constants/images';
@@ -11,18 +10,15 @@ import { Button } from '~/src/components/buttons';
 const OnboardingStep1 = () => {
   /*** Constants ***/
   const { height: windowHeight } = useWindowDimensions();
-  const { handleOnboardingCompleted } = useUserProvider();
   const { requestLocationPermission, isLoading } = usePermissions();
 
   const handleEnableLocation = async () => {
     await requestLocationPermission().then(() => {
-      router.navigate('/(unauthenticated)/onboarding/step2');
+      routeToNextStep();
     });
   };
-
-  const handleSkip = () => {
-    router.replace('/(unauthenticated)/login');
-    handleOnboardingCompleted(true);
+  const routeToNextStep = () => {
+    router.navigate('/(unauthenticated)/onboarding/step2');
   };
 
   return (
@@ -54,7 +50,7 @@ const OnboardingStep1 = () => {
         <Button
           title="Skip"
           variant="ghost"
-          onPress={handleSkip}
+          onPress={routeToNextStep}
           containerStyle={styles.skipButton}
         />
       </View>

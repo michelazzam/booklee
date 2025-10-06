@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { BottomSheetModal, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { StyleSheet, View } from 'react-native';
 
@@ -9,7 +9,7 @@ import { theme } from '~/src/constants/theme';
 
 import LocationCardSkeleton from '../preview/location/skeleton';
 import LocationCard from '../preview/location';
-import { Text } from '../base';
+import { Icon, Text } from '../base';
 
 type LocationsModalProps = {
   isLoading: boolean;
@@ -18,8 +18,8 @@ type LocationsModalProps = {
 };
 
 export type LocationsModalRef = {
-  present: () => void;
   dismiss: () => void;
+  present: (locationId: string) => void;
 };
 
 const LocationsModal = forwardRef<LocationsModalRef, LocationsModalProps>(
@@ -27,42 +27,50 @@ const LocationsModal = forwardRef<LocationsModalRef, LocationsModalProps>(
     /*** Refs ***/
     const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-    /*** States ***/
-    const [isVisible, setIsVisible] = useState(true);
-
     /*** Constants ***/
     const { bottom } = useAppSafeAreaInsets();
 
+    /*** States ***/
+    const [chosenLocationId, setChosenLocationId] = useState<string | null>(null);
+
+    /*** Memoization ***/
+    const filteredLocations = useMemo(
+      () => locations.filter((location) => location._id !== chosenLocationId),
+      [locations, chosenLocationId]
+    );
+    const chosenLocation = useMemo(
+      () => locations.find((location) => location._id === chosenLocationId),
+      [locations, chosenLocationId]
+    );
+
     useImperativeHandle(ref, () => ({
-      present: () => {
-        setIsVisible(true);
-        setTimeout(() => {
-          bottomSheetRef.current?.present();
-        }, 300);
+      present: (locationId: string) => {
+        bottomSheetRef.current?.present();
+        setChosenLocationId(locationId);
       },
       dismiss: () => {
-        setIsVisible(false);
         bottomSheetRef.current?.dismiss();
       },
     }));
 
     const handleLocationPress = useCallback(
       (locationId: string) => {
-        bottomSheetRef.current?.snapToIndex(0);
+        bottomSheetRef.current?.dismiss();
+
         setTimeout(() => {
           onLocationPress(locationId);
-        }, 300);
+        }, 100);
       },
       [onLocationPress]
     );
 
-    const renderLocationItem = useCallback(
+    const RenderLocationItem = useCallback(
       ({ item }: { item: LocationType }) => (
         <LocationCard data={item} onPress={() => handleLocationPress(item._id)} width="100%" />
       ),
       [handleLocationPress]
     );
-    const renderEmptyComponent = useCallback(() => {
+    const RenderEmptyComponent = useCallback(() => {
       if (isLoading) {
         return Array.from({ length: 10 }).map((_, index) => (
           <LocationCardSkeleton key={index} minWidth={230} />
@@ -78,26 +86,53 @@ const LocationsModal = forwardRef<LocationsModalRef, LocationsModalProps>(
         </Text>
       );
     }, [isLoading]);
+    const RenderHeaderComponent = useCallback(() => {
+      return (
+        <View style={{ gap: theme.spacing.md }}>
+          <Icon
+            size={24}
+            name="close"
+            style={{ alignSelf: 'flex-end' }}
+            onPress={() => bottomSheetRef.current?.dismiss()}
+          />
 
-    if (!isVisible) {
-      return null;
-    }
+          {chosenLocation && (
+            <View style={{ gap: theme.spacing['3xl'] }}>
+              <LocationCard
+                data={chosenLocation}
+                onPress={() => handleLocationPress(chosenLocation._id)}
+              />
+
+              <View style={styles.dividerContainer}>
+                <View style={styles.divider} />
+
+                <Text size={theme.typography.fontSizes.lg} weight="medium">
+                  You might also like
+                </Text>
+
+                <View style={styles.divider} />
+              </View>
+            </View>
+          )}
+        </View>
+      );
+    }, [chosenLocation, handleLocationPress]);
 
     return (
       <BottomSheetModal
         index={0}
         ref={bottomSheetRef}
-        enablePanDownToClose={false}
+        snapPoints={['55%', '85%']}
         backdropComponent={() => null}
-        snapPoints={['10%', '55%', '85%']}
         handleIndicatorStyle={styles.handleIndicator}
         backgroundStyle={styles.bottomSheetBackground}>
         <BottomSheetFlatList
-          data={locations}
-          renderItem={renderLocationItem}
+          data={filteredLocations}
+          renderItem={RenderLocationItem}
           keyExtractor={(item) => item._id}
           showsVerticalScrollIndicator={false}
-          ListEmptyComponent={renderEmptyComponent}
+          ListEmptyComponent={RenderEmptyComponent}
+          ListHeaderComponent={RenderHeaderComponent}
           contentContainerStyle={[styles.contentContainer, { paddingBottom: bottom }]}
           ItemSeparatorComponent={() => <View style={{ height: theme.spacing.sm }} />}
         />
@@ -128,5 +163,16 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     paddingVertical: theme.spacing.xl,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
+  },
+  divider: {
+    flex: 1,
+    height: 3,
+    backgroundColor: theme.colors.border,
   },
 });

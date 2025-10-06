@@ -16,10 +16,10 @@ const TabBarIcon = ({ icon, color, focused = false }: TabBarIconProps) => {
   /***** Animations *****/
   const iconAnimatedStyle = useAnimatedStyle(() => {
     const opacityValue = withTiming(focused ? 1 : 0.7, {
-      duration: 250,
+      duration: 200,
     });
     const scaleValue = withTiming(focused ? 1.2 : 1, {
-      duration: 250,
+      duration: 200,
     });
 
     return {

@@ -1,18 +1,16 @@
-import { View, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { theme } from '~/src/constants/theme';
 import {
   ChevronRightIcon,
-  QuestionMarkIcon,
   UserInfoIcon,
   EnvelopeIcon,
   LogoutIcon,
   PhoneIcon,
   TrashIcon,
   BellIcon,
-  StarIcon,
 } from '~/src/assets/icons';
 
 import { AuthServices, UserServices } from '~/src/services';
@@ -20,6 +18,7 @@ import { AuthServices, UserServices } from '~/src/services';
 import { SettingsCard, ScreenHeader, type CardRowDataType } from '~/src/components/utils';
 import { AwareScrollView, Text } from '~/src/components/base';
 import { useUserProvider } from '~/src/store';
+import { Toast } from 'toastify-react-native';
 
 const AccountPage = () => {
   /*** Constants ***/
@@ -28,6 +27,14 @@ const AccountPage = () => {
   const { isBusinessMode, setBusinessMode } = useUserProvider();
   const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
   const { mutate: deleteUser, isPending: isDeleteUserPending } = UserServices.useDeleteUser();
+
+  const handleDeleteAccount = useCallback(() => {
+    deleteUser(undefined, {
+      onError: (error) => {
+        Toast.error(error.message);
+      },
+    });
+  }, [deleteUser]);
 
   /*** Memoization ***/
   const isOwner = useMemo(() => userData?.user?.role === 'owner', [userData]);
@@ -58,28 +65,8 @@ const AccountPage = () => {
       },
     ];
   }, [userData, router]);
-  const openBusinessData: CardRowDataType[] = useMemo(() => {
-    return [
-      {
-        label: 'My Reviews',
-        leadingIcon: <StarIcon />,
-        trailingIcon: <ChevronRightIcon />,
-      },
-      {
-        label: 'Users help center',
-        leadingIcon: <QuestionMarkIcon />,
-        trailingIcon: <ChevronRightIcon />,
-      },
-    ];
-  }, []);
   const appSettingsData: CardRowDataType[] = useMemo(() => {
     return [
-      // {
-      //   variant: 'secondary',
-      //   label: 'OPEN A BUSINESS',
-      //   leadingIcon: <HomeIcon />,
-      //   trailingIcon: <ChevronRightIcon />,
-      // },
       {
         onPress: logout,
         label: 'LOG OUT',
@@ -88,13 +75,17 @@ const AccountPage = () => {
       },
       {
         variant: 'danger',
-        onPress: deleteUser,
         label: 'DELETE ACCOUNT',
         leadingIcon: <TrashIcon />,
         loading: isDeleteUserPending,
+        onPress: () =>
+          Alert.alert('Delete Account', 'Are you sure you want to delete your account?', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Delete', style: 'destructive', onPress: handleDeleteAccount },
+          ]),
       },
     ];
-  }, [logout, deleteUser, isLogoutPending, isDeleteUserPending]);
+  }, [logout, isLogoutPending, isDeleteUserPending, handleDeleteAccount]);
 
   return (
     <View style={styles.container}>
@@ -122,7 +113,7 @@ const AccountPage = () => {
             <Text
               weight="semiBold"
               color={theme.colors.darkText[100]}
-              size={theme.typography.fontSizes.sm}
+              size={theme.typography.fontSizes.xs}
               style={{ letterSpacing: 1 }}>
               SWITCH TO BUSINESS ACCOUNT
             </Text>
@@ -130,27 +121,24 @@ const AccountPage = () => {
               <Text
                 weight="medium"
                 color={theme.colors.darkText[100]}
-                size={theme.typography.fontSizes.xs}
-                style={{ marginRight: theme.spacing.sm }}>
+                size={theme.typography.fontSizes.xs}>
                 {isBusinessMode ? 'ON' : 'OFF'}
               </Text>
+
               <Switch
                 value={isBusinessMode}
                 onValueChange={setBusinessMode}
+                thumbColor={theme.colors.white.DEFAULT}
                 trackColor={{
                   false: theme.colors.grey[100],
                   true: theme.colors.primaryGreen[100],
                 }}
-                thumbColor={theme.colors.white.DEFAULT}
-                ios_backgroundColor={theme.colors.grey[100]}
               />
             </View>
           </View>
         )}
 
         <SettingsCard data={personalInformationData} title="PERSONAL INFORMATION" />
-
-        <SettingsCard data={openBusinessData} title="SETTINGS" />
 
         <SettingsCard data={appSettingsData} />
       </AwareScrollView>
@@ -163,10 +151,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.white[100],
   },
-
   scrollContent: {
     flexGrow: 1,
     gap: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing['2xl'],
   },
   businessModeContainer: {
@@ -176,13 +164,11 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.white.DEFAULT,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
   },
   switchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: theme.spacing.sm,
   },
   sectionTitle: {
     ...theme.typography.textVariants.ctaSecondaryBold,

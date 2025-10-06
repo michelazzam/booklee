@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { type StyleProp, StyleSheet, View, type ViewStyle } from "react-native";
-import React, { useEffect } from "react";
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
+import { useEffect } from 'react';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
   withDelay,
   Easing,
-} from "react-native-reanimated";
+} from 'react-native-reanimated';
 
 type LoadingDotsProps = {
   size?: number;
@@ -17,16 +17,9 @@ type LoadingDotsProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-const LoadingDots = ({
-  style,
-  size = 8,
-  color = "#000",
-  numberOfDots = 3,
-}: LoadingDotsProps) => {
+const LoadingDots = ({ style, size = 8, color = '#000', numberOfDots = 3 }: LoadingDotsProps) => {
   /*** Animation ***/
-  const animations = Array.from({ length: numberOfDots }).map(() =>
-    useSharedValue(0)
-  );
+  const animations = Array.from({ length: numberOfDots }).map(() => useSharedValue(0));
 
   useEffect(() => {
     const linear = Easing.linear;
@@ -51,10 +44,7 @@ const LoadingDots = ({
             easing: linear,
           }),
           // Wait for other dots
-          withDelay(
-            (numberOfDots - index - 1) * 200,
-            withTiming(0, { duration: 0 })
-          )
+          withDelay((numberOfDots - index - 1) * 200, withTiming(0, { duration: 0 }))
         )
       );
     };
@@ -106,7 +96,7 @@ export default LoadingDots;
 const styles = StyleSheet.create({
   container: {
     gap: 4,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

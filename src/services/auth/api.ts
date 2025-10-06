@@ -116,6 +116,7 @@ export const forgotPasswordApi = async (email: string) => {
   const [response] = await withErrorCatch(
     authClient.requestPasswordReset({
       email,
+      redirectTo: 'https://booklee.app/reset-password',
     })
   );
 

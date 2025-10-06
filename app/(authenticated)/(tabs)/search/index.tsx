@@ -1,9 +1,7 @@
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
-import { useRef, useMemo, useState, useCallback } from 'react';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import { Icon } from '~/src/components/base';
+import { useRef, useMemo, useState } from 'react';
 import * as Location from 'expo-location';
 
 import { LocationServices, type GetLocationsReqType, type CategoryType } from '~/src/services';
@@ -13,6 +11,7 @@ import { FilterIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants/theme';
 
 import { SearchInput } from '~/src/components/textInputs';
+import { Icon } from '~/src/components/base';
 import {
   type LocationsModalRef,
   type ModalWrapperRef,
@@ -90,16 +89,6 @@ const MapScreen = () => {
     }
   }, [filterSlug]);
 
-  useFocusEffect(
-    useCallback(() => {
-      locationsModalRef.current?.present();
-
-      return () => {
-        locationsModalRef.current?.dismiss();
-      };
-    }, [])
-  );
-
   const handleLocationPress = async () => {
     try {
       // Check if location permission is granted
@@ -140,7 +129,7 @@ const MapScreen = () => {
           <Marker
             data={marker}
             key={marker._id + index}
-            onPress={() => router.navigate(`/(authenticated)/(screens)/location/${marker._id}`)}
+            onPress={() => locationsModalRef.current?.present(marker._id)}
           />
         ))}
       </MapView>

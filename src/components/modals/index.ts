@@ -1,5 +1,7 @@
 export { default as ModifyBookingModal, type ModifyBookingModalRef } from './ModifyBookingModal';
+export { default as RescheduleModal, type RescheduleModalRef } from './ReschedulingModal';
 export { default as LocationsModal, type LocationsModalRef } from './LocationsModal';
+export { default as RatingModal, type RatingModalRef } from './RatingModal';
 export { default as FilterModal } from './FilterModal';
 export { type ModalWrapperRef } from './ModalWrapper';
 export {

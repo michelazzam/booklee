@@ -7,7 +7,7 @@ import { type CategoryType, LocationServices, UserServices, LocationType } from 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { LocationCard, LocationCardSkeleton, HomePageSkeleton } from '~/src/components/preview';
+import { LocationCard, LocationCardSkeleton } from '~/src/components/preview';
 import { ScreenHeader } from '~/src/components/utils';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
@@ -19,13 +19,13 @@ const CategorySection = memo(({ category }: { category: CategoryType }) => {
     LocationServices.useGetLocationsByCategory(category.slug);
 
   const RenderItem = useCallback(
-    ({ item, index }: { item: LocationType; index: number }) => {
+    ({ item }: { item: LocationType }) => {
       return (
         <LocationCard
           width={230}
           data={item}
-          delay={index * 150}
-          key={item._id + index}
+          duration={0}
+          key={item._id}
           animatedStyle="slideLeft"
           onPress={() =>
             router.navigate({
@@ -102,11 +102,11 @@ const CategorySection = memo(({ category }: { category: CategoryType }) => {
         renderItem={RenderItem}
         onEndReachedThreshold={0.5}
         onEndReached={handleEndReached}
+        keyExtractor={(item) => item._id}
         ListFooterComponent={renderFooter}
         showsHorizontalScrollIndicator={false}
         ListEmptyComponent={RenderListEmptyComponent}
         contentContainerStyle={styles.sectionContainer}
-        keyExtractor={(item, index) => item._id + index}
       />
     </View>
   );
@@ -116,7 +116,7 @@ const HomePage = () => {
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
-  const { data: categories, isLoading } = LocationServices.useGetLocationsCategories();
+  const { data: categories } = LocationServices.useGetLocationsCategories();
 
   return (
     <>
@@ -143,11 +143,9 @@ const HomePage = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
-        {isLoading ? (
-          <HomePageSkeleton />
-        ) : (
-          categories?.map((category) => <CategorySection key={category._id} category={category} />)
-        )}
+        {categories?.map((category) => (
+          <CategorySection key={category._id} category={category} />
+        ))}
       </ScrollView>
     </>
   );
