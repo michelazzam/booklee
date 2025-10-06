@@ -15,8 +15,8 @@ import { BackIcon, HeartIcon, HeartIconFilled, StarIcon } from '~/src/assets/ico
 
 import { ImageCarousel, TabMenu, LocationSplashImage } from '~/src/components/utils';
 import { Services } from '~/src/components/preview';
-import { Icon, Text } from '~/src/components/base';
 import { Button } from '~/src/components/buttons';
+import { Text } from '~/src/components/base';
 
 type SalonDetailPageProps = {
   id: string;
