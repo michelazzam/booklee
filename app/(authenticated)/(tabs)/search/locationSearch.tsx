@@ -139,6 +139,7 @@ const Search = () => {
     <>
       <View style={[styles.headerContainer, { paddingTop: top }]}>
         <SearchInput
+          autoFocus
           value={searchQuery}
           icon={<BackIcon />}
           ref={searchInputRef}

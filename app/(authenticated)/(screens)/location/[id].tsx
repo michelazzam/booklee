@@ -1,4 +1,4 @@
-import { View, ScrollView, StyleSheet, Linking, TouchableOpacity, Touchable } from 'react-native';
+import { View, ScrollView, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';

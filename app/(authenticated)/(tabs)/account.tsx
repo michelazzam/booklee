@@ -1,6 +1,7 @@
-import { View, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Toast } from 'toastify-react-native';
 import { useCallback, useMemo } from 'react';
+import { useRouter } from 'expo-router';
 
 import { theme } from '~/src/constants/theme';
 import {
@@ -14,17 +15,16 @@ import {
 } from '~/src/assets/icons';
 
 import { AuthServices, UserServices } from '~/src/services';
+// import { useUserProvider } from '~/src/store';
 
 import { SettingsCard, ScreenHeader, type CardRowDataType } from '~/src/components/utils';
 import { AwareScrollView, Text } from '~/src/components/base';
-import { useUserProvider } from '~/src/store';
-import { Toast } from 'toastify-react-native';
 
 const AccountPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { data: userData } = UserServices.useGetMe();
-  const { isBusinessMode, setBusinessMode } = useUserProvider();
+  // const { isBusinessMode, setBusinessMode } = useUserProvider();
   const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
   const { mutate: deleteUser, isPending: isDeleteUserPending } = UserServices.useDeleteUser();
 
@@ -37,7 +37,7 @@ const AccountPage = () => {
   }, [deleteUser]);
 
   /*** Memoization ***/
-  const isOwner = useMemo(() => userData?.user?.role === 'owner', [userData]);
+  // const isOwner = useMemo(() => userData?.user?.role === 'owner', [userData]);
   const personalInformationData: CardRowDataType[] = useMemo(() => {
     if (!userData) return [];
 
@@ -108,7 +108,7 @@ const AccountPage = () => {
       />
 
       <AwareScrollView contentContainerStyle={styles.scrollContent}>
-        {isOwner && (
+        {/* {isOwner && (
           <View style={styles.businessModeContainer}>
             <Text
               weight="semiBold"
@@ -117,6 +117,7 @@ const AccountPage = () => {
               style={{ letterSpacing: 1 }}>
               SWITCH TO BUSINESS ACCOUNT
             </Text>
+
             <View style={styles.switchContainer}>
               <Text
                 weight="medium"
@@ -136,7 +137,7 @@ const AccountPage = () => {
               />
             </View>
           </View>
-        )}
+        )} */}
 
         <SettingsCard data={personalInformationData} title="PERSONAL INFORMATION" />
 

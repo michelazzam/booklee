@@ -60,7 +60,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setIsOnboardingCompleted(isOnboardingCompleted);
     await AsyncStorage.setItem(STORAGE_KEY.onboardingCompleted, isOnboardingCompleted.toString());
   };
-
   const setBusinessMode = async (isBusinessMode: boolean) => {
     setIsBusinessModeState(isBusinessMode);
     await AsyncStorage.setItem(STORAGE_KEY.businessMode, isBusinessMode.toString());

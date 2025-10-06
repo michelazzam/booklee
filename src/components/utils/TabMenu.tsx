@@ -67,14 +67,14 @@ const TabMenu = ({ tabs, activeTab, onTabChange }: TabMenuProps) => {
 
   if (tabs.length === 1) {
     return (
-      <View>
+      <View style={{ gap: theme.spacing['3xl'] }}>
         <View style={{ gap: theme.spacing.md }}>
           <Text style={styles.tabText}>{tabs[0].tabName.name}</Text>
 
           <View style={[styles.singleTabUnderline]} />
         </View>
 
-        {tabs[0].tabChildren}
+        <View>{tabs[0].tabChildren}</View>
       </View>
     );
   }
