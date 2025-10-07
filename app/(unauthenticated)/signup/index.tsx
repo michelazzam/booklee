@@ -133,6 +133,7 @@ export const SignupPage = () => {
         )} */}
 
         <PhoneInput
+          isRequired
           placeholder="xx-xxx-xxxx"
           error={validationErrors.errors?.phone}
           onChangeText={(value) => onTextChange(value, 'phone')}

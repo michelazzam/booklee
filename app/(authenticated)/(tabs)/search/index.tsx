@@ -86,6 +86,10 @@ const MapScreen = () => {
   useMemo(() => {
     if (filterSlug) {
       setSelectedFilter((prev) => ({ ...prev, category: filterSlug }));
+
+      setTimeout(() => {
+        locationsModalRef.current?.present();
+      }, 100);
     }
   }, [filterSlug]);
 

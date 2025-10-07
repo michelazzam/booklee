@@ -1,7 +1,8 @@
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ImageBackground } from 'react-native';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '../../../constants/theme';
+import { IMAGES } from '~/src/constants/images';
 
 import { Text } from '../../base';
 
@@ -16,7 +17,9 @@ const ScreenHeader = ({ leading, title, trailing }: ScreenHeaderProps) => {
   const { top } = useAppSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { paddingTop: top, height: 62 + top }]}>
+    <ImageBackground
+      source={IMAGES.background.texturedBackground}
+      style={[styles.container, { paddingTop: top, height: 62 + top }]}>
       {leading}
 
       <Text size={theme.typography.fontSizes.lg} weight="bold" color={theme.colors.white.DEFAULT}>
@@ -24,7 +27,7 @@ const ScreenHeader = ({ leading, title, trailing }: ScreenHeaderProps) => {
       </Text>
 
       {trailing}
-    </View>
+    </ImageBackground>
   );
 };
 

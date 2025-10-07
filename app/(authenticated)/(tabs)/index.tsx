@@ -41,7 +41,7 @@ const CategorySection = memo(({ category }: { category: LocationCategoryType }) 
 
       return (
         <LocationCard
-          width={230}
+          width={200}
           data={item}
           duration={0}
           key={item._id}

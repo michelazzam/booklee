@@ -196,8 +196,8 @@ const styles = StyleSheet.create({
   infoContainer: {
     flex: 1,
     gap: theme.spacing.md,
-    padding: theme.spacing.md,
     justifyContent: 'space-between',
+    paddingVertical: theme.spacing.md,
   },
   topContainer: {
     flexDirection: 'row',
