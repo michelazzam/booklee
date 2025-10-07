@@ -143,11 +143,11 @@ export type LocationReviewLocationType = {
 };
 export type LocationReviewType = {
   rating: number;
+  userId: string;
   message: string;
   employees: any[];
   createdAt: string;
   appointmentId: string;
-  userId: string;
   location: LocationReviewLocationType;
   organization: LocationReviewLocationType;
 };

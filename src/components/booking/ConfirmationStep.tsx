@@ -1,4 +1,5 @@
-import { View, StyleSheet, TextInput, Image } from 'react-native';
+import { View, StyleSheet, TextInput } from 'react-native';
+import { Image } from 'expo-image';
 
 import { theme } from '~/src/constants/theme';
 import { Text, Icon } from '../base';
@@ -49,8 +50,12 @@ const ConfirmationStep = ({ bookingData, location, onNotesChange }: Confirmation
       <View style={[styles.card, styles.locationCard]}>
         <View style={styles.locationHeader}>
           <View style={styles.locationImage}>
-            {location?.logo ? (
-              <Image source={{ uri: location.logo }} style={styles.logoImg} />
+            {location?.photos?.[0] ? (
+              <Image
+                contentFit="cover"
+                style={styles.logoImg}
+                source={{ uri: location.photos?.[0] }}
+              />
             ) : (
               <Icon name="store" size={24} color={theme.colors.primaryBlue['100']} />
             )}

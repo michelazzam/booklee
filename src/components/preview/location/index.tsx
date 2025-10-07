@@ -12,11 +12,11 @@ import Animated, {
 
 import { type LocationType } from '~/src/services';
 
-import { StarIcon, AppLogo } from '~/src/assets/icons';
+import { StarIcon, AppLogo, HeartIcon, HeartIconFilled } from '~/src/assets/icons';
 import { useHandleFavorites } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { Text, Icon } from '../../base';
+import { Text } from '../../base';
 
 type LocationCardProps = {
   delay?: number;
@@ -38,7 +38,7 @@ const LocationCard = ({
 }: LocationCardProps) => {
   /***** Constants *****/
   const { _id, name, city, tags, rating, photos } = data;
-  const { isInFavorites, handleToggleFavorites, isLoading } = useHandleFavorites(_id);
+  const { isInFavorites, handleToggleFavorites } = useHandleFavorites(_id);
 
   /***** Memoization *****/
   const getEnteringAnimation = useMemo(() => {
@@ -100,37 +100,38 @@ const LocationCard = ({
           </View>
         )}
 
-        <View style={styles.favoriteButton}>
-          <Icon
-            size={28}
-            color="#FFFFFF"
-            loading={isLoading}
-            onPress={handleToggleFavorites}
-            name={isInFavorites ? 'heart' : 'heart-outline'}
-          />
-        </View>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.favoriteButton}
+          onPress={handleToggleFavorites}>
+          {isInFavorites ? (
+            <HeartIconFilled width={38} height={38} color={theme.colors.white.DEFAULT} />
+          ) : (
+            <HeartIcon width={38} height={38} />
+          )}
+        </TouchableOpacity>
       </View>
 
       <View style={styles.infoContainer}>
         <View style={{ gap: theme.spacing.xs }}>
           <View style={styles.topContainer}>
-            <Text weight="medium" style={{ flexShrink: 1 }} size={theme.typography.fontSizes.md}>
+            <Text weight="semiBold" style={{ flexShrink: 1 }} size={theme.typography.fontSizes.xs}>
               {name}
             </Text>
 
-            {rating && (
+            {!!rating && (
               <View style={styles.ratingContainer}>
-                <StarIcon />
+                <StarIcon width={12} height={12} />
 
-                <Text size={theme.typography.fontSizes.sm}>{rating.toFixed(1)}</Text>
+                <Text size={theme.typography.fontSizes.xs}>{rating.toFixed(1)}</Text>
               </View>
             )}
           </View>
 
           <Text
-            size={theme.typography.fontSizes.sm}
             numberOfLines={1}
-            color={theme.colors.lightText}>
+            color={theme.colors.lightText}
+            size={theme.typography.fontSizes.xs}>
             {city}
           </Text>
         </View>
@@ -153,7 +154,6 @@ export default LocationCard;
 
 const styles = StyleSheet.create({
   container: {
-    ...theme.shadows.soft,
     borderRadius: theme.radii.md,
     backgroundColor: theme.colors.white.DEFAULT,
   },
@@ -178,11 +178,9 @@ const styles = StyleSheet.create({
     height: 42,
     position: 'absolute',
     alignItems: 'center',
-    top: theme.spacing.sm,
-    right: theme.spacing.sm,
+    top: theme.spacing.md,
+    right: theme.spacing.md,
     justifyContent: 'center',
-    borderRadius: theme.radii.full,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   mapButton: {
     width: 42,

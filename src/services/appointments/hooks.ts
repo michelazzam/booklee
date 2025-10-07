@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
-  createAppointment,
   getLocationBookingData,
+  rescheduleAppointment,
   getUserAppointments,
+  createAppointment,
   getAvailabilities,
   cancelAppointment,
 } from './api';
@@ -11,21 +12,31 @@ import {
 import type { ResErrorType } from '../axios/types';
 
 import type {
+  RescheduleAppointmentResType,
+  RescheduleAppointmentReqType,
   CreateAppointmentReqType,
   CreateAppointmentResType,
-  UserAppointmentsResType,
-  BookingDataResponse,
-  UserAppointment,
-  UserAppointmentsReqType,
-  AvailabilityResponse,
   CancelAppointmentResType,
   CancelAppointmentReqType,
+  UserAppointmentsResType,
+  UserAppointmentsReqType,
+  AvailabilityResponse,
+  BookingDataResponse,
+  UserAppointment,
 } from './types';
 
 /*** Create Appointment Hook ***/
 const useCreateAppointment = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
   return useMutation<CreateAppointmentResType, Error, CreateAppointmentReqType>({
     mutationFn: createAppointment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['getUserAppointments'],
+      });
+    },
   });
 };
 
@@ -47,7 +58,14 @@ const useGetUserAppointments = (filters?: UserAppointmentsReqType) => {
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
     queryKey: ['getUserAppointments', filters],
-    select: (data) => data.pages.flatMap((page) => page.appointments),
+    select: (data) =>
+      data.pages.flatMap((page) => {
+        if (filters?.upcoming) {
+          return page.appointments.filter((appointment) => appointment.status === 'confirmed');
+        }
+
+        return page.appointments;
+      }),
     queryFn: ({ pageParam, queryKey }) =>
       getUserAppointments(pageParam as number, queryKey[1] ?? {}),
     getNextPageParam: (lastPage, allPages) => {
@@ -88,13 +106,31 @@ const useCancelAppointment = () => {
   return useMutation<CancelAppointmentResType, ResErrorType, CancelAppointmentReqType>({
     mutationFn: cancelAppointment,
     onSuccess: () => {
-      queryClient.refetchQueries({ queryKey: ['getUserAppointments'] });
+      queryClient.invalidateQueries({
+        queryKey: ['getUserAppointments'],
+      });
+    },
+  });
+};
+
+/*** Reschedule Appointment Hook ***/
+const useRescheduleAppointment = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation<RescheduleAppointmentResType, ResErrorType, RescheduleAppointmentReqType>({
+    mutationFn: rescheduleAppointment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['getUserAppointments'],
+      });
     },
   });
 };
 
 export const AppointmentServices = {
   useGetLocationBookingData,
+  useRescheduleAppointment,
   useGetUserAppointments,
   useCreateAppointment,
   useGetAvailabilities,

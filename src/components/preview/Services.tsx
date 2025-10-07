@@ -30,16 +30,19 @@ const ServicesPreview = ({ data, onPress, isActive }: ServicesPreviewProps) => {
 
   return (
     <TouchableOpacity activeOpacity={0.8} style={styles.container} onPress={() => onPress(id)}>
-      <View
-        style={[
-          styles.checkboxContainer,
-          { backgroundColor: isActive ? theme.colors.darkText[100] : 'transparent' },
-        ]}>
-        {isActive && <Icon name="check" size={18} color={theme.colors.white.DEFAULT} />}
-      </View>
-
       <View style={styles.infoContainer}>
-        <Text size={theme.typography.fontSizes.md} weight={'medium'}>
+        <View
+          style={[
+            styles.checkboxContainer,
+            { backgroundColor: isActive ? theme.colors.darkText[100] : 'transparent' },
+          ]}>
+          {isActive && <Icon name="check" size={18} color={theme.colors.white.DEFAULT} />}
+        </View>
+
+        <Text
+          style={{ flex: 1 }}
+          size={theme.typography.fontSizes.sm}
+          weight={isActive ? 'medium' : 'regular'}>
           {service?.name ?? ''}
         </Text>
       </View>
@@ -71,7 +74,7 @@ const styles = StyleSheet.create({
   checkboxContainer: {
     width: 24,
     height: 24,
-    borderWidth: 2,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.radii.xs,
@@ -79,7 +82,9 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flex: 1,
-    gap: theme.spacing.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
   },
   pricingContainer: {
     gap: theme.spacing.xs,

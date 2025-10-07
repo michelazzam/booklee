@@ -67,14 +67,14 @@ const TabMenu = ({ tabs, activeTab, onTabChange }: TabMenuProps) => {
 
   if (tabs.length === 1) {
     return (
-      <View>
+      <View style={{ gap: theme.spacing['3xl'] }}>
         <View style={{ gap: theme.spacing.md }}>
           <Text style={styles.tabText}>{tabs[0].tabName.name}</Text>
 
           <View style={[styles.singleTabUnderline]} />
         </View>
 
-        {tabs[0].tabChildren}
+        <View>{tabs[0].tabChildren}</View>
       </View>
     );
   }
@@ -138,18 +138,18 @@ const styles = StyleSheet.create({
   },
   underline: {
     bottom: 0,
-    height: 3,
+    height: 2,
     position: 'absolute',
     borderRadius: theme.radii.xs,
     backgroundColor: theme.colors.darkText[100],
   },
   singleTabUnderline: {
-    height: 3,
+    height: 2,
     borderRadius: theme.radii.xs,
     backgroundColor: theme.colors.darkText[100],
   },
   animatedContent: {
     flex: 1,
-    paddingTop: theme.spacing.lg,
+    paddingTop: theme.spacing['3xl'],
   },
 });

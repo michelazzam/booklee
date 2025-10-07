@@ -1,10 +1,10 @@
-import { View, TouchableOpacity, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { View, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { StarIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants';
 
 import AnimatedProgressBar from './AnimatedProgressBar';
-import { Text, Icon } from '../../base';
+import { Text } from '../../base';
 
 type RatingData = {
   stars: number;
@@ -20,11 +20,10 @@ export type StarContainerData = {
 };
 type StarContainerProps = {
   data: StarContainerData;
-  onButtonPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
 };
 
-const StarContainer = ({ data, onButtonPress, containerStyle }: StarContainerProps) => {
+const StarContainer = ({ data, containerStyle }: StarContainerProps) => {
   const { averageRating, totalReviews, ratingData, name, location } = data;
 
   return (
@@ -66,12 +65,6 @@ const StarContainer = ({ data, onButtonPress, containerStyle }: StarContainerPro
           ))}
         </View>
       </View>
-
-      <TouchableOpacity style={styles.buttonContainer} activeOpacity={0.8} onPress={onButtonPress}>
-        <Icon name="pencil-outline" size={20} color={theme.colors.darkText[100]} />
-
-        <Text size={theme.typography.fontSizes.lg}>Write A Review</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -114,16 +107,5 @@ const styles = StyleSheet.create({
   countLabel: {
     minWidth: 20,
     textAlign: 'right',
-  },
-  buttonContainer: {
-    borderWidth: 2,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: theme.spacing.md,
-    justifyContent: 'center',
-    borderRadius: theme.radii.sm,
-    borderColor: theme.colors.border,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
   },
 });

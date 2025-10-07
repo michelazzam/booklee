@@ -5,14 +5,16 @@ import { apiClient } from '../axios/interceptor';
 import { withErrorCatch } from '../axios/error';
 
 import type {
+  RescheduleAppointmentResType,
+  RescheduleAppointmentReqType,
   CreateAppointmentReqType,
+  CancelAppointmentResType,
   CreateAppointmentResType,
+  CancelAppointmentReqType,
   UserAppointmentsResType,
   UserAppointmentsReqType,
   BookingDataResponse,
   AvailabilityResponse,
-  CancelAppointmentResType,
-  CancelAppointmentReqType,
 } from './types';
 
 /*** Create Appointment ***/
@@ -79,6 +81,26 @@ export const cancelAppointment = async (
 ): Promise<CancelAppointmentResType> => {
   const [response, error] = await withErrorCatch(
     apiClient.delete<CancelAppointmentResType>('/appointments', { data })
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response.data;
+};
+
+/*** Reschedule Appointment ***/
+export const rescheduleAppointment = async (
+  data: RescheduleAppointmentReqType
+): Promise<RescheduleAppointmentResType> => {
+  const [response, error] = await withErrorCatch(
+    apiClient.post<RescheduleAppointmentResType>('/appointments/reschedule', data)
   );
 
   if (error instanceof AxiosError) {

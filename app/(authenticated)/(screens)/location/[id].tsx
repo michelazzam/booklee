@@ -11,12 +11,12 @@ import {
 
 import { useAppSafeAreaInsets, useHandleFavorites } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
-import { StarIcon } from '~/src/assets/icons';
+import { BackIcon, HeartIcon, HeartIconFilled, StarIcon } from '~/src/assets/icons';
 
 import { ImageCarousel, TabMenu, LocationSplashImage } from '~/src/components/utils';
 import { Services } from '~/src/components/preview';
-import { Icon, Text } from '~/src/components/base';
 import { Button } from '~/src/components/buttons';
+import { Text } from '~/src/components/base';
 
 type SalonDetailPageProps = {
   id: string;
@@ -33,14 +33,10 @@ const SalonDetailPage = () => {
   const router = useRouter();
   const { top, bottom } = useAppSafeAreaInsets();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
+  const { isInFavorites, handleToggleFavorites } = useHandleFavorites(id);
   const { data: location, isLoading } = LocationServices.useGetLocationById(id || '');
   const { photos, name, address, category, rating, phone, tags, operatingHours, geo } =
     location || {};
-  const {
-    isInFavorites,
-    handleToggleFavorites,
-    isLoading: isLoadingFavorites,
-  } = useHandleFavorites(id);
 
   /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -57,7 +53,7 @@ const SalonDetailPage = () => {
       return 'Closed today';
     }
 
-    return `Open ${todayHours?.open} - ${todayHours?.close}`;
+    return `OPENS ${todayHours?.open} - ${todayHours?.close}`;
   }, [location]);
   const selectedServiceData = useMemo((): SelectedService[] => {
     if (!location?.locationServices) return [];
@@ -100,7 +96,7 @@ const SalonDetailPage = () => {
       <View style={{ gap: theme.spacing.md }}>
         <Text
           weight={'medium'}
-          size={theme.typography.fontSizes.md}
+          size={theme.typography.fontSizes.sm}
           style={{ textTransform: 'uppercase' }}>
           {category?.title}
         </Text>
@@ -146,20 +142,23 @@ const SalonDetailPage = () => {
 
     return aboutItemData.map(({ title, value, onPress }, index) => (
       <View
+        key={title}
         style={[
           styles.aboutItemContainer,
-          { borderBottomWidth: index === aboutItemData.length - 1 ? 0 : 1 },
-        ]}
-        key={title}>
-        <Text size={theme.typography.fontSizes.md} weight={'semiBold'}>
+          {
+            paddingTop: index !== 0 ? theme.spacing.xl : 0,
+            borderBottomWidth: index === aboutItemData.length - 1 ? 0 : 1,
+          },
+        ]}>
+        <Text size={theme.typography.fontSizes.md} weight={'medium'}>
           {title}
         </Text>
 
         {typeof value === 'string' && (
           <Text
             key={value}
-            weight={'medium'}
             onPress={onPress}
+            weight={'semiBold'}
             size={theme.typography.fontSizes.sm}
             style={{ textDecorationLine: 'underline' }}
             color={onPress ? theme.colors.primaryBlue[100] : theme.colors.darkText[100]}>
@@ -203,31 +202,26 @@ const SalonDetailPage = () => {
       <ScrollView
         bounces={false}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom * 2 }}>
-        <View>
-          <View style={[styles.headerComponent, { top }]}>
-            <Icon
-              size={32}
-              name="chevron-left"
-              onPress={() => router.back()}
-              color={theme.colors.white.DEFAULT}
-            />
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom, paddingTop: top }}>
+        <View style={styles.headerComponent}>
+          <TouchableOpacity activeOpacity={0.8} onPress={() => router.back()}>
+            <BackIcon width={28} height={28} color={theme.colors.darkText[100]} />
+          </TouchableOpacity>
 
-            <Icon
-              size={28}
-              color="#FFFFFF"
-              loading={isLoadingFavorites}
-              onPress={handleToggleFavorites}
-              name={isInFavorites ? 'heart' : 'heart-outline'}
-            />
-          </View>
-
-          <ImageCarousel images={photos || []} />
+          <TouchableOpacity activeOpacity={0.8} onPress={handleToggleFavorites}>
+            {isInFavorites ? (
+              <HeartIconFilled width={28} height={28} color={theme.colors.darkText[100]} />
+            ) : (
+              <HeartIcon width={28} height={28} color={theme.colors.darkText[100]} />
+            )}
+          </TouchableOpacity>
         </View>
+
+        <ImageCarousel images={photos || []} />
 
         <View style={styles.storeContentContainer}>
           <View style={{ gap: theme.spacing.sm }}>
-            <Text size={theme.typography.fontSizes.xl} weight={'bold'}>
+            <Text size={theme.typography.fontSizes['2xl']} weight={'semiBold'}>
               {name}
             </Text>
 
@@ -238,14 +232,14 @@ const SalonDetailPage = () => {
                 onPress={() => {
                   router.navigate({
                     params: { id },
-                    pathname: '/(authenticated)/(screens)/location/rating',
+                    pathname: '/(authenticated)/(screens)/location/reviews',
                   });
                 }}>
                 <StarIcon width={18} height={18} />
 
                 <Text
                   weight={'bold'}
-                  size={theme.typography.fontSizes.sm}
+                  size={theme.typography.fontSizes.xs}
                   style={{ textDecorationLine: 'underline' }}>
                   {rating}
                 </Text>
@@ -256,7 +250,7 @@ const SalonDetailPage = () => {
           </View>
 
           <View style={{ gap: theme.spacing.sm }}>
-            <Text size={theme.typography.fontSizes.md}>{address}</Text>
+            <Text size={theme.typography.fontSizes.sm}>{address}</Text>
 
             {tags && tags.length > 0 && (
               <View style={styles.tagContainer}>
@@ -281,7 +275,7 @@ const SalonDetailPage = () => {
           entering={FadeIn}
           style={[styles.bookingBar, { bottom: bottom }]}>
           <View style={styles.bookingInfo}>
-            <Text size={theme.typography.fontSizes.md} weight="bold">
+            <Text size={theme.typography.fontSizes.xs} weight="bold">
               Starting $
               {selectedServiceData.reduce((total, service) => {
                 if (service.priceType === 'fixed') return total + service.price;
@@ -290,7 +284,7 @@ const SalonDetailPage = () => {
               }, 0)}
             </Text>
 
-            <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+            <Text size={theme.typography.fontSizes.xs} color={theme.colors.darkText['50']}>
               {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
             </Text>
           </View>
@@ -306,10 +300,9 @@ export default SalonDetailPage;
 
 const styles = StyleSheet.create({
   headerComponent: {
-    zIndex: 2,
-    width: '100%',
-    position: 'absolute',
+    height: 62,
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.lg,
   },
@@ -342,10 +335,10 @@ const styles = StyleSheet.create({
   },
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
     gap: theme.spacing.md,
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.lg,
   },
   infoRow: {
     alignItems: 'center',
@@ -368,7 +361,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
     alignItems: 'flex-start',
     paddingVertical: theme.spacing.xl,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: theme.colors.lightText + '50',
   },
   operatingHoursContainer: {
     flexDirection: 'row',

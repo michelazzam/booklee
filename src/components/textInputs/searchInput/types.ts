@@ -9,7 +9,10 @@ export type SearchInputProps = {
   placeholder?: string;
   onFocus?: () => void;
   onPress?: () => void;
+  icon?: React.ReactNode;
+  onIconPress?: () => void;
   containerStyle?: ViewStyle;
+  placeholderTextColor?: string;
   onSearch?: (query: string) => void;
 };
 

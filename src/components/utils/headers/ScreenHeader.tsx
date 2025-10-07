@@ -16,11 +16,13 @@ const ScreenHeader = ({ leading, title, trailing }: ScreenHeaderProps) => {
   const { top } = useAppSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { paddingTop: top }]}>
+    <View style={[styles.container, { paddingTop: top, height: 62 + top }]}>
       {leading}
+
       <Text size={theme.typography.fontSizes.lg} weight="bold" color={theme.colors.white.DEFAULT}>
         {title}
       </Text>
+
       {trailing}
     </View>
   );
@@ -30,10 +32,10 @@ export default ScreenHeader;
 
 const styles = StyleSheet.create({
   container: {
+    filter: 'blur(0.5px)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingBottom: theme.spacing.lg,
     paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.primaryBlue[100],
   },

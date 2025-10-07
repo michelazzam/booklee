@@ -5,6 +5,8 @@ import { withErrorCatch } from '../axios/error';
 
 import type {
   GetLocationsCategorizedResType,
+  LocationRatingSubmitResType,
+  LocationRatingSubmitReqType,
   DeleteSearchHistoryResType,
   GetSearchHistoryResType,
   GetLocationByIdResType,
@@ -14,8 +16,6 @@ import type {
   GetLocationsResType,
   SearchReqType,
   SearchResType,
-  LocationRatingSubmitResType,
-  LocationRatingSubmitReqType,
 } from './types';
 
 export const DEFAULT_LOCATION_FIELDS = 'rating,price,geo,_id,slug,name,logo,city,tags,photos';
@@ -34,33 +34,6 @@ export const getLocationsCategoriesApi = async (filters?: GetLocationsReqType) =
   const [response, error] = await withErrorCatch(
     apiClient.get<GetLocationsCategorizedResType>(url)
   );
-
-  if (error instanceof AxiosError) {
-    throw {
-      ...error.response?.data,
-      status: error.response?.status,
-    };
-  } else if (error) {
-    throw error;
-  }
-  return response?.data;
-};
-
-/*** API for get locations by category with pagination ***/
-export const getLocationsByCategoryApi = async (
-  categorySlug: string,
-  page: number,
-  filters?: GetLocationsReqType
-) => {
-  let url = `locations?page=${page}&category=${categorySlug}&fields=${DEFAULT_LOCATION_FIELDS}`;
-
-  if (filters) {
-    url += `&${Object.entries(filters)
-      .map(([key, value]) => `${key}=${value}`)
-      .join('&')}`;
-  }
-
-  const [response, error] = await withErrorCatch(apiClient.get<GetLocationsResType>(url));
 
   if (error instanceof AxiosError) {
     throw {

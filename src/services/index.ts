@@ -7,6 +7,7 @@ export { AuthServices } from './auth/hooks';
 export { UserServices } from './user/hooks';
 export { AppointmentServices } from './appointments/hooks';
 export { DashboardServices } from './dashboard/hooks';
+export { AnalyticsServices } from './analytics/hooks';
 
 /*** Types ***/
 export type { ResErrorType } from './axios/types';
@@ -42,6 +43,8 @@ export type {
   UserType,
   GetUserLocationsResType,
   UserLocationItemType,
+  UserLocationEmployeeType,
+  UserLocationDataType,
 } from './user/types';
 export type {
   CreateAppointmentReqType,
@@ -61,3 +64,10 @@ export type {
   GetAppointmentsReqType,
   GetAppointmentsResType,
 } from './dashboard/types';
+export type {
+  AnalyticsPeriod,
+  AnalyticsSeriesItem,
+  AnalyticsServiceItem,
+  GetAnalyticsReqType,
+  GetAnalyticsResType,
+} from './analytics/types';

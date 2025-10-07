@@ -53,7 +53,7 @@ const toastConfig = {
 
 const Navigation = () => {
   /*** Constants ***/
-  const { isInitialized } = useUserProvider();
+  const { isInitialized, setBusinessMode } = useUserProvider();
   const { isFetched: isUserFetched } = AuthServices.useGetMe();
   const { isAuthenticated, isLoading: isAuthLoading } = AuthServices.useGetBetterAuthUser();
   const [fontsLoaded] = useFonts({
@@ -88,9 +88,10 @@ const Navigation = () => {
     }
 
     if (isAppReady) {
+      setBusinessMode(false);
       SplashScreen.hideAsync();
     }
-  }, [isAppReady]);
+  }, [isAppReady, setBusinessMode]);
 
   if (!appInitialized) {
     return null;

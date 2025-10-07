@@ -89,7 +89,7 @@ export default ImageCarousel;
 
 const styles = StyleSheet.create({
   container: {
-    height: 450,
+    height: 250,
     width: '100%',
   },
   imagePlaceholder: {

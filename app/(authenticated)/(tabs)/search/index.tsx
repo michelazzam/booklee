@@ -137,7 +137,8 @@ const MapScreen = () => {
       <View style={[styles.headerContainer, { top }]}>
         <View style={styles.searchContainer}>
           <SearchInput
-            placeholder="Search for a location"
+            placeholder="Store, location, or service"
+            placeholderTextColor={theme.colors.lightText}
             containerStyle={{ backgroundColor: theme.colors.white.DEFAULT }}
             onPress={() => router.navigate('/(authenticated)/(tabs)/search/locationSearch')}
           />

@@ -1,12 +1,11 @@
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import { format } from 'date-fns';
 
 import { type SearchHistoryType } from '~/src/services';
 
 import { BuildingIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants/theme';
 
-import { Icon, Text } from '../base';
+import { Text } from '../base';
 
 type SearchHistoryProps = {
   onPress: () => void;
@@ -14,7 +13,7 @@ type SearchHistoryProps = {
 };
 const SearchHistory = ({ data, onPress }: SearchHistoryProps) => {
   /*** Constants ***/
-  const { query, at } = data;
+  const { query } = data;
 
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={styles.container}>
@@ -25,22 +24,13 @@ const SearchHistory = ({ data, onPress }: SearchHistoryProps) => {
 
         <View>
           <Text
-            weight="semiBold"
             numberOfLines={1}
-            size={theme.typography.fontSizes.md}
+            size={theme.typography.fontSizes.sm}
             style={{ textTransform: 'capitalize' }}>
             {query}
           </Text>
-
-          {at && (
-            <Text color={theme.colors.lightText} weight="regular">
-              {format(at, 'MMM d, yyyy')}
-            </Text>
-          )}
         </View>
       </View>
-
-      <Icon name="magnify" size={24} color={theme.colors.lightText} />
     </TouchableOpacity>
   );
 };

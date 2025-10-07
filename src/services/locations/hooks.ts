@@ -2,7 +2,6 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 
 import {
   getLocationsCategoriesApi,
-  getLocationsByCategoryApi,
   submitLocationRatingApi,
   deleteSearchHistoryApi,
   getLocationRatingsApi,
@@ -23,50 +22,20 @@ import type {
   LocationRatingResType,
   LocationRatingReqType,
   DetailedLocationType,
+  LocationCategoryType,
   GetLocationsReqType,
   GetLocationsResType,
   SearchHistoryType,
   SearchReqType,
   SearchResType,
   LocationType,
-  CategoryType,
 } from './types';
 
 const useGetLocationsCategories = (filters?: GetLocationsReqType) => {
-  return useQuery<GetLocationsCategorizedResType, ResErrorType, CategoryType[]>({
+  return useQuery<GetLocationsCategorizedResType, ResErrorType, LocationCategoryType[]>({
+    select: ({ categories }) => categories,
     queryKey: ['getLocationsCategories', filters],
     queryFn: () => getLocationsCategoriesApi(filters),
-    select: ({ categories }) =>
-      categories.map((category) => {
-        const { locations, ...rest } = category;
-        return rest;
-      }),
-  });
-};
-
-const useGetLocationsByCategory = (categorySlug: string, filters?: GetLocationsReqType) => {
-  return useInfiniteQuery<GetLocationsResType, ResErrorType, LocationType[]>({
-    initialPageParam: 1,
-    refetchOnMount: false,
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
-    refetchIntervalInBackground: false,
-    queryKey: ['getLocationsByCategory', categorySlug, filters],
-    select: ({ pages }) => pages.flatMap((page) => page.locations),
-    queryFn: ({ pageParam = 1 }) =>
-      getLocationsByCategoryApi(categorySlug, pageParam as number, filters),
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage && lastPage.locations.length > 0) {
-        return allPages.length + 1;
-      }
-      return undefined;
-    },
-    getPreviousPageParam: (_, allPages) => {
-      if (allPages.length > 1) {
-        return allPages.length - 1;
-      }
-      return undefined;
-    },
   });
 };
 
@@ -98,6 +67,10 @@ const useGetLocations = (filters?: GetLocationsReqType) => {
 const useGetLocationById = (id: string) => {
   return useQuery<GetLocationByIdResType, ResErrorType, DetailedLocationType>({
     enabled: !!id,
+    gcTime: 3 * 60 * 1000,
+    refetchOnMount: false,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
     queryKey: ['getLocationById', id],
     select: ({ location }) => location,
     queryFn: () => getLocationByIdApi(id),
@@ -151,7 +124,6 @@ const useSubmitLocationRating = () => {
 
 export const LocationServices = {
   useGetLocationsCategories,
-  useGetLocationsByCategory,
   useSubmitLocationRating,
   useDeleteSearchHistory,
   useGetLocationRatings,

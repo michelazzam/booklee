@@ -5,6 +5,7 @@ import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import { type GetLocationsReqType } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '../../hooks/useAppSafeAreaInsets';
+import { MapMarkerIcon } from '~/src/assets/icons';
 import { theme } from '../../constants/theme';
 
 import ModalWrapper, { type ModalWrapperRef } from './ModalWrapper';
@@ -83,22 +84,31 @@ const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
     return (
       <ModalWrapper
         ref={modalRef}
-        title="FILTER"
         snapPoints={['90%']}
         onDismiss={handleClose}
         disable={isSliderActive}
-        contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
-        trailingIcon={
+        contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
+        <View style={styles.header}>
+          <View style={{ width: 24 }} />
+
+          <Text
+            weight="medium"
+            color={theme.colors.darkText[100]}
+            size={theme.typography.fontSizes.sm}>
+            FILTER
+          </Text>
+
           <Icon name="close" size={24} color={theme.colors.darkText[100]} onPress={handleClose} />
-        }>
+        </View>
+
         <View style={styles.filterContainer}>
           <View style={{ gap: theme.spacing.md }}>
-            <Text weight="bold" color={theme.colors.darkText[100]}>
+            <Text color={theme.colors.darkText[100]} size={theme.typography.fontSizes.xs}>
               Location
             </Text>
 
             <View style={styles.locationInputContainer}>
-              <Icon name="map-marker" size={24} color={theme.colors.lightText} />
+              <MapMarkerIcon />
 
               <TextInput
                 value={filters.city}
@@ -111,7 +121,7 @@ const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
           </View>
 
           <View style={{ gap: theme.spacing.md }}>
-            <Text weight="bold" color={theme.colors.darkText[100]}>
+            <Text color={theme.colors.darkText[100]} size={theme.typography.fontSizes.xs}>
               Price Range ($)
             </Text>
 
@@ -136,11 +146,11 @@ const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
               />
 
               <View style={styles.sliderValueContainer}>
-                <Text weight="medium" color={theme.colors.darkText[100]}>
+                <Text color={theme.colors.darkText[100]} size={theme.typography.fontSizes.xs}>
                   ${filters.price_min || 0}
                 </Text>
 
-                <Text weight="medium" color={theme.colors.darkText[100]}>
+                <Text color={theme.colors.darkText[100]} size={theme.typography.fontSizes.xs}>
                   ${filters.price_max || 1000}
                 </Text>
               </View>
@@ -148,7 +158,7 @@ const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
           </View>
 
           <View style={{ gap: theme.spacing.md }}>
-            <Text weight="bold" color={theme.colors.darkText[100]}>
+            <Text color={theme.colors.darkText[100]} size={theme.typography.fontSizes.xs}>
               Minimum Rating
             </Text>
 
@@ -170,14 +180,14 @@ const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
                 onValuesChange={(values) => setFilters({ ...filters, rating_min: values[0] })}
               />
 
-              <Text weight="medium" color={theme.colors.darkText[100]}>
+              <Text color={theme.colors.darkText[100]} size={theme.typography.fontSizes.xs}>
                 {Math.round((filters.rating_min || 0) * 10) / 10}
               </Text>
             </View>
           </View>
 
           <View style={{ gap: theme.spacing.md }}>
-            <Text weight="bold" color={theme.colors.darkText[100]}>
+            <Text color={theme.colors.darkText[100]} size={theme.typography.fontSizes.xs}>
               Maximum Distance (km)
             </Text>
 
@@ -199,7 +209,7 @@ const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
                 onValuesChange={(values) => setFilters({ ...filters, distance: values[0] })}
               />
 
-              <Text weight="medium" color={theme.colors.darkText[100]}>
+              <Text color={theme.colors.darkText[100]} size={theme.typography.fontSizes.xs}>
                 {Math.round(filters.distance || 30)} km
               </Text>
             </View>
@@ -227,13 +237,22 @@ export default FilterModal;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: theme.spacing.md,
-    paddingHorizontal: theme.spacing.xl,
+    gap: 36,
     backgroundColor: theme.colors.white.DEFAULT,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    paddingBottom: theme.spacing.md,
+    justifyContent: 'space-between',
+    borderColor: theme.colors.border,
+    paddingHorizontal: theme.spacing.xl,
   },
   filterContainer: {
     flex: 1,
     gap: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xl,
   },
   locationInputContainer: {
     flex: 1,
@@ -249,6 +268,7 @@ const styles = StyleSheet.create({
   },
   locationInput: {
     flex: 1,
+    fontWeight: '400',
     paddingBottom: theme.spacing.xs,
     color: theme.colors.darkText[100],
     ...theme.typography.textVariants.bodyPrimaryRegular,
@@ -259,19 +279,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   selectedTrack: {
+    height: 3,
     backgroundColor: theme.colors.darkText[100],
-    height: 4,
   },
   unselectedTrack: {
-    height: 4,
-    backgroundColor: theme.colors.border,
+    height: 1,
+    backgroundColor: theme.colors.darkText[100],
   },
   markerStyle: {
     width: 20,
     height: 20,
-    borderWidth: 2,
     borderRadius: 10,
-    borderColor: theme.colors.white.DEFAULT,
     backgroundColor: theme.colors.darkText[100],
   },
   pressedMarkerStyle: {
@@ -286,5 +304,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.md,
+    paddingHorizontal: theme.spacing.xl,
   },
 });

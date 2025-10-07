@@ -10,21 +10,17 @@ import { Text } from '../../base';
 type DayProps = {
   date: DateData;
   isSelected: boolean;
+  isDisabled: boolean;
   onPress: (date: any) => void;
 };
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
-const Day = ({ date, isSelected, onPress }: DayProps) => {
+const Day = ({ date, isSelected, onPress, isDisabled }: DayProps) => {
   /*** Memoization ***/
   const isToday = useMemo(() => {
     const today = new Date();
     const currentDate = new Date(date.dateString);
     return today.toDateString() === currentDate.toDateString();
-  }, [date]);
-  const isPast = useMemo(() => {
-    const today = new Date();
-    const currentDate = new Date(date.dateString);
-    return currentDate < today;
   }, [date]);
 
   /*** Animation ***/
@@ -43,10 +39,10 @@ const Day = ({ date, isSelected, onPress }: DayProps) => {
 
   return (
     <AnimatedTouchableOpacity
-      disabled={isPast}
+      disabled={isDisabled}
       activeOpacity={0.7}
       onPress={() => onPress(date)}
-      style={[styles.dayContent, animatedStyle, isPast && { opacity: 0.5 }]}>
+      style={[styles.dayContent, animatedStyle, isDisabled && { opacity: 0.5 }]}>
       <Text
         weight="medium"
         size={theme.typography.fontSizes.md}

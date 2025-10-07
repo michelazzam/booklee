@@ -27,6 +27,9 @@ export { default as DoneStepIcon } from './DoneStepIcon';
 export { default as CurrentStepIcon } from './CurrentStepIcon';
 export { default as DashboardIcon } from './DashboardIcon';
 export { default as AnalyticsIcon } from './AnalyticsIcon';
+export { default as HeartIcon } from './HeartIcon.svg';
+export { default as HeartIconFilled } from './HeartIconFilled.svg';
 export { default as AddAppointmentIcon } from './AddAppointmentIcon';
-
+export { default as BackIcon } from './backIcon.svg';
+export { default as MapMarkerIcon } from './mapMarkerIcon.svg';
 export { default as CheckCircleIcon } from './checkCircleIcon.svg';

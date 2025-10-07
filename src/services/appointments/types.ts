@@ -191,3 +191,12 @@ export type CancelAppointmentReqType = {
 export type CancelAppointmentResType = {
   ok: boolean;
 };
+
+/*** Reschedule Appointment Types ***/
+export type RescheduleAppointmentReqType = {
+  startAt: string;
+  appointmentId: string;
+};
+export type RescheduleAppointmentResType = {
+  ok: boolean;
+};

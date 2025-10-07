@@ -16,13 +16,13 @@ const getAppName = () => {
   return 'Booklee';
 };
 const getAppUniqueIdentifier = () => {
-  if (appVariant === 'development') {
-    return 'app.booklee.dev';
-  }
+  // if (appVariant === 'development') {
+  //   return 'app.booklee.dev';
+  // }
 
-  if (appVariant === 'preview') {
-    return 'app.booklee.preview';
-  }
+  // if (appVariant === 'preview') {
+  //   return 'app.booklee.preview';
+  // }
 
   return 'app.booklee';
 };

@@ -10,7 +10,8 @@ import { theme } from '~/src/constants/theme';
 
 import { LocationCardSkeleton, SearchHistory, LocationCard } from '~/src/components/preview';
 import { SearchInput, type SearchInputRef } from '~/src/components/textInputs';
-import { Icon, Text } from '~/src/components/base';
+import { BackIcon } from '~/src/assets/icons';
+import { Text } from '~/src/components/base';
 
 const Search = () => {
   /*** Refs ***/
@@ -73,12 +74,20 @@ const Search = () => {
     return (
       <View style={styles.recentSearchesContainer}>
         <View style={styles.recentSearchesHeader}>
-          <Text color={theme.colors.darkText[100]} weight="medium">
+          <Text
+            weight="semiBold"
+            color={theme.colors.lightText}
+            size={theme.typography.fontSizes.xs}>
             Your Recent Searches
           </Text>
 
-          {!isDeletingSearchHistory && searchHistory?.length ? (
-            <Text weight="medium" color={theme.colors.lightText} onPress={handleClearSearchHistory}>
+          {!isDeletingSearchHistory ? (
+            <Text
+              weight="medium"
+              color={theme.colors.lightText}
+              onPress={handleClearSearchHistory}
+              size={theme.typography.fontSizes.xs}
+              style={{ textDecorationLine: 'underline' }}>
               Clear All
             </Text>
           ) : (
@@ -129,19 +138,16 @@ const Search = () => {
   return (
     <>
       <View style={[styles.headerContainer, { paddingTop: top }]}>
-        <Icon
-          size={24}
-          name="arrow-left"
-          onPress={() => router.back()}
-          color={theme.colors.darkText[100]}
-        />
-
         <SearchInput
+          autoFocus
           value={searchQuery}
+          icon={<BackIcon />}
           ref={searchInputRef}
           onSearch={handleSearch}
           onClear={handleClearSearchInput}
+          onIconPress={() => router.back()}
           placeholder="Store, location, or service"
+          placeholderTextColor={theme.colors.lightText}
         />
       </View>
 
@@ -150,6 +156,7 @@ const Search = () => {
         renderItem={RenderItem}
         onEndReachedThreshold={0.5}
         showsVerticalScrollIndicator={false}
+        style={{ marginTop: theme.spacing.xl }}
         ListEmptyComponent={RenderEmptyComponent}
         keyExtractor={(item, index) => item._id + index}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
