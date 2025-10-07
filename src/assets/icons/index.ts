@@ -33,3 +33,4 @@ export { default as AddAppointmentIcon } from './AddAppointmentIcon';
 export { default as BackIcon } from './backIcon.svg';
 export { default as MapMarkerIcon } from './mapMarkerIcon.svg';
 export { default as CheckCircleIcon } from './checkCircleIcon.svg';
+export { default as MapIcon } from './mapIcon.svg';
