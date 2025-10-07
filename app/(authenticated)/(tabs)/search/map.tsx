@@ -7,7 +7,7 @@ import * as Location from 'expo-location';
 import { LocationServices, type GetLocationsReqType, type CategoryType } from '~/src/services';
 
 import { useAppSafeAreaInsets, usePermissions } from '~/src/hooks';
-import { FilterIcon, MapIcon } from '~/src/assets/icons';
+import { FilterIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants/theme';
 
 import { SearchInput } from '~/src/components/textInputs';
