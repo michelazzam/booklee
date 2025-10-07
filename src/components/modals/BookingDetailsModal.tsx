@@ -77,7 +77,7 @@ const BookingDetailsModal = forwardRef<BookingDetailsModalRef, BookingDetailsMod
           label: 'Pending',
         },
       }),
-      [status]
+      []
     );
     const formattedTime = useMemo(() => {
       if (!startAt) return '';
