@@ -1,4 +1,5 @@
-import { useCallback, memo, useState } from 'react';
+import { useCallback, memo, useState, useEffect } from 'react';
+import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import {
   TouchableOpacity,
@@ -109,13 +110,49 @@ const CategorySection = memo(({ category }: { category: LocationCategoryType }) 
 });
 
 const HomePage = () => {
+  /*** States ***/
+  const [isRefetching, setIsRefetching] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(
+    undefined
+  );
+
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
-  const { data: categories, isLoading, refetch } = LocationServices.useGetLocationsCategories();
 
-  /*** States ***/
-  const [isRefetching, setIsRefetching] = useState(false);
+  const {
+    refetch,
+    isLoading,
+    data: categories,
+  } = LocationServices.useGetLocationsCategories({
+    lat: userLocation?.lat,
+    lng: userLocation?.lng,
+  });
+
+  useEffect(() => {
+    const getUserLocation = async () => {
+      try {
+        // Check if location permission is granted
+        const { status } = await Location.getForegroundPermissionsAsync();
+
+        if (status === 'granted') {
+          // Get the current location
+          const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+
+          setUserLocation({
+            lat: location.coords.latitude,
+            lng: location.coords.longitude,
+          });
+        }
+      } catch (error) {
+        console.error('Error getting user location:', error);
+      }
+    };
+
+    getUserLocation();
+  }, []);
 
   const handleRefresh = useCallback(() => {
     setIsRefetching(true);

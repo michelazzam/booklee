@@ -22,11 +22,15 @@ export const DEFAULT_LOCATION_FIELDS = 'rating,price,geo,_id,slug,name,logo,city
 
 /*** API for get locations categories ***/
 export const getLocationsCategoriesApi = async (filters?: GetLocationsReqType) => {
-  let url = `locations?page=1&fields=${DEFAULT_LOCATION_FIELDS}`;
+  const hasLocation = filters?.lat !== undefined && filters?.lng !== undefined;
+  const sortParam = hasLocation ? '&sort=distance' : '';
+
+  let url = `locations?page=1&limit=5&fields=${DEFAULT_LOCATION_FIELDS}${sortParam}`;
   const categoriesFilters = { ...filters, categories: true };
 
   if (categoriesFilters) {
     url += `&${Object.entries(categoriesFilters)
+      .filter(([_, value]) => value !== undefined && value !== null && value !== '')
       .map(([key, value]) => `${key}=${value}`)
       .join('&')}`;
   }
@@ -52,6 +56,7 @@ export const getLocationsApi = async (page: number, filters?: GetLocationsReqTyp
 
   if (filters) {
     url += `&${Object.entries(filters)
+      .filter(([_, value]) => value !== undefined && value !== null && value !== '')
       .map(([key, value]) => `${key}=${value}`)
       .join('&')}`;
   }
