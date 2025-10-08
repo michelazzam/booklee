@@ -2,7 +2,7 @@ import { View, StyleSheet, Image, FlatList, ActivityIndicator } from 'react-nati
 import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
 
-import { AppointmentServices, type UserAppointment } from '~/src/services';
+import { AppointmentServices, type UserAppointmentType } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
@@ -30,7 +30,9 @@ const PastBookingsPage = () => {
   });
 
   const RenderItem = useCallback(
-    ({ item }: { item: UserAppointment }) => <PastBookings data={item} onBookAgain={() => {}} />,
+    ({ item }: { item: UserAppointmentType }) => (
+      <PastBookings data={item} onBookAgain={() => {}} />
+    ),
     []
   );
   const RenderListEmptyComponent = useCallback(() => {

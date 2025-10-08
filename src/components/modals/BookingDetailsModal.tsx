@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { format } from 'date-fns';
 
-import { type UserAppointment } from '~/src/services';
+import { type UserAppointmentType } from '~/src/services';
 
 import { StarIcon, CheckCircleIcon } from '~/src/assets/icons';
 import { useAppSafeAreaInsets } from '~/src/hooks';
@@ -13,12 +13,12 @@ import ModalWrapper, { type ModalWrapperRef } from './ModalWrapper';
 import { Text, Icon } from '~/src/components/base';
 
 type BookingDetailsModalProps = {
-  appointment?: UserAppointment | null;
+  appointment?: UserAppointmentType | null;
 };
 
 export type BookingDetailsModalRef = {
   dismiss: () => void;
-  present: (appointment: UserAppointment) => void;
+  present: (appointment: UserAppointmentType) => void;
 };
 
 const BookingDetailsModal = forwardRef<BookingDetailsModalRef, BookingDetailsModalProps>(
@@ -27,7 +27,7 @@ const BookingDetailsModal = forwardRef<BookingDetailsModalRef, BookingDetailsMod
     const modalRef = useRef<ModalWrapperRef>(null);
 
     /*** States ***/
-    const [currentAppointment, setCurrentAppointment] = useState<UserAppointment | null>(null);
+    const [currentAppointment, setCurrentAppointment] = useState<UserAppointmentType | null>(null);
 
     /*** Constants ***/
     const { bottom } = useAppSafeAreaInsets();
@@ -44,7 +44,7 @@ const BookingDetailsModal = forwardRef<BookingDetailsModalRef, BookingDetailsMod
     } = currentAppointment || {};
 
     useImperativeHandle(ref, () => ({
-      present: (appointment: UserAppointment) => {
+      present: (appointment: UserAppointmentType) => {
         setCurrentAppointment(appointment);
         modalRef.current?.present();
       },

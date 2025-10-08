@@ -7,6 +7,8 @@ import type {
   GetLocationsCategorizedResType,
   LocationRatingSubmitResType,
   LocationRatingSubmitReqType,
+  LocationRatingDeleteResType,
+  LocationRatingDeleteReqType,
   DeleteSearchHistoryResType,
   GetSearchHistoryResType,
   GetLocationByIdResType,
@@ -174,6 +176,24 @@ export const getLocationRatingsApi = async (filters?: LocationRatingReqType) => 
 export const submitLocationRatingApi = async (params: LocationRatingSubmitReqType) => {
   const [response, error] = await withErrorCatch(
     apiClient.post<LocationRatingSubmitResType>('reviews', params)
+  );
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API to delete location rating ***/
+export const deleteLocationRatingApi = async (params?: LocationRatingDeleteReqType) => {
+  const [response, error] = await withErrorCatch(
+    apiClient.post<LocationRatingDeleteResType>('reviews/cancel', params)
   );
 
   if (error instanceof AxiosError) {

@@ -3,6 +3,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import {
   getLocationsCategoriesApi,
   submitLocationRatingApi,
+  deleteLocationRatingApi,
   deleteSearchHistoryApi,
   getLocationRatingsApi,
   getSearchHistoryApi,
@@ -15,7 +16,9 @@ import type { ResErrorType } from '../axios/types';
 import type {
   GetLocationsCategorizedResType,
   LocationRatingSubmitResType,
+  LocationRatingDeleteReqType,
   LocationRatingSubmitReqType,
+  LocationRatingDeleteResType,
   DeleteSearchHistoryResType,
   GetSearchHistoryResType,
   GetLocationByIdResType,
@@ -117,14 +120,37 @@ const useGetLocationRatings = (filters?: LocationRatingReqType) => {
 };
 
 const useSubmitLocationRating = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
   return useMutation<LocationRatingSubmitResType, ResErrorType, LocationRatingSubmitReqType>({
     mutationFn: (params) => submitLocationRatingApi(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['getUserAppointments', { needsReview: true }] });
+    },
+  });
+};
+
+const useDeleteLocationRating = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    LocationRatingDeleteResType,
+    ResErrorType,
+    LocationRatingDeleteReqType | undefined
+  >({
+    mutationFn: (params) => deleteLocationRatingApi(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['getUserAppointments', { needsReview: true }] });
+    },
   });
 };
 
 export const LocationServices = {
   useGetLocationsCategories,
   useSubmitLocationRating,
+  useDeleteLocationRating,
   useDeleteSearchHistory,
   useGetLocationRatings,
   useGetSearchHistory,

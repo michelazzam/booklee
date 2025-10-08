@@ -164,6 +164,8 @@ export type LocationRatingResType = {
   reviews: LocationReviewType[];
   locations: LocationReviewLocationType[];
 };
+
+/*** Location Rating Submit API Types ***/
 export type LocationRatingSubmitReqType = {
   userId: string;
   rating: number;
@@ -171,5 +173,13 @@ export type LocationRatingSubmitReqType = {
   appointmentId: string;
 };
 export type LocationRatingSubmitResType = {
+  ok: boolean;
+};
+
+/*** Location Rating Delete API Types ***/
+export type LocationRatingDeleteReqType = {
+  appointmentId?: string;
+};
+export type LocationRatingDeleteResType = {
   ok: boolean;
 };

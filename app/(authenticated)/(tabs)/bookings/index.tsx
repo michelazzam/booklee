@@ -1,17 +1,21 @@
 import { View, StyleSheet, Image, FlatList, ActivityIndicator } from 'react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 
-import { AppointmentServices, type UserAppointment } from '~/src/services';
+import { AppointmentServices, type UserAppointmentType } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
 
 import { Booking, UpcomingBookingsSkeleton } from '~/src/components/preview';
+import { RatingModal, type RatingModalRef } from '~/src/components/modals';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
 const UpcomingBookingsPage = () => {
+  /*** Refs ***/
+  const ratingModalRef = useRef<RatingModalRef>(null);
+
   /*** States ***/
   const [isRefetching, setIsRefetching] = useState(false);
 
@@ -32,8 +36,14 @@ const UpcomingBookingsPage = () => {
     upcoming: true,
   });
 
+  useEffect(() => {
+    if (needsReviewAppointments && needsReviewAppointments.length > 0) {
+      ratingModalRef.current?.present();
+    }
+  }, [needsReviewAppointments]);
+
   const RenderItem = useCallback(
-    ({ item }: { item: UserAppointment }) => <Booking data={item} />,
+    ({ item }: { item: UserAppointmentType }) => <Booking data={item} />,
     []
   );
   const RenderListEmptyComponent = useCallback(() => {
@@ -88,19 +98,23 @@ const UpcomingBookingsPage = () => {
   }, [refetch]);
 
   return (
-    <FlatList
-      data={userAppointments}
-      renderItem={RenderItem}
-      onRefresh={handleRefresh}
-      refreshing={isRefetching}
-      onEndReachedThreshold={0.5}
-      onEndReached={handleEndReached}
-      ListFooterComponent={RenderFooter}
-      showsVerticalScrollIndicator={false}
-      ListEmptyComponent={RenderListEmptyComponent}
-      keyExtractor={(_, index) => index.toString()}
-      contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
-    />
+    <>
+      <FlatList
+        data={userAppointments}
+        renderItem={RenderItem}
+        onRefresh={handleRefresh}
+        refreshing={isRefetching}
+        onEndReachedThreshold={0.5}
+        onEndReached={handleEndReached}
+        ListFooterComponent={RenderFooter}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={RenderListEmptyComponent}
+        keyExtractor={(_, index) => index.toString()}
+        contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
+      />
+
+      <RatingModal ref={ratingModalRef} appointments={needsReviewAppointments || []} />
+    </>
   );
 };
 

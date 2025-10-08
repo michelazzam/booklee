@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useMemo, useRef } from 'react';
 import { formatDate } from 'date-fns';
 
-import { type UserAppointment } from '~/src/services';
+import { type UserAppointmentType } from '~/src/services';
 
 import { CheckCircleIcon, AppLogo, StarIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants';
@@ -13,7 +13,7 @@ import { Text } from '~/src/components/base';
 import { Image } from 'expo-image';
 
 type PastBookingsProps = {
-  data: UserAppointment;
+  data: UserAppointmentType;
   onBookAgain: () => void;
 };
 
