@@ -34,6 +34,9 @@ export type {
   SearchHistoryType,
   DetailedLocationType,
   LocationType,
+  LocationRatingResType,
+  LocationReviewType,
+  LocationRatingSortType,
 } from './locations/types';
 export type {
   UpdateUserReqType,

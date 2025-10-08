@@ -1,5 +1,5 @@
 import { View, StyleSheet, TouchableOpacity, type ViewStyle } from 'react-native';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -13,16 +13,16 @@ import { theme } from '~/src/constants';
 import { Text, Icon } from '~/src/components/base';
 import DropdownItem from './item';
 
-export type DropDownItem = {
+export type DropDownItem<T = any> = {
   label: string;
-  value: string;
+  value: T;
 };
 
 type DropDownProps = {
   disabled?: boolean;
   placeholder?: string;
   items: DropDownItem[];
-  selectedValue?: string;
+  selectedValue?: any;
   width?: ViewStyle['width'];
   containerHeight?: ViewStyle['height'];
   onSelect: (item: DropDownItem) => void;
@@ -41,6 +41,23 @@ const DropDown = ({
   /***** States *****/
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<DropDownItem | null>(null);
+
+  /***** Effects *****/
+  useEffect(() => {
+    if (selectedValue !== undefined && selectedValue !== null) {
+      const found = items.find((item) => {
+        if (typeof item.value === 'object' && item.value !== null) {
+          if (typeof selectedValue === 'object' && selectedValue !== null) {
+            return JSON.stringify(item.value) === JSON.stringify(selectedValue);
+          }
+          return false;
+        }
+        return item.value === selectedValue;
+      });
+
+      setSelectedItem(found || null);
+    }
+  }, [selectedValue, items]);
 
   /***** Memoization *****/
   const placeHolderColor = useMemo(
@@ -124,6 +141,7 @@ export default DropDown;
 const styles = StyleSheet.create({
   container: {
     zIndex: 1000,
+    minWidth: 160,
     position: 'relative',
   },
   trigger: {

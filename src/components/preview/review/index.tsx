@@ -1,36 +1,37 @@
 import { View, StyleSheet } from 'react-native';
 
+import { LocationReviewType } from '~/src/services';
 import { StarIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants';
 
 import { Text } from '~/src/components/base';
 
 type ReviewProps = {
-  data: any;
+  data: LocationReviewType;
 };
 
 const Review = ({ data }: ReviewProps) => {
   /***** Constants *****/
-  const { name, rating, review } = data;
+  const { location, rating, message } = data;
 
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Text size={theme.typography.fontSizes.sm} weight="bold">
-          {name}
+          {location.name}
         </Text>
 
         <View style={styles.ratingContainer}>
           <StarIcon />
 
           <Text size={theme.typography.fontSizes.xs} weight="bold">
-            {rating}
+            {rating.toFixed(1)}
           </Text>
         </View>
       </View>
 
       <Text size={theme.typography.fontSizes.sm} color={theme.colors.lightText}>
-        {review}
+        {message}
       </Text>
     </View>
   );

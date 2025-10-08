@@ -12,7 +12,7 @@ import { LocationServices, type UserAppointmentType, UserServices } from '~/src/
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import { Rating, type RatingDataType } from '~/src/components/preview';
+import Rating, { type RatingDataType } from '~/src/components/preview/review/rating';
 import { Icon, Text } from '~/src/components/base';
 
 type RatingModalProps = {

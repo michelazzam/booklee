@@ -151,10 +151,14 @@ export type LocationReviewType = {
   location: LocationReviewLocationType;
   organization: LocationReviewLocationType;
 };
-export type LocationRatingReqType = {
+export type LocationRatingSortType = {
+  dir: 'asc' | 'desc';
+  sort: 'date' | 'value';
+};
+export type LocationRatingReqType = LocationRatingSortType & {
   limit?: number;
-  countOnly?: boolean;
   locationId?: string;
+  countOnly?: boolean;
 };
 export type LocationRatingResType = {
   ok: boolean;

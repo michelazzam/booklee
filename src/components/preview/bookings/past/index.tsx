@@ -41,6 +41,11 @@ const PastBookings = ({ data, onBookAgain }: PastBookingsProps) => {
           color: theme.colors.primaryBlue[100],
           backgroundColor: theme.colors.primaryBlue[10],
         };
+      case 'pending':
+        return {
+          color: theme.colors.orange[100],
+          backgroundColor: theme.colors.orange[10],
+        };
       default:
         return {
           color: theme.colors.lightText,

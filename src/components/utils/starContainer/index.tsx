@@ -1,4 +1,7 @@
 import { View, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { useMemo } from 'react';
+
+import { LocationRatingResType } from '~/src/services';
 
 import { StarIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants';
@@ -6,35 +9,54 @@ import { theme } from '~/src/constants';
 import AnimatedProgressBar from './AnimatedProgressBar';
 import { Text } from '../../base';
 
-type RatingData = {
-  stars: number;
-  count: number;
-  percentage: number;
-};
-export type StarContainerData = {
-  name: string;
-  location: string;
-  totalReviews: number;
-  averageRating: number;
-  ratingData: RatingData[];
-};
 type StarContainerProps = {
-  data: StarContainerData;
+  data: LocationRatingResType;
   containerStyle?: StyleProp<ViewStyle>;
 };
 
 const StarContainer = ({ data, containerStyle }: StarContainerProps) => {
-  const { averageRating, totalReviews, ratingData, name, location } = data;
+  /*** Constants ***/
+  const { count = 0, reviews = [], locations = [] } = data || {};
+
+  /*** Memoization ***/
+  const ratingData = useMemo(() => {
+    const ratingCounts: Record<number, number> = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    };
+
+    reviews.forEach((review) => {
+      const rating = Math.round(review.rating);
+      if (rating >= 1 && rating <= 5) {
+        ratingCounts[rating]++;
+      }
+    });
+
+    const totalReviews = reviews.length || 1;
+    return [5, 4, 3, 2, 1].map((stars) => ({
+      stars,
+      count: ratingCounts[stars],
+      percentage: (ratingCounts[stars] / totalReviews) * 100,
+    }));
+  }, [reviews]);
+  const averageRating = useMemo(() => {
+    if (reviews.length === 0) return '0.0';
+    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+    return (sum / reviews.length).toFixed(1);
+  }, [reviews]);
 
   return (
     <View style={[styles.ratingContainer, containerStyle]}>
       <View style={{ gap: theme.spacing.xs }}>
         <Text size={theme.typography.fontSizes.lg} weight="bold">
-          {name}
+          {locations[0].name}
         </Text>
 
         <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText[100]}>
-          {location}
+          N/A
         </Text>
       </View>
 
@@ -49,7 +71,7 @@ const StarContainer = ({ data, containerStyle }: StarContainerProps) => {
           </View>
 
           <Text size={theme.typography.fontSizes.sm} color={theme.colors.lightText}>
-            ({totalReviews} reviews)
+            ({count} reviews)
           </Text>
         </View>
 
