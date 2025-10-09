@@ -1,9 +1,7 @@
 import { Redirect, Slot } from 'expo-router';
-import { useUserProvider } from '~/src/store';
 import { AuthServices } from '~/src/services';
 
 const DashboardLayout = () => {
-  const { isBusinessMode } = useUserProvider();
   const { data: userData, isLoading } = AuthServices.useGetMe();
 
   // Wait for user data to load before making redirect decisions
@@ -18,8 +16,8 @@ const DashboardLayout = () => {
     return <Redirect href="/(authenticated)/(tabs)" />;
   }
 
-  // If business mode is off and user is owner, redirect to authenticated tabs
-  if (isOwner && !isBusinessMode) {
+  // If user is owner, redirect to authenticated tabs
+  if (isOwner) {
     return <Redirect href="/(authenticated)/(tabs)" />;
   }
 
