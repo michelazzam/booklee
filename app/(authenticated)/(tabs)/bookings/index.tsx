@@ -99,7 +99,7 @@ const UpcomingBookingsPage = () => {
       <FlatList
         data={userAppointments}
         renderItem={RenderItem}
-        onEndReachedThreshold={0.5}
+        onEndReachedThreshold={0.8}
         onEndReached={handleEndReached}
         ListFooterComponent={RenderFooter}
         showsVerticalScrollIndicator={false}

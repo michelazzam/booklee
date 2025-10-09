@@ -30,10 +30,29 @@ const PastBookingsPage = () => {
   });
 
   const RenderItem = useCallback(
-    ({ item }: { item: UserAppointmentType }) => (
-      <PastBookings data={item} onBookAgain={() => {}} />
-    ),
-    []
+    ({ item }: { item: UserAppointmentType }) => {
+      const handleBookAgain = () => {
+        const selectedServices = item.items.map((item) => ({
+          id: item.serviceId,
+          price: item.price,
+          priceType: 'fixed',
+          priceMin: item.price,
+          priceMax: item.price,
+          name: item.serviceName,
+          duration: item.durationMinutes,
+        }));
+
+        router.navigate({
+          pathname: '/(authenticated)/(screens)/booking/[locationId]',
+          params: {
+            locationId: item.location.id,
+            services: JSON.stringify(selectedServices),
+          },
+        });
+      };
+      return <PastBookings data={item} onBookAgain={handleBookAgain} />;
+    },
+    [router]
   );
   const RenderListEmptyComponent = useCallback(() => {
     if (isLoading) {
@@ -92,7 +111,7 @@ const PastBookingsPage = () => {
       renderItem={RenderItem}
       onRefresh={handleRefresh}
       refreshing={isRefetching}
-      onEndReachedThreshold={0.5}
+      onEndReachedThreshold={0.8}
       onEndReached={handleEndReached}
       ListFooterComponent={RenderFooter}
       showsVerticalScrollIndicator={false}
