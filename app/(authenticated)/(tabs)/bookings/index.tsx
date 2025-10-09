@@ -1,5 +1,5 @@
-import { View, StyleSheet, Image, FlatList, ActivityIndicator } from 'react-native';
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { View, StyleSheet, Image, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
 
 import { AppointmentServices, type UserAppointmentType } from '~/src/services';
@@ -8,23 +8,16 @@ import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
 
 import { Booking, UpcomingBookingsSkeleton } from '~/src/components/preview';
-import { RatingModal, type RatingModalRef } from '~/src/components/modals';
 import { Button } from '~/src/components/buttons';
 import { Text } from '~/src/components/base';
 
 const UpcomingBookingsPage = () => {
-  /*** Refs ***/
-  const ratingModalRef = useRef<RatingModalRef>(null);
-
   /*** States ***/
   const [isRefetching, setIsRefetching] = useState(false);
 
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
-  const { data: needsReviewAppointments } = AppointmentServices.useGetUserAppointments({
-    needsReview: true,
-  });
   const {
     refetch,
     isLoading,
@@ -36,11 +29,17 @@ const UpcomingBookingsPage = () => {
     upcoming: true,
   });
 
-  useEffect(() => {
-    if (needsReviewAppointments && needsReviewAppointments.length > 0) {
-      ratingModalRef.current?.present();
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  }, [needsReviewAppointments]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const handleRefresh = useCallback(() => {
+    setIsRefetching(true);
+    refetch().finally(() => {
+      setIsRefetching(false);
+    });
+  }, [refetch]);
 
   const RenderItem = useCallback(
     ({ item }: { item: UserAppointmentType }) => <Booking data={item} />,
@@ -84,36 +83,31 @@ const UpcomingBookingsPage = () => {
 
     return <ActivityIndicator color={theme.colors.primaryBlue[100]} />;
   }, [isFetchingNextPage]);
-
-  const handleEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-  const handleRefresh = useCallback(() => {
-    setIsRefetching(true);
-    refetch().finally(() => {
-      setIsRefetching(false);
-    });
-  }, [refetch]);
+  const RenderRefreshControl = useCallback(() => {
+    return (
+      <RefreshControl
+        refreshing={isRefetching}
+        onRefresh={handleRefresh}
+        colors={[theme.colors.primaryBlue[100]]}
+        tintColor={theme.colors.primaryBlue[100]}
+      />
+    );
+  }, [isRefetching, handleRefresh]);
 
   return (
     <>
       <FlatList
         data={userAppointments}
         renderItem={RenderItem}
-        onRefresh={handleRefresh}
-        refreshing={isRefetching}
         onEndReachedThreshold={0.5}
         onEndReached={handleEndReached}
         ListFooterComponent={RenderFooter}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={RenderListEmptyComponent}
+        refreshControl={RenderRefreshControl()}
         keyExtractor={(_, index) => index.toString()}
+        ListEmptyComponent={RenderListEmptyComponent}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
       />
-
-      <RatingModal ref={ratingModalRef} appointments={needsReviewAppointments || []} />
     </>
   );
 };

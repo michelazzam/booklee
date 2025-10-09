@@ -1,7 +1,7 @@
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useState, useCallback } from 'react';
 import { Image } from 'expo-image';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { type UserAppointmentType } from '~/src/services';
 
@@ -39,18 +39,30 @@ const Rating = ({ data, onSubmit, isSubmitting }: RatingProps) => {
   }));
 
   /*** State ***/
-  const [showReview, setShowReview] = useState(false);
+  const [showContent, setShowContent] = useState(false);
   const [ratingData, setRatingData] = useState<RatingDataType>({
     rating: 0,
     review: '',
   });
 
   const toggleExpanded = useCallback(() => {
-    setShowReview((prev) => !prev);
+    const willExpand = isExpanded.value === 0;
+
+    if (willExpand) {
+      setShowContent(true);
+    }
 
     setTimeout(() => {
-      const targetValue = isExpanded.value === 0 ? 1 : 0;
-      isExpanded.value = withSpring(targetValue);
+      const targetValue = willExpand ? 1 : 0;
+      isExpanded.value = withSpring(targetValue, {
+        damping: 20,
+        stiffness: 90,
+        mass: 0.8,
+      });
+
+      if (!willExpand) {
+        setTimeout(() => setShowContent(false), 300);
+      }
     }, 100);
   }, [isExpanded]);
   const onChangeText = useCallback(
@@ -65,7 +77,7 @@ const Rating = ({ data, onSubmit, isSubmitting }: RatingProps) => {
 
     setTimeout(() => {
       toggleExpanded();
-    }, 100);
+    }, 1000);
   }, [ratingData, data.id, onSubmit, toggleExpanded]);
 
   const RenderStars = useCallback(() => {
@@ -121,7 +133,7 @@ const Rating = ({ data, onSubmit, isSubmitting }: RatingProps) => {
         </View>
       </TouchableOpacity>
 
-      {showReview && (
+      {showContent && (
         <Animated.View style={[contentAnimatedStyle, styles.expandableContent]}>
           <View style={styles.ratingSectionContainer}>
             <View style={styles.starsContainer}>

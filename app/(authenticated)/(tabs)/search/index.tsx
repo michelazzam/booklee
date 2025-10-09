@@ -1,4 +1,4 @@
-import { TouchableOpacity, View, StyleSheet, FlatList } from 'react-native';
+import { TouchableOpacity, View, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
@@ -66,6 +66,13 @@ const LocationListing = () => {
     }
   }, [filterSlug]);
 
+  const handleRefresh = useCallback(() => {
+    setIsRefreshing(true);
+    refetch().finally(() => {
+      setIsRefreshing(false);
+    });
+  }, [refetch]);
+
   const RenderItem = useCallback(
     ({ item }: { item: LocationType }) => (
       <LocationCard
@@ -88,13 +95,34 @@ const LocationListing = () => {
       </Text>
     );
   }, [isLoading]);
-
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true);
-    refetch().finally(() => {
-      setIsRefreshing(false);
-    });
-  }, [refetch]);
+  const RenderRefreshControl = useCallback(() => {
+    return (
+      <RefreshControl
+        refreshing={isRefreshing}
+        onRefresh={handleRefresh}
+        colors={[theme.colors.primaryBlue[100]]}
+        tintColor={theme.colors.primaryBlue[100]}
+      />
+    );
+  }, [isRefreshing, handleRefresh]);
+  const RenderHeaderComponent = useCallback(() => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        style={styles.mapIconContainer}
+        onPress={() =>
+          router.replace({
+            pathname: '/(authenticated)/(tabs)/search/map',
+            params: { filterSlug: selectedFilter?.category },
+          })
+        }>
+        <Text color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.xs}>
+          Map
+        </Text>
+        <MapIcon />
+      </TouchableOpacity>
+    );
+  }, [router, selectedFilter]);
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
@@ -129,8 +157,8 @@ const LocationListing = () => {
         />
       </View>
 
-      <View>
-        <TouchableOpacity
+      <View style={{ flex: 1 }}>
+        {/* <TouchableOpacity
           activeOpacity={0.8}
           style={styles.mapIconContainer}
           onPress={() =>
@@ -143,16 +171,17 @@ const LocationListing = () => {
             Map
           </Text>
           <MapIcon />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <FlatList
           data={locationsData}
           renderItem={RenderItem}
-          refreshing={isRefreshing}
-          onRefresh={handleRefresh}
           keyExtractor={(item) => item._id}
           showsVerticalScrollIndicator={false}
+          refreshControl={RenderRefreshControl()}
           ListEmptyComponent={RenderEmptyComponent}
+          ListHeaderComponent={RenderHeaderComponent}
+          ListHeaderComponentStyle={styles.listHeaderComponent}
           contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
         />
       </View>
@@ -189,7 +218,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xl,
   },
   mapIconContainer: {
-    top: 16,
+    top: 20,
     height: 24,
     zIndex: 1000,
     alignSelf: 'center',
@@ -200,5 +229,10 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.md,
     paddingHorizontal: theme.spacing.md,
     backgroundColor: theme.colors.darkText[100],
+  },
+  listHeaderComponent: {
+    zIndex: 1000,
+    position: 'absolute',
+    alignSelf: 'center',
   },
 });

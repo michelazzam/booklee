@@ -1,4 +1,4 @@
-import { useCallback, memo, useState, useEffect } from 'react';
+import { useCallback, memo, useState, useEffect, useRef } from 'react';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import {
@@ -12,6 +12,7 @@ import {
 
 import {
   type LocationCategoryType,
+  AppointmentServices,
   LocationServices,
   UserServices,
   LocationType,
@@ -20,6 +21,7 @@ import {
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
+import { RatingModal, type RatingModalRef } from '~/src/components/modals';
 import { LocationCard, HomePageSkeleton } from '~/src/components/preview';
 import { ScreenHeader } from '~/src/components/utils';
 import { Text } from '~/src/components/base';
@@ -89,7 +91,10 @@ const CategorySection = memo(({ category }: { category: LocationCategoryType }) 
               weight="semiBold"
               color={theme.colors.darkText[100]}
               size={theme.typography.fontSizes.sm}
-              style={{ textDecorationLine: 'underline' }}>
+              style={{
+                textDecorationLine: 'underline',
+                opacity: category.locations.length > 1 ? 1 : 0.5,
+              }}>
               see all
             </Text>
           </TouchableOpacity>
@@ -110,6 +115,9 @@ const CategorySection = memo(({ category }: { category: LocationCategoryType }) 
 });
 
 const HomePage = () => {
+  /*** Refs ***/
+  const ratingModalRef = useRef<RatingModalRef>(null);
+
   /*** States ***/
   const [isRefetching, setIsRefetching] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(
@@ -119,7 +127,9 @@ const HomePage = () => {
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
-
+  const { data: needsReviewAppointments } = AppointmentServices.useGetUserAppointments({
+    needsReview: true,
+  });
   const {
     refetch,
     isLoading,
@@ -153,6 +163,13 @@ const HomePage = () => {
 
     getUserLocation();
   }, []);
+  useEffect(() => {
+    if (!needsReviewAppointments) return;
+
+    if (needsReviewAppointments.length > 0 && categories) {
+      ratingModalRef.current?.present();
+    }
+  }, [needsReviewAppointments, categories]);
 
   const handleRefresh = useCallback(() => {
     setIsRefetching(true);
@@ -160,6 +177,17 @@ const HomePage = () => {
       setIsRefetching(false);
     });
   }, [refetch]);
+
+  const RenderRefreshControl = useCallback(() => {
+    return (
+      <RefreshControl
+        refreshing={isRefetching}
+        onRefresh={handleRefresh}
+        colors={[theme.colors.primaryBlue[100]]}
+        tintColor={theme.colors.primaryBlue[100]}
+      />
+    );
+  }, [isRefetching, handleRefresh]);
 
   return (
     <>
@@ -185,7 +213,7 @@ const HomePage = () => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />}
+        refreshControl={RenderRefreshControl()}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
         {isLoading || isRefetching ? (
           <HomePageSkeleton />
@@ -193,6 +221,8 @@ const HomePage = () => {
           categories?.map((category) => <CategorySection key={category._id} category={category} />)
         )}
       </ScrollView>
+
+      <RatingModal ref={ratingModalRef} appointments={needsReviewAppointments || []} />
     </>
   );
 };

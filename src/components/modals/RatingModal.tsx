@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef, useCallback } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useCallback, useState } from 'react';
 import { View, StyleSheet, Keyboard } from 'react-native';
 import { Toast } from 'toastify-react-native';
 import BottomSheet, {
@@ -28,6 +28,9 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
   /*** Refs ***/
   const bottomSheetRef = useRef<BottomSheet>(null);
 
+  /*** States ***/
+  const [isVisible, setIsVisible] = useState(false);
+
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
@@ -37,10 +40,18 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
 
   useImperativeHandle(ref, () => ({
     present: () => {
-      bottomSheetRef.current?.snapToIndex(0);
+      setIsVisible(true);
+
+      setTimeout(() => {
+        bottomSheetRef.current?.snapToIndex(0);
+      }, 500);
     },
     dismiss: () => {
       bottomSheetRef.current?.close();
+
+      setTimeout(() => {
+        setIsVisible(false);
+      }, 500);
     },
   }));
 
@@ -63,33 +74,38 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
           appointmentId,
           message: review,
           userId: userData?.user.id || '',
+        },
+        {
+          onSuccess: () => {
+            deleteRating({ appointmentId });
+          },
         }
-        // {
-        //   onSuccess: () => {
-        //     bottomSheetRef.current?.close();
-        //   },
-        // }
       );
     },
-    [submitRating, userData?.user.id]
+    [submitRating, userData?.user.id, deleteRating]
   );
   const handleModalClose = useCallback(() => {
     bottomSheetRef.current?.close();
+    setIsVisible(false);
     deleteRating(undefined);
   }, [deleteRating]);
 
-  const renderBackdrop = useCallback(
+  const RenderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
     ),
     []
   );
-  const renderItem = useCallback(
+  const RenderItem = useCallback(
     ({ item }: { item: UserAppointmentType }) => (
       <Rating data={item} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
     ),
     [isSubmitting, handleSubmit]
   );
+
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <BottomSheet
@@ -98,7 +114,7 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
       ref={bottomSheetRef}
       snapPoints={['85%']}
       onClose={handleModalClose}
-      backdropComponent={renderBackdrop}>
+      backdropComponent={RenderBackdrop}>
       <View style={styles.header}>
         <View style={{ width: 24 }} />
 
@@ -126,7 +142,7 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
 
       <BottomSheetFlatList
         data={appointments}
-        renderItem={renderItem}
+        renderItem={RenderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
         ItemSeparatorComponent={() => <View style={{ height: theme.spacing.sm }} />}
