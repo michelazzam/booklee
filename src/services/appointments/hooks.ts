@@ -60,7 +60,7 @@ const useGetUserAppointments = (filters?: UserAppointmentsReqType) => {
     queryKey: ['getUserAppointments', filters],
     select: (data) =>
       data.pages.flatMap((page) => {
-        if (filters?.upcoming && filters?.needsReview) {
+        if (filters?.upcoming || filters?.needsReview) {
           return page.appointments.filter((appointment) => appointment.status === 'confirmed');
         }
 

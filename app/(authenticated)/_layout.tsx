@@ -27,7 +27,7 @@ export default function AuthenticatedLayout() {
   }
 
   // Check if user is owner
-  if (userData?.role === 'owner') {
+  if (userData?.role !== 'user') {
     return <Redirect href={'/(dashboard)/(tabs)'} />;
   }
 
