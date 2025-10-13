@@ -13,9 +13,10 @@ import { AwareScrollView, Text } from '~/src/components/base';
 import { Input } from '~/src/components/textInputs';
 import { Button } from '~/src/components/buttons';
 
-const SignInPage = () => {
+const LoginScreen = () => {
   /***** Refs *****/
   const data = useRef<LoginReqType>({
+    email: '',
     password: '',
   });
 
@@ -42,19 +43,7 @@ const SignInPage = () => {
   }, [isUserLoading, userData, authUser, router]);
 
   const onTextChange = (text: string, field: keyof LoginReqType) => {
-    switch (field) {
-      case 'password':
-        data.current[field] = text;
-        break;
-      case 'email':
-        delete data.current.phone;
-        data.current[field] = text;
-        break;
-      case 'phone':
-        delete data.current.email;
-        data.current[field] = text;
-        break;
-    }
+    data.current[field] = text;
 
     setValidationErrors((prev) => ({
       ...prev,
@@ -74,7 +63,7 @@ const SignInPage = () => {
 
     login(data.current, {
       onError: (error) => {
-        //@ts-expect-error
+        // @ts-expect-error
         if (error?.code === 'EMAIL_NOT_VERIFIED') {
           router.navigate({
             pathname: '/(unauthenticated)/signup/email-verification',
@@ -128,7 +117,11 @@ const SignInPage = () => {
               onChangeText={(value) => onTextChange(value, 'password')}
               subText={{
                 label: 'Forgot Password',
-                action: () => router.navigate('/(unauthenticated)/login/forgot-password'),
+                action: () =>
+                  router.navigate({
+                    params: { email: data.current.email },
+                    pathname: '/(unauthenticated)/login/forgot-password',
+                  }),
               }}
             />
 
@@ -180,7 +173,7 @@ const SignInPage = () => {
   );
 };
 
-export default SignInPage;
+export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {

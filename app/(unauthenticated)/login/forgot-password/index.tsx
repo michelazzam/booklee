@@ -1,6 +1,6 @@
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, StyleSheet, Keyboard } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { z } from 'zod';
 
 import { AuthServices } from '~/src/services';
@@ -23,14 +23,19 @@ const ForgotPasswordEmailInput = () => {
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
+  const { email: fromLoginEmail } = useLocalSearchParams<{ email: string }>();
   const { mutate: forgotPassword, isPending: isForgotPasswordPending } =
     AuthServices.useForgotPassword();
+
+  useEffect(() => {
+    if (fromLoginEmail) {
+      setEmail(fromLoginEmail);
+    }
+  }, [fromLoginEmail]);
 
   /*** Handlers ***/
   const handleContinue = () => {
     Keyboard.dismiss();
-
-    // Validate email format
     const validationResult = emailSchema.safeParse(email);
 
     if (!validationResult.success) {
@@ -40,9 +45,9 @@ const ForgotPasswordEmailInput = () => {
 
     forgotPassword(email, {
       onSuccess: () => {
-        router.navigate({
-          pathname: '/(unauthenticated)/login/forgot-password/otp-verification',
-          params: { method: 'email', contact: email },
+        router.replace({
+          pathname: '/(unauthenticated)/login/forgot-password/success',
+          params: { email },
         });
       },
       onError: (error: any) => {

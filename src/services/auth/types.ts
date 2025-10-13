@@ -48,8 +48,7 @@ export type GetMeResType = {
 
 /*** Login types ***/
 export type LoginReqType = {
-  email?: string;
-  phone?: string;
+  email: string;
   password: string;
 };
 

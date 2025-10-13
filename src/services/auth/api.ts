@@ -116,7 +116,7 @@ export const forgotPasswordApi = async (email: string) => {
   const [response] = await withErrorCatch(
     authClient.requestPasswordReset({
       email,
-      redirectTo: 'https://booklee.app/reset-password',
+      redirectTo: 'https://booklee.app/auth/reset-password',
     })
   );
 
@@ -132,53 +132,7 @@ export const forgotPasswordApi = async (email: string) => {
   return response?.data;
 };
 
-/*** API for reset password ***/
-export const resetPasswordApi = async ({
-  token,
-  newPassword,
-}: {
-  token: string;
-  newPassword: string;
-}) => {
-  const [response] = await withErrorCatch(
-    authClient.resetPassword({
-      token,
-      newPassword,
-    })
-  );
-
-  if (response?.error instanceof AxiosError) {
-    throw {
-      ...response?.error.response?.data,
-      status: response?.error.response?.status,
-    };
-  } else if (response?.error) {
-    throw response?.error;
-  }
-
-  return response?.data;
-};
-
-/*** API for verify email ***/
-export const verifyEmailApi = async (token: string) => {
-  const [response] = await withErrorCatch(
-    authClient.verifyEmail({
-      query: { token },
-    })
-  );
-
-  if (response?.error instanceof AxiosError) {
-    throw {
-      ...response?.error.response?.data,
-      status: response?.error.response?.status,
-    };
-  } else if (response?.error) {
-    throw response?.error;
-  }
-
-  return response?.data;
-};
-
+/*** API for resend email verification ***/
 export const resendEmailVerificationApi = async (email: string) => {
   const [response] = await withErrorCatch(
     authClient.sendVerificationEmail({
