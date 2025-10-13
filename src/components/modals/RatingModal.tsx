@@ -154,7 +154,10 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
       <BottomSheetFlatList
         data={appointments}
         renderItem={RenderItem}
+        keyboardDismissMode="on-drag"
         keyExtractor={(item) => item.id}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
         ItemSeparatorComponent={() => <View style={{ height: theme.spacing.sm }} />}
       />
