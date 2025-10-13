@@ -151,10 +151,14 @@ export type LocationReviewType = {
   location: LocationReviewLocationType;
   organization: LocationReviewLocationType;
 };
-export type LocationRatingReqType = {
+export type LocationRatingSortType = {
+  dir: 'asc' | 'desc';
+  sort: 'date' | 'value';
+};
+export type LocationRatingReqType = LocationRatingSortType & {
   limit?: number;
-  countOnly?: boolean;
   locationId?: string;
+  countOnly?: boolean;
 };
 export type LocationRatingResType = {
   ok: boolean;
@@ -164,6 +168,8 @@ export type LocationRatingResType = {
   reviews: LocationReviewType[];
   locations: LocationReviewLocationType[];
 };
+
+/*** Location Rating Submit API Types ***/
 export type LocationRatingSubmitReqType = {
   userId: string;
   rating: number;
@@ -171,5 +177,13 @@ export type LocationRatingSubmitReqType = {
   appointmentId: string;
 };
 export type LocationRatingSubmitResType = {
+  ok: boolean;
+};
+
+/*** Location Rating Delete API Types ***/
+export type LocationRatingDeleteReqType = {
+  appointmentId?: string;
+};
+export type LocationRatingDeleteResType = {
   ok: boolean;
 };

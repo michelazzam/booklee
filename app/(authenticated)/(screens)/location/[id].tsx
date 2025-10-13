@@ -202,15 +202,15 @@ const SalonDetailPage = () => {
       <ScrollView
         bounces={false}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom, paddingTop: top }}>
-        <View style={styles.headerComponent}>
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom }}>
+        <View style={[styles.headerComponent, { paddingTop: top }]}>
           <TouchableOpacity activeOpacity={0.8} onPress={() => router.back()}>
-            <BackIcon width={28} height={28} color={theme.colors.darkText[100]} />
+            <BackIcon width={28} height={28} color={theme.colors.white.DEFAULT} />
           </TouchableOpacity>
 
           <TouchableOpacity activeOpacity={0.8} onPress={handleToggleFavorites}>
             {isInFavorites ? (
-              <HeartIconFilled width={28} height={28} color={theme.colors.darkText[100]} />
+              <HeartIconFilled width={28} height={28} color={theme.colors.white.DEFAULT} />
             ) : (
               <HeartIcon width={28} height={28} color={theme.colors.darkText[100]} />
             )}
@@ -300,7 +300,12 @@ export default SalonDetailPage;
 
 const styles = StyleSheet.create({
   headerComponent: {
+    top: 0,
+    left: 0,
+    right: 0,
     height: 62,
+    zIndex: 1000,
+    position: 'absolute',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

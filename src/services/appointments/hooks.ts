@@ -22,7 +22,7 @@ import type {
   UserAppointmentsReqType,
   AvailabilityResponse,
   BookingDataResponse,
-  UserAppointment,
+  UserAppointmentType,
 } from './types';
 
 /*** Create Appointment Hook ***/
@@ -51,7 +51,7 @@ const useGetLocationBookingData = (locationId: string) => {
 
 /*** Get User Appointments Hook ***/
 const useGetUserAppointments = (filters?: UserAppointmentsReqType) => {
-  return useInfiniteQuery<UserAppointmentsResType, ResErrorType, UserAppointment[]>({
+  return useInfiniteQuery<UserAppointmentsResType, ResErrorType, UserAppointmentType[]>({
     initialPageParam: 1,
     refetchOnMount: false,
     refetchInterval: false,

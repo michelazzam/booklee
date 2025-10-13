@@ -12,12 +12,14 @@ export type PhoneInputProps = {
   value?: string;
   editable?: boolean;
   placeholder: string;
+  isRequired?: boolean;
   onChangeText?: (phoneInput: string) => void;
 };
 
 const PhoneInputWrapper = ({
   value,
   error,
+  isRequired,
   placeholder,
   onChangeText,
   editable = true,
@@ -85,7 +87,7 @@ const PhoneInputWrapper = ({
   return (
     <View style={{ gap: 4, width: '100%', opacity: editable ? 1 : 0.5 }}>
       <Text size={14} weight="regular">
-        Phone Number
+        {` Phone Number${isRequired ? '*' : ''}`}
       </Text>
 
       <Animated.View style={styles.inputContainer}>

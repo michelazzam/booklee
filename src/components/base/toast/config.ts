@@ -62,7 +62,7 @@ export const TOAST_CONFIG: ToastThemeConfig = {
     duration: 3000,
     borderRadius: 16,
     closeIconSize: 20,
-    showProgress: true,
+    showProgress: false,
     fontFamily: 'Montserrat',
   },
 };

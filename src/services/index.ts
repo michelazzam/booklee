@@ -34,6 +34,9 @@ export type {
   SearchHistoryType,
   DetailedLocationType,
   LocationType,
+  LocationRatingResType,
+  LocationReviewType,
+  LocationRatingSortType,
 } from './locations/types';
 export type {
   UpdateUserReqType,
@@ -51,8 +54,8 @@ export type {
   CreateAppointmentResType,
   UserAppointmentsResType,
   BookingDataResponse,
+  UserAppointmentType,
   SelectedService,
-  UserAppointment,
   AppointmentItem,
   BookingService,
   BookingStep,

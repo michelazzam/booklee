@@ -4,7 +4,7 @@ import { useCallback, useRef } from 'react';
 import { formatDate } from 'date-fns';
 import { Image } from 'expo-image';
 
-import { type AppointmentItem, type UserAppointment } from '~/src/services';
+import { type AppointmentItem, type UserAppointmentType } from '~/src/services';
 
 import { AppLogo, BookingIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants';
@@ -16,7 +16,7 @@ import RescheduleModal from '../../../modals/ReschedulingModal';
 import { Icon, Text } from '~/src/components/base';
 
 type BookingProps = {
-  data: UserAppointment;
+  data: UserAppointmentType;
 };
 
 const Booking = ({ data }: BookingProps) => {

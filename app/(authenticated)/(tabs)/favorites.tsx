@@ -1,4 +1,4 @@
-import { View, StyleSheet, Image, FlatList } from 'react-native';
+import { View, StyleSheet, Image, FlatList, RefreshControl } from 'react-native';
 import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
 
@@ -19,6 +19,13 @@ const FavoritesPage = () => {
 
   /*** States ***/
   const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    refetch().finally(() => {
+      setRefreshing(false);
+    });
+  }, [refetch]);
 
   const RenderItem = useCallback(
     ({ item }: { item: LocationType }) => (
@@ -65,13 +72,16 @@ const FavoritesPage = () => {
       </View>
     );
   }, [router, isLoading]);
-
-  const handleRefresh = useCallback(() => {
-    setRefreshing(true);
-    refetch().finally(() => {
-      setRefreshing(false);
-    });
-  }, [refetch]);
+  const RenderRefreshControl = useCallback(() => {
+    return (
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        colors={[theme.colors.primaryBlue[100]]}
+        tintColor={theme.colors.primaryBlue[100]}
+      />
+    );
+  }, [refreshing, handleRefresh]);
 
   return (
     <>
@@ -80,11 +90,10 @@ const FavoritesPage = () => {
       <FlatList
         numColumns={2}
         data={favorites}
-        refreshing={refreshing}
         renderItem={RenderItem}
-        onRefresh={handleRefresh}
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
+        refreshControl={RenderRefreshControl()}
         ListEmptyComponent={RenderListEmptyComponent}
         columnWrapperStyle={{ gap: theme.spacing.lg }}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}

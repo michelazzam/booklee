@@ -1,20 +1,25 @@
-import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useCallback, useState } from 'react';
 import { View, StyleSheet, Keyboard } from 'react-native';
-import { Image } from 'expo-image';
+import { Toast } from 'toastify-react-native';
+import BottomSheet, {
+  type BottomSheetBackdropProps,
+  BottomSheetFlatList,
+  BottomSheetBackdrop,
+} from '@gorhom/bottom-sheet';
 
-import { LocationServices, UserServices } from '~/src/services';
+import { LocationServices, type UserAppointmentType, UserServices } from '~/src/services';
 
+import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import type { ModalWrapperRef } from './ModalWrapper';
 import { Icon, Text } from '~/src/components/base';
-import { StarIcon } from '~/src/assets/icons';
-import ModalWrapper from './ModalWrapper';
-import { Input } from '../textInputs';
-import { Button } from '../buttons';
+import Rating, {
+  type RatingDataType,
+  type RatingRef,
+} from '~/src/components/preview/review/rating';
 
 type RatingModalProps = {
-  storeId: string;
+  appointments: UserAppointmentType[];
 };
 
 export type RatingModalRef = {
@@ -22,127 +27,141 @@ export type RatingModalRef = {
   dismiss: () => void;
 };
 
-const RatingModal = forwardRef<RatingModalRef, RatingModalProps>((props, ref) => {
+const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments }, ref) => {
   /*** Refs ***/
-  const review = useRef('');
-  const modalRef = useRef<ModalWrapperRef>(null);
+  const ratingRef = useRef<RatingRef>(null);
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
   /*** States ***/
-  const [error, setError] = useState('');
-  const [selectedRating, setSelectedRating] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
 
   /*** Constants ***/
+  const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
-  const { data: locationData } = LocationServices.useGetLocationById(props.storeId);
+  const { mutate: deleteRating } = LocationServices.useDeleteLocationRating();
   const { mutate: submitRating, isPending: isSubmitting } =
     LocationServices.useSubmitLocationRating();
 
   useImperativeHandle(ref, () => ({
     present: () => {
-      modalRef.current?.present();
+      setIsVisible(true);
+
+      setTimeout(() => {
+        bottomSheetRef.current?.snapToIndex(0);
+      }, 500);
     },
     dismiss: () => {
-      modalRef.current?.dismiss();
+      bottomSheetRef.current?.close();
+
+      setTimeout(() => {
+        setIsVisible(false);
+      }, 500);
     },
   }));
 
-  const onChangeText = (text: string) => {
-    setError('');
-    review.current = text;
-  };
-  const handleSubmit = () => {
-    Keyboard.dismiss();
-    setError('');
+  const handleSubmit = useCallback(
+    (ratingData: RatingDataType) => {
+      Keyboard.dismiss();
+      const { rating, review, appointmentId = '' } = ratingData;
 
-    if (!selectedRating || !review.current) {
-      setError('Please select a rating and write a review');
-      return;
-    }
-
-    submitRating(
-      {
-        rating: selectedRating,
-        message: review.current,
-        appointmentId: props.storeId,
-        userId: userData?.user.id || '',
-      },
-      {
-        onSuccess: () => {
-          setError('');
-          review.current = '';
-          setSelectedRating(0);
-
-          modalRef.current?.dismiss();
-        },
+      if (!rating || !review) {
+        Toast.show({
+          type: 'error',
+          text1: 'Please select a rating and write a review',
+        });
+        return;
       }
-    );
-  };
+
+      submitRating(
+        {
+          rating,
+          appointmentId,
+          message: review,
+          userId: userData?.user.id || '',
+        },
+        {
+          onSuccess: () => {
+            ratingRef.current?.close();
+            deleteRating({ appointmentId });
+          },
+          onError: () => {
+            Toast.show({
+              type: 'error',
+              text1: 'Failed to submit rating',
+            });
+          },
+        }
+      );
+    },
+    [submitRating, userData?.user.id, deleteRating, ratingRef]
+  );
+  const handleModalClose = useCallback(() => {
+    bottomSheetRef.current?.close();
+    setIsVisible(false);
+    deleteRating(undefined);
+  }, [deleteRating]);
+
+  const RenderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+    ),
+    []
+  );
+  const RenderItem = useCallback(
+    ({ item }: { item: UserAppointmentType }) => (
+      <Rating ref={ratingRef} data={item} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+    ),
+    [isSubmitting, handleSubmit, ratingRef]
+  );
+
+  if (!isVisible) {
+    return null;
+  }
 
   return (
-    <ModalWrapper
-      ref={modalRef}
-      snapPoints={['90%']}
-      contentContainerStyle={{ gap: theme.spacing.xl }}
-      trailingIcon={<Icon name="close" size={24} color={theme.colors.darkText['100']} />}>
+    <BottomSheet
+      index={-1}
+      enablePanDownToClose
+      ref={bottomSheetRef}
+      snapPoints={['85%']}
+      onClose={handleModalClose}
+      backdropComponent={RenderBackdrop}>
+      <View style={styles.header}>
+        <View style={{ width: 24 }} />
+
+        <Text
+          weight="medium"
+          size={theme.typography.fontSizes.sm}
+          color={theme.colors.darkText['100']}>
+          RATE YOUR EXPERIENCES
+        </Text>
+
+        <Icon
+          size={24}
+          name="close"
+          onPress={handleModalClose}
+          color={theme.colors.darkText['100']}
+        />
+      </View>
+
       <Text
-        size={theme.typography.fontSizes.lg}
-        weight="medium"
-        style={{ textAlign: 'center' }}
-        color={theme.colors.lightText}>
-        Share your feedback with us
+        style={styles.subtitle}
+        size={theme.typography.fontSizes.sm}
+        color={theme.colors.darkText['100']}>
+        Share your feedback with us!
       </Text>
 
-      <View style={styles.container}>
-        <View style={styles.storeContainer}>
-          <View style={styles.imageContainer}>
-            {false ? (
-              <Image source={{ uri: 'https://via.placeholder.com/150' }} />
-            ) : (
-              <Icon name="store" size={32} color={theme.colors.lightText} />
-            )}
-          </View>
-
-          <View style={{ gap: theme.spacing.sm }}>
-            <Text size={theme.typography.fontSizes.lg} weight="medium">
-              {locationData?.name}
-            </Text>
-
-            <View style={styles.ratingContainer}>
-              <StarIcon width={16} height={16} />
-
-              <Text
-                weight={'semiBold'}
-                size={theme.typography.fontSizes.sm}
-                color={theme.colors.darkText['100']}>
-                {locationData?.rating}
-              </Text>
-            </View>
-
-            <Text size={theme.typography.fontSizes.sm} color={theme.colors.lightText}>
-              {locationData?.city}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.starsContainer}>
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Icon
-              size={56}
-              key={star}
-              name="star"
-              onPress={() => setSelectedRating(star)}
-              color={
-                star <= selectedRating ? theme.colors.primaryBlue['100'] : theme.colors.grey['100']
-              }
-            />
-          ))}
-        </View>
-
-        <Input multiline onChangeText={onChangeText} placeholder="Write your review" />
-
-        <Button title="Submit" onPress={handleSubmit} error={error} isLoading={isSubmitting} />
-      </View>
-    </ModalWrapper>
+      <BottomSheetFlatList
+        data={appointments}
+        renderItem={RenderItem}
+        keyboardDismissMode="on-drag"
+        keyExtractor={(item) => item.id}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
+        ItemSeparatorComponent={() => <View style={{ height: theme.spacing.sm }} />}
+      />
+    </BottomSheet>
   );
 });
 
@@ -150,40 +169,21 @@ RatingModal.displayName = 'RatingModal';
 export default RatingModal;
 
 const styles = StyleSheet.create({
-  container: {
-    gap: theme.spacing.xl,
-    padding: theme.spacing.xl,
-  },
-  imageContainer: {
-    width: 100,
-    height: 100,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: theme.radii.md,
-    backgroundColor: theme.colors.lightText + '10',
-  },
-  storeContainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: theme.spacing.lg,
-  },
-  ratingContainer: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
+    borderBottomWidth: 1,
+    paddingBottom: theme.spacing.md,
+    justifyContent: 'space-between',
+    borderColor: theme.colors.border,
+    paddingHorizontal: theme.spacing.xl,
   },
-  starsContainer: {
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  starButton: {
-    padding: theme.spacing.xs,
-  },
-  ratingText: {
+  subtitle: {
     textAlign: 'center',
-    fontStyle: 'italic',
+    paddingVertical: theme.spacing.md,
+  },
+  listContent: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.md,
   },
 });

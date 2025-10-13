@@ -3,7 +3,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { type DateData } from 'react-native-calendars';
 
-import { AppointmentServices, type UserAppointment } from '~/src/services';
+import { AppointmentServices, type UserAppointmentType } from '~/src/services';
 import { theme } from '~/src/constants/theme';
 
 import ModalWrapper, { type ModalWrapperRef } from './ModalWrapper';
@@ -17,7 +17,7 @@ export type RescheduleModalRef = {
   present: () => void;
 };
 type RescheduleModalProps = {
-  appointment: UserAppointment;
+  appointment: UserAppointmentType;
 };
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);

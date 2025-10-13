@@ -1,4 +1,5 @@
 /*** Previews ***/
+export { default as Rating, type RatingDataType } from './review/rating';
 export { default as SearchHistory } from './SearchHistory';
 export { default as PastBookings } from './bookings/past';
 export { default as Booking } from './bookings/upcoming';

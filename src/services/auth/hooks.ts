@@ -7,8 +7,6 @@ import {
   resendEmailVerificationApi,
   loginWithEmailApi,
   forgotPasswordApi,
-  resetPasswordApi,
-  verifyEmailApi,
   googleLoginApi,
   signUpApi,
   logoutApi,
@@ -111,18 +109,6 @@ const useForgotPassword = () => {
   });
 };
 
-const useResetPassword = () => {
-  return useMutation({
-    mutationFn: resetPasswordApi,
-  });
-};
-
-const useVerifyEmail = () => {
-  return useMutation({
-    mutationFn: verifyEmailApi,
-  });
-};
-
 const useResendEmailVerification = () => {
   return useMutation({
     mutationFn: resendEmailVerificationApi,
@@ -133,9 +119,7 @@ export const AuthServices = {
   useResendEmailVerification,
   useGetBetterAuthUser,
   useForgotPassword,
-  useResetPassword,
   useGoogleLogin,
-  useVerifyEmail,
   useSession,
   useLogout,
   useSignUp,

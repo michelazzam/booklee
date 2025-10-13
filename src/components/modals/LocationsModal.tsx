@@ -19,7 +19,7 @@ type LocationsModalProps = {
 
 export type LocationsModalRef = {
   dismiss: () => void;
-  present: (locationId: string) => void;
+  present: (locationId?: string) => void;
 };
 
 const LocationsModal = forwardRef<LocationsModalRef, LocationsModalProps>(
@@ -31,31 +31,43 @@ const LocationsModal = forwardRef<LocationsModalRef, LocationsModalProps>(
     const { bottom } = useAppSafeAreaInsets();
 
     /*** States ***/
-    const [chosenLocationId, setChosenLocationId] = useState<string | null>(null);
+    const [isVisible, setIsVisible] = useState(false);
+    const [chosenLocationId, setChosenLocationId] = useState<string | undefined>(undefined);
 
     /*** Memoization ***/
-    const filteredLocations = useMemo(
-      () => locations.filter((location) => location._id !== chosenLocationId),
-      [locations, chosenLocationId]
-    );
-    const chosenLocation = useMemo(
-      () => locations.find((location) => location._id === chosenLocationId),
-      [locations, chosenLocationId]
-    );
+    const filteredLocations = useMemo(() => {
+      if (!chosenLocationId) return locations;
+
+      return locations.filter((location) => location._id !== chosenLocationId);
+    }, [locations, chosenLocationId]);
+    const chosenLocation = useMemo(() => {
+      if (!chosenLocationId) return undefined;
+
+      return locations.find((location) => location._id === chosenLocationId);
+    }, [locations, chosenLocationId]);
 
     useImperativeHandle(ref, () => ({
-      present: (locationId: string) => {
-        bottomSheetRef.current?.present();
-        setChosenLocationId(locationId);
+      present: (locationId?: string) => {
+        setIsVisible(true);
+
+        if (locationId) {
+          setChosenLocationId(locationId);
+        }
+
+        setTimeout(() => {
+          bottomSheetRef.current?.present();
+        }, 50);
       },
       dismiss: () => {
         bottomSheetRef.current?.dismiss();
+        setIsVisible(false);
       },
     }));
 
     const handleLocationPress = useCallback(
       (locationId: string) => {
         bottomSheetRef.current?.dismiss();
+        setIsVisible(false);
 
         setTimeout(() => {
           onLocationPress(locationId);
@@ -66,7 +78,7 @@ const LocationsModal = forwardRef<LocationsModalRef, LocationsModalProps>(
 
     const RenderLocationItem = useCallback(
       ({ item }: { item: LocationType }) => (
-        <LocationCard data={item} onPress={() => handleLocationPress(item._id)} width="100%" />
+        <LocationCard data={item} onPress={() => handleLocationPress(item._id)} />
       ),
       [handleLocationPress]
     );
@@ -93,7 +105,10 @@ const LocationsModal = forwardRef<LocationsModalRef, LocationsModalProps>(
             size={24}
             name="close"
             style={{ alignSelf: 'flex-end' }}
-            onPress={() => bottomSheetRef.current?.dismiss()}
+            onPress={() => {
+              bottomSheetRef.current?.dismiss();
+              setIsVisible(false);
+            }}
           />
 
           {chosenLocation && (
@@ -118,12 +133,17 @@ const LocationsModal = forwardRef<LocationsModalRef, LocationsModalProps>(
       );
     }, [chosenLocation, handleLocationPress]);
 
+    if (!isVisible) {
+      return null;
+    }
+
     return (
       <BottomSheetModal
         index={0}
         ref={bottomSheetRef}
-        snapPoints={['55%', '85%']}
+        snapPoints={['60%', '85%']}
         backdropComponent={() => null}
+        onDismiss={() => setIsVisible(false)}
         handleIndicatorStyle={styles.handleIndicator}
         backgroundStyle={styles.bottomSheetBackground}>
         <BottomSheetFlatList

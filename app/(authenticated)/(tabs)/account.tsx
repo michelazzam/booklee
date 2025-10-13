@@ -24,7 +24,6 @@ const AccountPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { data: userData } = UserServices.useGetMe();
-  // const { isBusinessMode, setBusinessMode } = useUserProvider();
   const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
   const { mutate: deleteUser, isPending: isDeleteUserPending } = UserServices.useDeleteUser();
 
@@ -37,7 +36,6 @@ const AccountPage = () => {
   }, [deleteUser]);
 
   /*** Memoization ***/
-  // const isOwner = useMemo(() => userData?.user?.role === 'owner', [userData]);
   const personalInformationData: CardRowDataType[] = useMemo(() => {
     if (!userData) return [];
 
@@ -108,37 +106,6 @@ const AccountPage = () => {
       />
 
       <AwareScrollView contentContainerStyle={styles.scrollContent}>
-        {/* {isOwner && (
-          <View style={styles.businessModeContainer}>
-            <Text
-              weight="semiBold"
-              color={theme.colors.darkText[100]}
-              size={theme.typography.fontSizes.xs}
-              style={{ letterSpacing: 1 }}>
-              SWITCH TO BUSINESS ACCOUNT
-            </Text>
-
-            <View style={styles.switchContainer}>
-              <Text
-                weight="medium"
-                color={theme.colors.darkText[100]}
-                size={theme.typography.fontSizes.xs}>
-                {isBusinessMode ? 'ON' : 'OFF'}
-              </Text>
-
-              <Switch
-                value={isBusinessMode}
-                onValueChange={setBusinessMode}
-                thumbColor={theme.colors.white.DEFAULT}
-                trackColor={{
-                  false: theme.colors.grey[100],
-                  true: theme.colors.primaryGreen[100],
-                }}
-              />
-            </View>
-          </View>
-        )} */}
-
         <SettingsCard data={personalInformationData} title="PERSONAL INFORMATION" />
 
         <SettingsCard data={appSettingsData} />

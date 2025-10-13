@@ -1,8 +1,8 @@
-import { View, StyleSheet, Image, FlatList, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Image, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
 
-import { AppointmentServices, type UserAppointment } from '~/src/services';
+import { AppointmentServices, type UserAppointmentType } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
@@ -18,9 +18,6 @@ const UpcomingBookingsPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
-  const { data: needsReviewAppointments } = AppointmentServices.useGetUserAppointments({
-    needsReview: true,
-  });
   const {
     refetch,
     isLoading,
@@ -32,8 +29,20 @@ const UpcomingBookingsPage = () => {
     upcoming: true,
   });
 
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const handleRefresh = useCallback(() => {
+    setIsRefetching(true);
+    refetch().finally(() => {
+      setIsRefetching(false);
+    });
+  }, [refetch]);
+
   const RenderItem = useCallback(
-    ({ item }: { item: UserAppointment }) => <Booking data={item} />,
+    ({ item }: { item: UserAppointmentType }) => <Booking data={item} />,
     []
   );
   const RenderListEmptyComponent = useCallback(() => {
@@ -74,33 +83,32 @@ const UpcomingBookingsPage = () => {
 
     return <ActivityIndicator color={theme.colors.primaryBlue[100]} />;
   }, [isFetchingNextPage]);
-
-  const handleEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-  const handleRefresh = useCallback(() => {
-    setIsRefetching(true);
-    refetch().finally(() => {
-      setIsRefetching(false);
-    });
-  }, [refetch]);
+  const RenderRefreshControl = useCallback(() => {
+    return (
+      <RefreshControl
+        refreshing={isRefetching}
+        onRefresh={handleRefresh}
+        colors={[theme.colors.primaryBlue[100]]}
+        tintColor={theme.colors.primaryBlue[100]}
+      />
+    );
+  }, [isRefetching, handleRefresh]);
 
   return (
-    <FlatList
-      data={userAppointments}
-      renderItem={RenderItem}
-      onRefresh={handleRefresh}
-      refreshing={isRefetching}
-      onEndReachedThreshold={0.5}
-      onEndReached={handleEndReached}
-      ListFooterComponent={RenderFooter}
-      showsVerticalScrollIndicator={false}
-      ListEmptyComponent={RenderListEmptyComponent}
-      keyExtractor={(_, index) => index.toString()}
-      contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
-    />
+    <>
+      <FlatList
+        data={userAppointments}
+        renderItem={RenderItem}
+        onEndReachedThreshold={0.8}
+        onEndReached={handleEndReached}
+        ListFooterComponent={RenderFooter}
+        showsVerticalScrollIndicator={false}
+        refreshControl={RenderRefreshControl()}
+        keyExtractor={(_, index) => index.toString()}
+        ListEmptyComponent={RenderListEmptyComponent}
+        contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
+      />
+    </>
   );
 };
 

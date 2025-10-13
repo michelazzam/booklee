@@ -157,7 +157,7 @@ export type UserAppointmentLocation = {
     coordinates: number[];
   };
 };
-export type UserAppointment = {
+export type UserAppointmentType = {
   id: string;
   notes: string;
   startAt: string;
@@ -176,7 +176,7 @@ export type UserAppointmentsReqType = {
 };
 export type UserAppointmentsResType = {
   ok: boolean;
-  appointments: UserAppointment[];
+  appointments: UserAppointmentType[];
   selectedServices: SelectedService[];
   // Track bookings per service
   serviceBookings: Record<string, ServiceBooking>;

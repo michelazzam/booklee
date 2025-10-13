@@ -1,22 +1,26 @@
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useMemo, useRef } from 'react';
 import { formatDate } from 'date-fns';
-import { useMemo } from 'react';
 
-import { type UserAppointment } from '~/src/services';
+import { type UserAppointmentType } from '~/src/services';
 
 import { CheckCircleIcon, AppLogo, StarIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants';
 
+import { BookingDetailsModal, type BookingDetailsModalRef } from '~/src/components/modals';
 import { Text } from '~/src/components/base';
 import { Image } from 'expo-image';
 
 type PastBookingsProps = {
-  data: UserAppointment;
+  data: UserAppointmentType;
   onBookAgain: () => void;
 };
 
 const PastBookings = ({ data, onBookAgain }: PastBookingsProps) => {
+  /*** Refs ***/
+  const bookingDetailsModalRef = useRef<BookingDetailsModalRef>(null);
+
   /*** Constants ***/
   const { status, startAt, totalPrice, location, totalServices } = data;
 
@@ -36,6 +40,11 @@ const PastBookings = ({ data, onBookAgain }: PastBookingsProps) => {
         return {
           color: theme.colors.primaryBlue[100],
           backgroundColor: theme.colors.primaryBlue[10],
+        };
+      case 'pending':
+        return {
+          color: theme.colors.orange[100],
+          backgroundColor: theme.colors.orange[10],
         };
       default:
         return {
@@ -103,7 +112,7 @@ const PastBookings = ({ data, onBookAgain }: PastBookingsProps) => {
               color={theme.colors.darkText[100]}
               size={theme.typography.fontSizes.sm}
               style={{ textDecorationLine: 'underline' }}
-              onPress={() => {}}>
+              onPress={() => bookingDetailsModalRef.current?.present(data)}>
               Details
             </Text>
           </View>
@@ -115,6 +124,8 @@ const PastBookings = ({ data, onBookAgain }: PastBookingsProps) => {
           </Text>
         </TouchableOpacity>
       </View>
+
+      <BookingDetailsModal ref={bookingDetailsModalRef} appointment={null} />
     </Animated.View>
   );
 };

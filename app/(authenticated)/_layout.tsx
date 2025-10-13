@@ -8,8 +8,8 @@ import { theme } from '~/src/constants/theme';
 export default function AuthenticatedLayout() {
   /*** Constants ***/
   const pathname = usePathname();
+  const { isOnboardingCompleted } = useUserProvider();
   const { data: userData, isLoading: isUserDataLoading } = AuthServices.useGetMe();
-  const { isOnboardingCompleted, isBusinessMode } = useUserProvider();
   const { isAuthenticated, isLoading: isAuthLoading } = AuthServices.useGetBetterAuthUser();
 
   // Wait for auth check to complete
@@ -26,9 +26,8 @@ export default function AuthenticatedLayout() {
     return <Redirect href="/(unauthenticated)/onboarding" />;
   }
 
-  // Check if user is owner and business mode is enabled
-  const isOwner = userData?.role === 'owner';
-  if (isOwner && isBusinessMode) {
+  // Check if user is owner
+  if (userData?.role === 'owner') {
     return <Redirect href={'/(dashboard)/(tabs)'} />;
   }
 
