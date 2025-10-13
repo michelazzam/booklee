@@ -1,28 +1,38 @@
 # Booklee 📚
 
-A modern React Native booking application built with Expo Router and TypeScript, featuring authentication, onboarding, and a beautiful UI with custom components.
+A modern React Native booking application built with Expo Router and TypeScript, featuring authentication, video splash screen, onboarding, and a beautiful UI with custom components.
 
 ## 🚀 Features
 
-- **Authentication System** - Complete login/signup flow with token management
+- **Video Splash Screen** - Engaging video introduction using expo-video
+- **Better Auth Integration** - Complete authentication system with email/password and Google OAuth
+- **Password Reset Flow** - Email-based password reset with resend functionality and timer
+- **Dual User Roles** - Separate experiences for customers and business owners (dashboard)
 - **Onboarding Experience** - Beautiful multi-step onboarding with custom illustrations
 - **Modern UI Components** - Custom design system with configurable components
-- **Tab Navigation** - Five-tab layout for Home, Search, Favorites, Bookings, and Account
+- **Tab Navigation** - Customer app with Home, Search, Favorites, Bookings, and Account tabs
+- **Dashboard Interface** - Business owner dashboard with Analytics, Calendar, and Account management
 - **Toast Notifications** - Configurable toast system with multiple variants
 - **Type Safety** - Full TypeScript support with strict typing
 - **Custom Fonts** - Montserrat font family integration
 - **Responsive Design** - Optimized for both iOS and Android
+- **Real-time Updates** - TanStack Query for efficient data fetching and caching
 
 ## 📱 Tech Stack
 
 - **Framework**: [Expo](https://expo.dev/) with SDK 53
 - **Navigation**: [Expo Router](https://expo.github.io/router/) with file-based routing
 - **Language**: TypeScript
-- **State Management**: React Context + TanStack Query
+- **Authentication**: [Better Auth](https://www.better-auth.com/) - Modern authentication library
+- **State Management**: React Context + TanStack Query (React Query v5)
 - **Styling**: React Native StyleSheet with custom theme system
-- **Icons**: Expo Vector Icons + Lucide React Native
+- **Video**: Expo Video for splash screen and media playback
+- **Icons**: Custom SVG icons with React Native
 - **Animations**: React Native Reanimated 3
-- **Storage**: AsyncStorage for token persistence
+- **Forms & Validation**: Zod for schema validation
+- **Storage**: Expo SecureStore for sensitive data persistence
+- **Maps**: Google Maps integration for location services
+- **Notifications**: Toastify React Native
 
 ## 🛠️ Prerequisites
 
@@ -40,7 +50,7 @@ Before running this project, make sure you have:
 
 ```bash
 git clone <your-repo-url>
-cd bookly
+cd booklee
 ```
 
 ### 2. Install Dependencies
@@ -64,13 +74,13 @@ APP_VARIANT=development
 EXPO_PUBLIC_APP_VARIANT=development
 EXPO_PUBLIC_ENABLE_API_LOGS=true
 EXPO_PUBLIC_ENABLE_ASYNC_ERROR_LOGS=true
-# Add your API URLs here
 EXPO_PUBLIC_API_URL=your-api-url
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 ```
 
 ### 4. Prebuild (Generate Native Code)
 
-Generate the native iOS and Android directories:
+**⚠️ REQUIRED STEP:** Generate the native iOS and Android directories before running the app:
 
 ```bash
 npm run prebuild
@@ -79,77 +89,148 @@ npm run prebuild
 This command:
 
 - Generates native `ios/` and `android/` directories
-- Configures native dependencies
+- Configures native dependencies (expo-video, Google Maps, Better Auth, etc.)
 - Sets up the development build environment
+- **Must be run before first launch and after adding new native dependencies**
 
-### 5. Start Development Server
+### 5. Run the App
 
-```bash
-npm start
-```
+After prebuild completes, run the app on your preferred platform:
 
-This will start the Expo development server with options to:
-
-- Press `i` for iOS simulator
-- Press `a` for Android emulator
-- Scan QR code with Expo Go app (for Expo Go builds)
-
-## 📱 Running on Devices
-
-### iOS
+#### iOS (macOS only)
 
 ```bash
 npm run ios
 ```
 
-### Android
+This will:
+
+- Build the iOS app
+- Launch the iOS Simulator
+- Start the Metro bundler
+
+#### Android
 
 ```bash
 npm run android
 ```
 
-### Web
+This will:
+
+- Build the Android app
+- Launch the Android Emulator (must be running)
+- Start the Metro bundler
+
+#### Alternative: Start Metro Separately
+
+You can also start the development server separately:
 
 ```bash
-npm run web
+npm start
 ```
+
+Then press:
+
+- `i` for iOS simulator
+- `a` for Android emulator
+- `w` for web (limited support)
 
 ## 🏗️ Project Structure
 
 ```
-bookly/
-├── app/                          # Expo Router pages
-│   ├── (authenticated)/          # Protected routes
-│   │   ├── (tabs)/              # Main tab navigation
-│   │   └── onboarding/          # Onboarding flow
-│   ├── (unauthenticated)/       # Public routes
-│   │   ├── login/               # Login screens
-│   │   └── signup/              # Signup screens
-│   └── _layout.tsx              # Root layout
+booklee/
+├── app/                              # Expo Router pages
+│   ├── (authenticated)/              # Customer app routes (protected)
+│   │   ├── (tabs)/                  # Customer tab navigation
+│   │   │   ├── index.tsx           # Home/Explore
+│   │   │   ├── search/             # Search flow
+│   │   │   ├── favorites.tsx       # Saved locations
+│   │   │   ├── bookings/           # User bookings
+│   │   │   └── account.tsx         # User account
+│   │   └── (screens)/              # Additional screens
+│   │       ├── booking/            # Booking flow
+│   │       ├── location/           # Location details
+│   │       └── settings/           # Settings screens
+│   ├── (dashboard)/                  # Business owner routes (protected)
+│   │   ├── (tabs)/                  # Dashboard tab navigation
+│   │   │   ├── index.tsx           # Dashboard home
+│   │   │   ├── analytics.tsx       # Business analytics
+│   │   │   ├── calendar.tsx        # Appointment calendar
+│   │   │   └── account.tsx         # Business account
+│   │   └── (screens)/              # Dashboard screens
+│   │       └── dashboard/          # Dashboard features
+│   ├── (unauthenticated)/           # Public routes
+│   │   ├── login/                  # Login & password reset
+│   │   │   ├── index.tsx          # Login screen
+│   │   │   └── forgot-password/   # Password reset flow
+│   │   ├── signup/                 # Registration flow
+│   │   │   ├── index.tsx          # Signup screen
+│   │   │   └── email-verification.tsx
+│   │   └── onboarding/            # App introduction
+│   ├── index.tsx                   # Video splash screen
+│   ├── _layout.tsx                 # Root layout
+│   └── +not-found.tsx              # 404 screen
 ├── src/
-│   ├── components/              # Reusable UI components
-│   │   ├── base/                # Base components (Text, Icon, Toast)
-│   │   ├── buttons/             # Button components
-│   │   ├── textInputs/          # Input components
-│   │   └── utils/               # Utility components
-│   ├── constants/               # App constants and theme
-│   ├── hooks/                   # Custom React hooks
-│   ├── services/                # API services and hooks
-│   ├── store/                   # Context providers
-│   └── assets/                  # Images, fonts, icons
-├── app.config.ts                # Expo configuration
-└── package.json
+│   ├── components/                 # Reusable UI components
+│   │   ├── base/                  # Base components (Text, Icon, etc.)
+│   │   ├── buttons/               # Button variants
+│   │   ├── textInputs/            # Input components with validation
+│   │   ├── modals/                # Modal components
+│   │   ├── calendars/             # Calendar components
+│   │   ├── booking/               # Booking-related components
+│   │   ├── preview/               # Preview cards & components
+│   │   └── utils/                 # Utility components
+│   ├── constants/                  # App constants
+│   │   ├── theme.ts               # Theme configuration
+│   │   ├── enums.ts               # App-wide enums
+│   │   ├── images.ts              # Image constants
+│   │   └── env.ts                 # Environment variables
+│   ├── hooks/                      # Custom React hooks
+│   │   ├── useTimer.ts            # Timer hook for resend functionality
+│   │   ├── usePermissions.ts      # Permission handling
+│   │   └── useDebouncing.ts       # Debounce hook
+│   ├── services/                   # API services
+│   │   ├── auth/                  # Authentication (Better Auth)
+│   │   ├── appointments/          # Booking management
+│   │   ├── locations/             # Location services
+│   │   ├── user/                  # User management
+│   │   ├── dashboard/             # Dashboard analytics
+│   │   └── axios/                 # HTTP client & interceptors
+│   ├── store/                      # Global state management
+│   │   ├── userProvider.tsx       # User context
+│   │   └── index.ts
+│   ├── assets/                     # Static assets
+│   │   ├── fonts/                 # Montserrat font family
+│   │   ├── icons/                 # SVG icons
+│   │   ├── images/                # Image assets
+│   │   └── splashVideo.mp4        # Splash screen video
+│   └── helper/                     # Helper functions
+│       └── validation/            # Form validation utilities
+├── ios/                            # iOS native code (generated)
+├── android/                        # Android native code (generated)
+├── app.config.ts                   # Expo configuration
+├── eas.json                        # EAS Build configuration
+├── tsconfig.json                   # TypeScript configuration
+└── package.json                    # Dependencies
 ```
 
 ## 🎨 Design System
 
 The app features a comprehensive design system with:
 
-- **Custom Text Component** - Configurable typography with Montserrat fonts
-- **Icon System** - Unified icon components with consistent styling
-- **Toast System** - Configurable notifications with multiple variants
-- **Theme Configuration** - Centralized colors, spacing, and typography
-- **Button Components** - Multiple button variants with loading states
+- **Custom Text Component** - Configurable typography with Montserrat fonts (Regular, Medium, SemiBold, Bold)
+- **Icon System** - Custom SVG icons with consistent styling and theming
+- **Toast System** - Four notification variants (success, error, info, warning) with custom components
+- **Theme Configuration** - Centralized theme with:
+  - Color palette (neutrals, primary blues/greens, secondary colors, messaging colors)
+  - Spacing system (xs to 3xl)
+  - Border radii (xs to full)
+  - Typography variants (body, headlines, CTA styles)
+  - Shadow presets
+- **Input Components** - Multiple input variants (email, password, phone, text) with validation
+- **Button Components** - Primary and secondary buttons with loading states
+- **Modal System** - Reusable modal components with Bottom Sheet integration
+- **Card Components** - Location previews, booking cards, analytics cards
 
 ## 🔧 Available Scripts
 
@@ -216,29 +297,120 @@ npm run android
 
 ## 📦 Key Dependencies
 
-- **expo-router** - File-based navigation system
-- **@tanstack/react-query** - Server state management
-- **react-native-reanimated** - High-performance animations
-- **@gorhom/bottom-sheet** - Bottom sheet components
+### Core
+
+- **expo** (SDK 53) - React Native framework
+- **expo-router** - File-based navigation and routing
+- **react-native** - Core mobile framework
+- **typescript** - Type safety
+
+### Authentication & API
+
+- **better-auth** - Modern authentication library with email/password and OAuth
+- **@tanstack/react-query** (v5) - Server state management and data fetching
+- **axios** - HTTP client with interceptors
+- **zod** - Schema validation
+
+### UI & Interactions
+
+- **react-native-reanimated** (v3) - High-performance animations
 - **react-native-gesture-handler** - Gesture recognition
-- **toastify-react-native** - Toast notification system
+- **@gorhom/bottom-sheet** - Bottom sheet modals
+- **toastify-react-native** - Toast notifications
+- **react-native-keyboard-controller** - Keyboard management
+- **expo-video** - Video playback for splash screen
+
+### Maps & Location
+
+- **react-native-google-maps** - Google Maps integration
+- **expo-location** - Location services
+
+### Storage & Security
+
+- **expo-secure-store** - Secure token storage
+- **@react-native-async-storage/async-storage** - Local data persistence
+
+### Development
+
+- **reactotron-react-native** - Debugging and development tools
 
 ## 🔐 Authentication
 
-The app includes a complete authentication system with:
+The app includes a complete authentication system powered by Better Auth:
 
-- Token-based authentication
-- Secure token storage with AsyncStorage
-- Automatic token refresh handling
-- Route protection based on authentication state
+### Features
+
+- **Email/Password Authentication** - Traditional email and password login
+- **Google OAuth** - Social authentication with Google
+- **Password Reset** - Email-based password reset with resend timer
+- **Email Verification** - Verify user email addresses
+- **Secure Storage** - Tokens stored using Expo SecureStore
+- **Route Protection** - Automatic route guarding based on auth state
+- **Session Management** - Better Auth session handling with auto-refresh
+- **Dual User Roles** - Customer and business owner authentication flows
+
+### Implementation
+
+- Better Auth client with cookie-based sessions
+- Axios interceptors for authenticated requests
+- React Query integration for user data fetching
+- Protected route groups: `(authenticated)` and `(dashboard)`
+- Automatic redirect to login for unauthenticated users
+
+## 🎯 App Flow
+
+### User Journey
+
+1. **Video Splash Screen** - Engaging video introduction (can be skipped)
+2. **Onboarding** - Multi-step introduction to app features
+3. **Authentication** - Login or signup with email/password or Google
+4. **Main App** - Access based on user role:
+
+#### Customer Experience
+
+- **Home/Explore** - Discover locations and services
+- **Search** - Advanced search with filters
+- **Favorites** - Saved locations for quick access
+- **Bookings** - Manage appointments and reservations
+- **Account** - Profile settings and preferences
+
+#### Business Owner Dashboard
+
+- **Dashboard** - Overview of business metrics
+- **Analytics** - Detailed business insights and reports
+- **Calendar** - Appointment management and scheduling
+- **Account** - Business profile and settings
 
 ## 🎯 Environment Variants
 
 The app supports multiple build variants:
 
-- **Development** - Full debugging, dev tools enabled
-- **Preview** - Staging environment for testing
-- **Production** - Optimized production build
+- **Development** (`APP_VARIANT=development`) - Full debugging, dev tools, Reactotron enabled
+- **Preview** (`APP_VARIANT=preview`) - Staging environment for testing
+- **Production** (`APP_VARIANT=production`) - Optimized production build
+
+## ⚡ Quick Start (TL;DR)
+
+For experienced developers who want to get started quickly:
+
+```bash
+# 1. Clone and install
+git clone <your-repo-url>
+cd booklee
+npm install
+
+# 2. Setup environment
+cp .env.example .env
+# Edit .env with your API keys
+
+# 3. Generate native code (REQUIRED)
+npm run prebuild
+
+# 4. Run the app
+npm run ios          # For iOS
+# OR
+npm run android      # For Android
+```
 
 ## 📄 License
 

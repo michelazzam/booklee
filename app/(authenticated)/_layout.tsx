@@ -8,8 +8,8 @@ import { theme } from '~/src/constants/theme';
 export default function AuthenticatedLayout() {
   /*** Constants ***/
   const pathname = usePathname();
-  const { isOnboardingCompleted } = useUserProvider();
   const { data: userData } = AuthServices.useGetMe();
+  const { isOnboardingCompleted } = useUserProvider();
   const { isAuthenticated } = AuthServices.useGetBetterAuthUser();
 
   // If not authenticated, redirect to login
