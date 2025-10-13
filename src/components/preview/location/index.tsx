@@ -37,7 +37,7 @@ const LocationCard = ({
   animatedStyle = 'fadeIn',
 }: LocationCardProps) => {
   /***** Constants *****/
-  const { _id, name, city, tags, rating, photos } = data;
+  const { _id, city, tags, rating, photos, organization } = data;
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(_id);
 
   /***** Memoization *****/
@@ -116,7 +116,7 @@ const LocationCard = ({
         <View style={{ gap: theme.spacing.xs }}>
           <View style={styles.topContainer}>
             <Text weight="semiBold" style={{ flexShrink: 1 }} size={theme.typography.fontSizes.xs}>
-              {name}
+              {organization}
             </Text>
 
             {!!rating && (

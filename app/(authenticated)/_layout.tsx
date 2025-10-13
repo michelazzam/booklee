@@ -8,14 +8,9 @@ import { theme } from '~/src/constants/theme';
 export default function AuthenticatedLayout() {
   /*** Constants ***/
   const pathname = usePathname();
+  const { data: userData } = AuthServices.useGetMe();
   const { isOnboardingCompleted } = useUserProvider();
-  const { data: userData, isLoading: isUserDataLoading } = AuthServices.useGetMe();
-  const { isAuthenticated, isLoading: isAuthLoading } = AuthServices.useGetBetterAuthUser();
-
-  // Wait for auth check to complete
-  if (isAuthLoading || isUserDataLoading) {
-    return null;
-  }
+  const { isAuthenticated } = AuthServices.useGetBetterAuthUser();
 
   // If not authenticated, redirect to login
   if (!isAuthenticated || !userData) {
@@ -27,7 +22,7 @@ export default function AuthenticatedLayout() {
   }
 
   // Check if user is owner
-  if (userData?.role === 'owner') {
+  if (userData?.role !== 'user') {
     return <Redirect href={'/(dashboard)/(tabs)'} />;
   }
 

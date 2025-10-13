@@ -20,6 +20,7 @@ export type LocationType = {
   tags: string[];
   rating?: number;
   photos?: string[];
+  organization: string;
   geo?: LocationGeolocationType;
 };
 export type CategoryType = {
