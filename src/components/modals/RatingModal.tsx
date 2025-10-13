@@ -92,7 +92,7 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
         }
       );
     },
-    [submitRating, userData?.user.id, deleteRating, ratingRef]
+    [submitRating, userData?.user.id, ratingRef]
   );
   const handleModalClose = useCallback(() => {
     bottomSheetRef.current?.close();
