@@ -11,3 +11,7 @@ export const IMAGES = {
     texturedBackground: require('../assets/images/appImages/texturedBackground.png'),
   },
 };
+
+export const VIDEOS = {
+  splash: require('../assets/splashVideo.mp4'),
+};

@@ -14,7 +14,6 @@ import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
 
 import { UserProvider, useUserProvider } from '~/src/store';
-import { AuthServices } from '~/src/services';
 
 import { CustomToast } from '~/src/components/base';
 
@@ -54,8 +53,6 @@ const toastConfig = {
 const Navigation = () => {
   /*** Constants ***/
   const { isInitialized } = useUserProvider();
-  const { isFetched: isUserFetched } = AuthServices.useGetMe();
-  const { isAuthenticated, isLoading: isAuthLoading } = AuthServices.useGetBetterAuthUser();
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../src/assets/fonts/Montserrat-Regular.ttf'),
     'Montserrat-Medium': require('../src/assets/fonts/Montserrat-Medium.ttf'),
@@ -67,30 +64,18 @@ const Navigation = () => {
   const appInitialized = useMemo(() => {
     return fontsLoaded && isInitialized;
   }, [fontsLoaded, isInitialized]);
-  const isAppReady = useMemo(() => {
-    // Wait for fonts and user provider to initialize
-    if (!appInitialized) {
-      return false;
-    }
-
-    // If user is authenticated, wait for user data to be fetched
-    if (isAuthenticated) {
-      return isUserFetched;
-    }
-
-    // If not authenticated, wait for auth check to complete
-    return !isAuthLoading;
-  }, [appInitialized, isUserFetched, isAuthenticated, isAuthLoading]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
       NavigationBar.setVisibilityAsync('hidden');
     }
 
-    if (isAppReady) {
-      SplashScreen.hideAsync();
+    if (appInitialized) {
+      setTimeout(() => {
+        SplashScreen.hideAsync();
+      }, 1000);
     }
-  }, [isAppReady]);
+  }, [appInitialized]);
 
   if (!appInitialized) {
     return null;

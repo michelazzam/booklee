@@ -66,6 +66,7 @@ const config: ExpoConfig = {
     },
   },
   plugins: [
+    'expo-video',
     'expo-router',
     [
       'expo-splash-screen',
