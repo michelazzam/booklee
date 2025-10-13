@@ -120,14 +120,8 @@ const useGetLocationRatings = (filters?: LocationRatingReqType) => {
 };
 
 const useSubmitLocationRating = () => {
-  /*** Constants ***/
-  const queryClient = useQueryClient();
-
   return useMutation<LocationRatingSubmitResType, ResErrorType, LocationRatingSubmitReqType>({
     mutationFn: (params) => submitLocationRatingApi(params),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['getUserAppointments', { needsReview: true }] });
-    },
   });
 };
 

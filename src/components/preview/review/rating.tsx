@@ -1,6 +1,6 @@
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { useState, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useState, useCallback } from 'react';
 import { Image } from 'expo-image';
 
 import { type UserAppointmentType } from '~/src/services';
@@ -11,6 +11,10 @@ import { theme } from '~/src/constants';
 import { Icon, Text } from '~/src/components/base';
 import { Input } from '../../textInputs';
 import { Button } from '../../buttons';
+
+export type RatingRef = {
+  close: () => void;
+};
 
 export type RatingDataType = {
   rating: number;
@@ -23,8 +27,8 @@ type RatingProps = {
   onSubmit: (ratingData: RatingDataType) => void;
 };
 
-const Rating = ({ data, onSubmit, isSubmitting }: RatingProps) => {
-  /*** Constants ***/
+const Rating = forwardRef<RatingRef, RatingProps>(({ data, onSubmit, isSubmitting }, ref) => {
+  /***** Constants *****/
   const { location } = data;
 
   /*** Animations ***/
@@ -45,9 +49,15 @@ const Rating = ({ data, onSubmit, isSubmitting }: RatingProps) => {
     review: '',
   });
 
+  useImperativeHandle(ref, () => ({
+    close: () => {
+      toggleExpanded();
+      setRatingData({ rating: 0, review: '' });
+    },
+  }));
+
   const toggleExpanded = useCallback(() => {
     const willExpand = isExpanded.value === 0;
-
     if (willExpand) {
       setShowContent(true);
     }
@@ -55,9 +65,9 @@ const Rating = ({ data, onSubmit, isSubmitting }: RatingProps) => {
     setTimeout(() => {
       const targetValue = willExpand ? 1 : 0;
       isExpanded.value = withSpring(targetValue, {
+        mass: 0.8,
         damping: 20,
         stiffness: 90,
-        mass: 0.8,
       });
 
       if (!willExpand) {
@@ -74,11 +84,7 @@ const Rating = ({ data, onSubmit, isSubmitting }: RatingProps) => {
   const handleSubmit = useCallback(() => {
     onSubmit({ ...ratingData, appointmentId: data.id });
     setRatingData({ rating: 0, review: '' });
-
-    setTimeout(() => {
-      toggleExpanded();
-    }, 1000);
-  }, [ratingData, data.id, onSubmit, toggleExpanded]);
+  }, [ratingData, data.id, onSubmit]);
 
   const RenderStars = useCallback(() => {
     return Array.from({ length: 5 }, (_, index) => {
@@ -148,12 +154,17 @@ const Rating = ({ data, onSubmit, isSubmitting }: RatingProps) => {
             />
           </View>
 
-          <Button title="Submit" onPress={handleSubmit} isLoading={isSubmitting} />
+          <Button
+            title="Submit"
+            onPress={handleSubmit}
+            isLoading={isSubmitting}
+            disabled={isSubmitting}
+          />
         </Animated.View>
       )}
     </View>
   );
-};
+});
 
 export default Rating;
 

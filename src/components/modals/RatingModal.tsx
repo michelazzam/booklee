@@ -12,8 +12,11 @@ import { LocationServices, type UserAppointmentType, UserServices } from '~/src/
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
-import Rating, { type RatingDataType } from '~/src/components/preview/review/rating';
 import { Icon, Text } from '~/src/components/base';
+import Rating, {
+  type RatingDataType,
+  type RatingRef,
+} from '~/src/components/preview/review/rating';
 
 type RatingModalProps = {
   appointments: UserAppointmentType[];
@@ -26,6 +29,7 @@ export type RatingModalRef = {
 
 const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments }, ref) => {
   /*** Refs ***/
+  const ratingRef = useRef<RatingRef>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   /*** States ***/
@@ -57,32 +61,41 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
 
   const handleSubmit = useCallback(
     (ratingData: RatingDataType) => {
-      Keyboard.dismiss();
-      const { rating, review, appointmentId = '' } = ratingData;
+      ratingRef.current?.close();
+      return;
+      // Keyboard.dismiss();
+      // const { rating, review, appointmentId = '' } = ratingData;
 
-      if (!rating || !review) {
-        Toast.show({
-          type: 'error',
-          text1: 'Please select a rating and write a review',
-        });
-        return;
-      }
+      // if (!rating || !review) {
+      //   Toast.show({
+      //     type: 'error',
+      //     text1: 'Please select a rating and write a review',
+      //   });
+      //   return;
+      // }
 
-      submitRating(
-        {
-          rating,
-          appointmentId,
-          message: review,
-          userId: userData?.user.id || '',
-        },
-        {
-          onSuccess: () => {
-            deleteRating({ appointmentId });
-          },
-        }
-      );
+      // submitRating(
+      //   {
+      //     rating,
+      //     appointmentId,
+      //     message: review,
+      //     userId: userData?.user.id || '',
+      //   },
+      //   {
+      //     onSuccess: () => {
+      //       ratingRef.current?.close();
+      //       deleteRating({ appointmentId });
+      //     },
+      //     onError: () => {
+      //       Toast.show({
+      //         type: 'error',
+      //         text1: 'Failed to submit rating',
+      //       });
+      //     },
+      //   }
+      // );
     },
-    [submitRating, userData?.user.id, deleteRating]
+    [submitRating, userData?.user.id, deleteRating, ratingRef]
   );
   const handleModalClose = useCallback(() => {
     bottomSheetRef.current?.close();
@@ -98,9 +111,9 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
   );
   const RenderItem = useCallback(
     ({ item }: { item: UserAppointmentType }) => (
-      <Rating data={item} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+      <Rating ref={ratingRef} data={item} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
     ),
-    [isSubmitting, handleSubmit]
+    [isSubmitting, handleSubmit, ratingRef]
   );
 
   if (!isVisible) {

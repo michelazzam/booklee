@@ -167,7 +167,9 @@ const HomePage = () => {
     if (!needsReviewAppointments) return;
 
     if (needsReviewAppointments.length > 0 && categories) {
-      ratingModalRef.current?.present();
+      setTimeout(() => {
+        ratingModalRef.current?.present();
+      }, 500);
     }
   }, [needsReviewAppointments, categories]);
 
