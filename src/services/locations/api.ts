@@ -20,7 +20,8 @@ import type {
   SearchResType,
 } from './types';
 
-export const DEFAULT_LOCATION_FIELDS = 'rating,price,geo,_id,slug,name,logo,city,tags,photos';
+export const DEFAULT_LOCATION_FIELDS =
+  'rating,price,geo,_id,slug,name,logo,city,tags,photos,organization';
 
 /*** API for get locations categories ***/
 export const getLocationsCategoriesApi = async (filters?: GetLocationsReqType) => {

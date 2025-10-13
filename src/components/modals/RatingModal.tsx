@@ -82,12 +82,11 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
         {
           onSuccess: () => {
             ratingRef.current?.close();
-            deleteRating({ appointmentId });
           },
-          onError: () => {
+          onError: (error) => {
             Toast.show({
               type: 'error',
-              text1: 'Failed to submit rating',
+              text1: error.message || 'Failed to submit rating',
             });
           },
         }

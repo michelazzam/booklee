@@ -117,7 +117,6 @@ const CategorySection = memo(({ category }: { category: LocationCategoryType }) 
 const HomePage = () => {
   /*** Refs ***/
   const ratingModalRef = useRef<RatingModalRef>(null);
-
   /*** States ***/
   const [isRefetching, setIsRefetching] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(
@@ -169,7 +168,7 @@ const HomePage = () => {
     if (needsReviewAppointments.length > 0 && categories) {
       setTimeout(() => {
         ratingModalRef.current?.present();
-      }, 500);
+      }, 800);
     }
   }, [needsReviewAppointments, categories]);
 
