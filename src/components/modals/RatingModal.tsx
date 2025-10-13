@@ -61,39 +61,37 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
 
   const handleSubmit = useCallback(
     (ratingData: RatingDataType) => {
-      ratingRef.current?.close();
-      return;
-      // Keyboard.dismiss();
-      // const { rating, review, appointmentId = '' } = ratingData;
+      Keyboard.dismiss();
+      const { rating, review, appointmentId = '' } = ratingData;
 
-      // if (!rating || !review) {
-      //   Toast.show({
-      //     type: 'error',
-      //     text1: 'Please select a rating and write a review',
-      //   });
-      //   return;
-      // }
+      if (!rating || !review) {
+        Toast.show({
+          type: 'error',
+          text1: 'Please select a rating and write a review',
+        });
+        return;
+      }
 
-      // submitRating(
-      //   {
-      //     rating,
-      //     appointmentId,
-      //     message: review,
-      //     userId: userData?.user.id || '',
-      //   },
-      //   {
-      //     onSuccess: () => {
-      //       ratingRef.current?.close();
-      //       deleteRating({ appointmentId });
-      //     },
-      //     onError: () => {
-      //       Toast.show({
-      //         type: 'error',
-      //         text1: 'Failed to submit rating',
-      //       });
-      //     },
-      //   }
-      // );
+      submitRating(
+        {
+          rating,
+          appointmentId,
+          message: review,
+          userId: userData?.user.id || '',
+        },
+        {
+          onSuccess: () => {
+            ratingRef.current?.close();
+            deleteRating({ appointmentId });
+          },
+          onError: () => {
+            Toast.show({
+              type: 'error',
+              text1: 'Failed to submit rating',
+            });
+          },
+        }
+      );
     },
     [submitRating, userData?.user.id, deleteRating, ratingRef]
   );
