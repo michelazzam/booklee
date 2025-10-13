@@ -9,13 +9,8 @@ export default function AuthenticatedLayout() {
   /*** Constants ***/
   const pathname = usePathname();
   const { isOnboardingCompleted } = useUserProvider();
-  const { data: userData, isLoading: isUserDataLoading } = AuthServices.useGetMe();
-  const { isAuthenticated, isLoading: isAuthLoading } = AuthServices.useGetBetterAuthUser();
-
-  // Wait for auth check to complete
-  if (isAuthLoading || isUserDataLoading) {
-    return null;
-  }
+  const { data: userData } = AuthServices.useGetMe();
+  const { isAuthenticated } = AuthServices.useGetBetterAuthUser();
 
   // If not authenticated, redirect to login
   if (!isAuthenticated || !userData) {
