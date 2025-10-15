@@ -15,9 +15,9 @@ import { theme } from '~/src/constants/theme';
 
 import { LocationCard, LocationCardSkeleton } from '~/src/components/preview';
 import { FilterContainer, type FilterType } from '~/src/components/utils';
-import { type FilterModalRef } from '~/src/components/modals';
+import { type FilterModalRef, FilterModal } from '~/src/components/modals';
 import { SearchInput } from '~/src/components/textInputs';
-import { Text } from '~/src/components/base';
+import { Icon, Text } from '~/src/components/base';
 
 const LocationListing = () => {
   /*** Refs ***/
@@ -90,9 +90,16 @@ const LocationListing = () => {
     }
 
     return (
-      <Text size={theme.typography.fontSizes.md} weight="medium" color={theme.colors.darkText[100]}>
-        No locations found
-      </Text>
+      <View style={styles.emptyStateContent}>
+        <Icon name="store" size={100} color={theme.colors.primaryBlue[100]} />
+
+        <Text
+          weight="semiBold"
+          color={theme.colors.darkText[100]}
+          size={theme.typography.fontSizes.md}>
+          No locations found
+        </Text>
+      </View>
     );
   }, [isLoading]);
   const RenderRefreshControl = useCallback(() => {
@@ -105,24 +112,6 @@ const LocationListing = () => {
       />
     );
   }, [isRefreshing, handleRefresh]);
-  const RenderHeaderComponent = useCallback(() => {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        style={styles.mapIconContainer}
-        onPress={() =>
-          router.replace({
-            pathname: '/(authenticated)/(tabs)/search/map',
-            params: { filterSlug: selectedFilter?.category },
-          })
-        }>
-        <Text color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.xs}>
-          Map
-        </Text>
-        <MapIcon />
-      </TouchableOpacity>
-    );
-  }, [router, selectedFilter]);
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
@@ -158,7 +147,7 @@ const LocationListing = () => {
       </View>
 
       <View style={{ flex: 1 }}>
-        {/* <TouchableOpacity
+        <TouchableOpacity
           activeOpacity={0.8}
           style={styles.mapIconContainer}
           onPress={() =>
@@ -171,7 +160,7 @@ const LocationListing = () => {
             Map
           </Text>
           <MapIcon />
-        </TouchableOpacity> */}
+        </TouchableOpacity>
 
         <FlatList
           data={locationsData}
@@ -180,11 +169,16 @@ const LocationListing = () => {
           showsVerticalScrollIndicator={false}
           refreshControl={RenderRefreshControl()}
           ListEmptyComponent={RenderEmptyComponent}
-          ListHeaderComponent={RenderHeaderComponent}
           ListHeaderComponentStyle={styles.listHeaderComponent}
           contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
         />
       </View>
+
+      <FilterModal
+        ref={filterModalRef}
+        onReset={() => setSelectedFilter((prev) => ({ category: prev?.category }))}
+        onApply={(filters) => setSelectedFilter((prev) => ({ ...prev, ...filters }))}
+      />
     </View>
   );
 };
@@ -219,14 +213,14 @@ const styles = StyleSheet.create({
   },
   mapIconContainer: {
     top: 20,
-    height: 24,
+    height: 32,
     zIndex: 1000,
     alignSelf: 'center',
     flexDirection: 'row',
     position: 'absolute',
     alignItems: 'center',
     gap: theme.spacing.sm,
-    borderRadius: theme.radii.md,
+    borderRadius: theme.radii.xl,
     paddingHorizontal: theme.spacing.md,
     backgroundColor: theme.colors.darkText[100],
   },
@@ -234,5 +228,10 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     position: 'absolute',
     alignSelf: 'center',
+  },
+  emptyStateContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

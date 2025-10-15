@@ -73,8 +73,7 @@ const LoginScreen = () => {
             },
           });
         } else {
-          // @ts-expect-error
-          Toast.error(error.error_description || 'Failed to login');
+          Toast.error(error.message || 'Failed to login');
         }
       },
     });

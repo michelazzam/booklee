@@ -141,6 +141,7 @@ export type LocationService = {
 export type LocationReviewLocationType = {
   id: string;
   name: string;
+  city: string;
 };
 export type LocationReviewType = {
   rating: number;

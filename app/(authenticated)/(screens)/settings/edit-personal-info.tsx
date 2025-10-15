@@ -120,7 +120,7 @@ export const EditPersonalInfoPage = () => {
         />
         <View style={styles.formSection}>
           <Input
-            label="First Name*"
+            label="First Name"
             placeholder="John"
             value={data.firstName}
             error={validationErrors.errors?.firstName}
@@ -128,7 +128,7 @@ export const EditPersonalInfoPage = () => {
           />
 
           <Input
-            label="Last Name*"
+            label="Last Name"
             placeholder="Doe"
             value={data.lastName}
             error={validationErrors.errors?.lastName}

@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
-import { Text } from '~/src/components/base';
+import { AwareScrollView, Text } from '~/src/components/base';
 import { Button } from '~/src/components/buttons';
 import { LocationServices, AppointmentServices } from '~/src/services';
 import type { BookingData, BookingStep, SelectedService, ServiceBooking } from '~/src/services';
@@ -428,9 +428,12 @@ const BookingFlow = () => {
       </View>
 
       {/* Content */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
+      <AwareScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        bounces={false}>
         {renderStepContent()}
-      </ScrollView>
+      </AwareScrollView>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -558,7 +561,7 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     marginTop: theme.spacing.lg,
     paddingHorizontal: theme.spacing.lg,
   },

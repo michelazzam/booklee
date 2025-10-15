@@ -6,16 +6,16 @@ import { withErrorCatch } from '../axios/error';
 import {
   RemoveFromFavoritesReqType,
   RemoveFromFavoritesResType,
+  GetUserLocationsResType,
+  UpdateUserImageReqType,
+  UpdateUserImageResType,
   AddToFavoritesReqType,
   AddToFavoritesResType,
   GetFavoritesResType,
   UpdateUserReqType,
   UpdateUserResType,
   GetUserMeResType,
-  GetUserLocationsResType,
   DeleteUserResType,
-  UpdateUserImageResType,
-  UpdateUserImageReqType,
 } from './types';
 
 /*** API for get user ***/

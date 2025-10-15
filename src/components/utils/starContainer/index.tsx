@@ -56,7 +56,7 @@ const StarContainer = ({ data, containerStyle }: StarContainerProps) => {
         </Text>
 
         <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText[100]}>
-          N/A
+          {locations[0].city}
         </Text>
       </View>
 

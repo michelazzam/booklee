@@ -14,9 +14,9 @@ import { theme } from '~/src/constants/theme';
 import { BackIcon, HeartIcon, HeartIconFilled, StarIcon } from '~/src/assets/icons';
 
 import { ImageCarousel, TabMenu, LocationSplashImage } from '~/src/components/utils';
+import { Icon, Text, HeaderNavigation } from '~/src/components/base';
 import { Services } from '~/src/components/preview';
 import { Button } from '~/src/components/buttons';
-import { Text } from '~/src/components/base';
 
 type SalonDetailPageProps = {
   id: string;
@@ -34,7 +34,7 @@ const SalonDetailPage = () => {
   const { top, bottom } = useAppSafeAreaInsets();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(id);
-  const { data: location, isLoading } = LocationServices.useGetLocationById(id || '');
+  const { data: location, isLoading, isFetched } = LocationServices.useGetLocationById(id || '');
   const { photos, name, address, category, rating, phone, tags, operatingHours, geo } =
     location || {};
 
@@ -194,6 +194,25 @@ const SalonDetailPage = () => {
         ]
       : [{ tabName: { name: 'About', value: 'about' }, tabChildren: RenderAbout() }];
   }, [RenderServices, RenderAbout, location?.locationServices]);
+
+  if (!location && isFetched) {
+    return (
+      <>
+        <HeaderNavigation title="Oh no!" />
+
+        <View style={styles.emptyScreenContainer}>
+          <Icon name="store" size={100} color={theme.colors.primaryBlue[100]} />
+
+          <Text
+            weight="semiBold"
+            color={theme.colors.darkText[100]}
+            size={theme.typography.fontSizes.md}>
+            Location not found
+          </Text>
+        </View>
+      </>
+    );
+  }
 
   return (
     <>
@@ -372,5 +391,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.md,
+  },
+  emptyScreenContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.lg,
   },
 });

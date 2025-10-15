@@ -178,6 +178,7 @@ export default ConfirmationStep;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     gap: theme.spacing.lg,
   },
   card: {

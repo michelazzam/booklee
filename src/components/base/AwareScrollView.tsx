@@ -1,35 +1,29 @@
-import { forwardRef } from "react";
+import { forwardRef } from 'react';
 import {
   type NativeSyntheticEvent,
   type NativeScrollEvent,
   type ScrollViewProps,
   ScrollView,
-} from "react-native";
+} from 'react-native';
 import {
   type KeyboardAwareScrollViewProps,
   KeyboardAwareScrollView,
-} from "react-native-keyboard-controller";
+} from 'react-native-keyboard-controller';
 import Animated, {
   type AnimatedScrollViewProps,
   useAnimatedScrollHandler,
   runOnJS,
-} from "react-native-reanimated";
-
-import { useAppSafeAreaInsets } from "~/src/hooks";
+} from 'react-native-reanimated';
 
 type AwareScrollViewProps = ScrollViewProps &
   KeyboardAwareScrollViewProps &
   AnimatedScrollViewProps & {
     onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onMomentumEnd?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
-    onScrollBeginDrag?: (
-      event: NativeSyntheticEvent<NativeScrollEvent>
-    ) => void;
+    onScrollBeginDrag?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   };
 
-const AnimatedKeyboardAwareScrollView = Animated.createAnimatedComponent(
-  KeyboardAwareScrollView
-);
+const AnimatedKeyboardAwareScrollView = Animated.createAnimatedComponent(KeyboardAwareScrollView);
 
 const AwareScrollView = forwardRef<ScrollView, AwareScrollViewProps>(
   (
@@ -40,29 +34,27 @@ const AwareScrollView = forwardRef<ScrollView, AwareScrollViewProps>(
       bounces = false,
       onScrollBeginDrag,
       contentContainerStyle,
-      keyboardShouldPersistTaps = "handled",
+      keyboardShouldPersistTaps = 'handled',
       showsVerticalScrollIndicator = false,
       ...props
     },
     ref
   ) => {
-    const { bottom } = useAppSafeAreaInsets();
-
     const scrollHandler = useAnimatedScrollHandler({
       onScroll: (event) => {
-        "worklet";
+        'worklet';
         if (onScroll) {
           runOnJS(onScroll)(event as any);
         }
       },
       onMomentumEnd: (event) => {
-        "worklet";
+        'worklet';
         if (onMomentumEnd) {
           runOnJS(onMomentumEnd)(event as any);
         }
       },
       onBeginDrag: (event) => {
-        "worklet";
+        'worklet';
         if (onScrollBeginDrag) {
           runOnJS(onScrollBeginDrag)(event as any);
         }
@@ -73,19 +65,18 @@ const AwareScrollView = forwardRef<ScrollView, AwareScrollViewProps>(
       <AnimatedKeyboardAwareScrollView
         ref={ref}
         bounces={bounces}
+        extraKeyboardSpace={100}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
-        extraKeyboardSpace={bottom}
         contentContainerStyle={contentContainerStyle}
         keyboardShouldPersistTaps={keyboardShouldPersistTaps}
         showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-        {...props}
-      >
+        {...props}>
         {children}
       </AnimatedKeyboardAwareScrollView>
     );
   }
 );
 
-AwareScrollView.displayName = "AwareScrollView";
+AwareScrollView.displayName = 'AwareScrollView';
 export default AwareScrollView;

@@ -10,8 +10,8 @@ import { theme } from '~/src/constants/theme';
 
 import { LocationCardSkeleton, SearchHistory, LocationCard } from '~/src/components/preview';
 import { SearchInput, type SearchInputRef } from '~/src/components/textInputs';
+import { Text, AwareScrollView } from '~/src/components/base';
 import { BackIcon } from '~/src/assets/icons';
-import { Text } from '~/src/components/base';
 
 const Search = () => {
   /*** Refs ***/
@@ -124,20 +124,10 @@ const Search = () => {
 
     return <RenderRecentSearches />;
   }, [RenderRecentSearches, isSearching, searchQuery]);
-  const RenderItem = useCallback(
-    ({ item: category, index }: { item: LocationType; index: number }) => (
-      <LocationCard
-        data={category}
-        delay={index * 100}
-        onPress={() => router.navigate(`/(authenticated)/(screens)/location/${category._id}`)}
-      />
-    ),
-    [router]
-  );
 
   return (
-    <>
-      <View style={[styles.headerContainer, { paddingTop: top }]}>
+    <View style={[styles.container, { paddingTop: top }]}>
+      <View style={{ height: 48 }}>
         <SearchInput
           autoFocus
           value={searchQuery}
@@ -151,7 +141,24 @@ const Search = () => {
         />
       </View>
 
-      <FlatList
+      <AwareScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}>
+        {!searchQuery ? (
+          <RenderEmptyComponent />
+        ) : (
+          searchResults.map((result, index) => (
+            <LocationCard
+              data={result}
+              key={result._id}
+              delay={index * 100}
+              onPress={() => router.navigate(`/(authenticated)/(screens)/location/${result._id}`)}
+            />
+          ))
+        )}
+      </AwareScrollView>
+
+      {/* <FlatList
         data={searchResults}
         renderItem={RenderItem}
         onEndReachedThreshold={0.5}
@@ -160,21 +167,18 @@ const Search = () => {
         ListEmptyComponent={RenderEmptyComponent}
         keyExtractor={(item, index) => item._id + index}
         contentContainerStyle={[styles.listContent, { paddingBottom: bottom }]}
-      />
-    </>
+      /> */}
+    </View>
   );
 };
 
 export default Search;
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
+  container: {
+    flex: 1,
     gap: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
     paddingHorizontal: theme.spacing.lg,
-    backgroundColor: theme.colors.white.DEFAULT,
   },
   emptyTextStyle: {
     textAlign: 'center',
@@ -183,7 +187,6 @@ const styles = StyleSheet.create({
   listContent: {
     flexGrow: 1,
     gap: theme.spacing.lg,
-    paddingHorizontal: theme.spacing.lg,
   },
   recentSearchesContainer: {
     flex: 1,
