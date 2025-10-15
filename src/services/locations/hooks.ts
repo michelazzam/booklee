@@ -126,7 +126,7 @@ const useSubmitLocationRating = () => {
   return useMutation<LocationRatingSubmitResType, ResErrorType, LocationRatingSubmitReqType>({
     mutationFn: (params) => submitLocationRatingApi(params),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['getLocationRatings'] });
+      queryClient.refetchQueries({ queryKey: ['getUserAppointmentsNeedsReview'] });
     },
   });
 };

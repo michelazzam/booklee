@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 
 import { type UserAppointmentType } from '~/src/services';
 
-import { StarIcon } from '~/src/assets/icons';
+import { AppLogo, StarIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants';
 
 import { Icon, Text } from '~/src/components/base';
@@ -112,7 +112,19 @@ const Rating = forwardRef<RatingRef, RatingProps>(({ data, onSubmit, isSubmittin
         activeOpacity={0.7}
         onPress={toggleExpanded}
         style={styles.ratingPreviewContainer}>
-        <Image source={location.photos[0]} style={styles.image} />
+        {location.photos?.[0] ? (
+          <Image
+            transition={100}
+            contentFit="cover"
+            style={styles.image}
+            cachePolicy="memory-disk"
+            source={{ uri: location.photos?.[0] }}
+          />
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <AppLogo width={24} height={24} />
+          </View>
+        )}
 
         <View style={styles.ratingContentContainer}>
           <View style={styles.ratingHeaderContainer}>
@@ -185,6 +197,14 @@ const styles = StyleSheet.create({
     width: 68,
     height: 68,
     borderRadius: theme.radii.md,
+  },
+  imagePlaceholder: {
+    width: 68,
+    height: 68,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radii.md,
+    backgroundColor: theme.colors.lightText + '70',
   },
   ratingContentContainer: {
     flex: 1,

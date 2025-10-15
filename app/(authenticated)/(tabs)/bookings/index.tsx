@@ -25,9 +25,8 @@ const UpcomingBookingsPage = () => {
     fetchNextPage,
     isFetchingNextPage,
     data: userAppointments,
-  } = AppointmentServices.useGetUserAppointments({
-    upcoming: true,
-  });
+    isRefetching: isRefetchingUpcoming,
+  } = AppointmentServices.useGetUpcomingUserAppointments();
 
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -86,13 +85,13 @@ const UpcomingBookingsPage = () => {
   const RenderRefreshControl = useCallback(() => {
     return (
       <RefreshControl
-        refreshing={isRefetching}
+        refreshing={isRefetching || isRefetchingUpcoming}
         onRefresh={handleRefresh}
         colors={[theme.colors.primaryBlue[100]]}
         tintColor={theme.colors.primaryBlue[100]}
       />
     );
-  }, [isRefetching, handleRefresh]);
+  }, [isRefetching, isRefetchingUpcoming, handleRefresh]);
 
   return (
     <>

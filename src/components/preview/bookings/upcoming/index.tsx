@@ -43,7 +43,7 @@ const Booking = ({ data }: BookingProps) => {
         <View style={{ alignItems: 'flex-end' }}>
           <Text size={theme.typography.fontSizes.xs}>Starting {price} $</Text>
 
-          <Text size={theme.typography.fontSizes.xs}>{durationMinutes}</Text>
+          <Text size={theme.typography.fontSizes.xs}>{durationMinutes} min</Text>
         </View>
       </View>
     );

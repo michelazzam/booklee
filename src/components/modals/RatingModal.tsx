@@ -47,11 +47,11 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
       setIsVisible(true);
 
       setTimeout(() => {
-        bottomSheetRef.current?.snapToIndex(0);
+        bottomSheetRef.current?.expand();
       }, 500);
     },
     dismiss: () => {
-      bottomSheetRef.current?.close();
+      bottomSheetRef.current?.collapse();
 
       setTimeout(() => {
         setIsVisible(false);
@@ -95,7 +95,7 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
     [submitRating, userData?.user.id, ratingRef]
   );
   const handleModalClose = useCallback(() => {
-    bottomSheetRef.current?.close();
+    bottomSheetRef.current?.collapse();
     setIsVisible(false);
     deleteRating(undefined);
   }, [deleteRating]);
@@ -122,8 +122,8 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
       index={-1}
       enablePanDownToClose
       ref={bottomSheetRef}
-      snapPoints={['85%']}
       onClose={handleModalClose}
+      snapPoints={['40%', '85%']}
       backdropComponent={RenderBackdrop}>
       <View style={styles.header}>
         <View style={{ width: 24 }} />
@@ -183,6 +183,5 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.md,
   },
 });

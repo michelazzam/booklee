@@ -1,4 +1,4 @@
-import { View, StyleSheet, Image, FlatList, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Image, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
 
@@ -25,9 +25,19 @@ const PastBookingsPage = () => {
     fetchNextPage,
     isFetchingNextPage,
     data: userAppointments,
-  } = AppointmentServices.useGetUserAppointments({
-    past: true,
-  });
+  } = AppointmentServices.useGetPastUserAppointments();
+
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const handleRefresh = useCallback(() => {
+    setIsRefetching(true);
+    refetch().finally(() => {
+      setIsRefetching(false);
+    });
+  }, [refetch]);
 
   const RenderItem = useCallback(
     ({ item }: { item: UserAppointmentType }) => {
@@ -92,29 +102,26 @@ const PastBookingsPage = () => {
 
     return <ActivityIndicator color={theme.colors.primaryBlue[100]} />;
   }, [isFetchingNextPage]);
-
-  const handleEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-  const handleRefresh = useCallback(() => {
-    setIsRefetching(true);
-    refetch().finally(() => {
-      setIsRefetching(false);
-    });
-  }, [refetch]);
+  const RenderRefreshControl = useCallback(() => {
+    return (
+      <RefreshControl
+        refreshing={isRefetching}
+        onRefresh={handleRefresh}
+        colors={[theme.colors.primaryBlue[100]]}
+        tintColor={theme.colors.primaryBlue[100]}
+      />
+    );
+  }, [isRefetching, handleRefresh]);
 
   return (
     <FlatList
       data={userAppointments}
       renderItem={RenderItem}
-      onRefresh={handleRefresh}
-      refreshing={isRefetching}
       onEndReachedThreshold={0.8}
       onEndReached={handleEndReached}
       ListFooterComponent={RenderFooter}
       showsVerticalScrollIndicator={false}
+      refreshControl={RenderRefreshControl()}
       ListEmptyComponent={RenderListEmptyComponent}
       keyExtractor={(_, index) => index.toString()}
       contentContainerStyle={[styles.container, { paddingBottom: bottom }]}

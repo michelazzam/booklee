@@ -165,8 +165,8 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.md,
   },
   locationImagePlaceholder: {
-    flex: 1,
-    height: 100,
+    width: 90,
+    height: 90,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.radii.md,

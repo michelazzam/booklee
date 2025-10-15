@@ -449,8 +449,8 @@ const Input = forwardRef<InputRef, InputProps>(
                 style={inputTextStyles}
                 placeholder={placeholder}
                 onChangeText={handleChangeText}
-                placeholderTextColor={colors.text.placeholder}
                 secureTextEntry={isPassword && !showPassword}
+                placeholderTextColor={isFocused ? '#ffffff' : colors.text.placeholder}
                 {...inputConfiguration}
                 {...props}
               />

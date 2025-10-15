@@ -48,24 +48,12 @@ const phoneNumberValidation = () => {
     );
 };
 
-export const loginSchema: z.ZodType<LoginReqType> = z
-  .object({
-    password: passwordValidation(),
-    phone: phoneNumberValidation().optional(),
-    email: z
-      .email({ message: 'Please enter a valid email address' })
-      .min(1, { message: 'Email is required' })
-      .optional(),
-  })
-  .refine(
-    (data) => {
-      return data.email || data.phone;
-    },
-    {
-      path: ['email'],
-      message: 'Either email or phone number is required',
-    }
-  );
+export const loginSchema: z.ZodType<LoginReqType> = z.object({
+  password: z.string().min(1, { message: 'Password is required' }),
+  email: z
+    .email({ message: 'Please enter a valid email address' })
+    .min(1, { message: 'Email is required' }),
+});
 
 export const signupSchema: z.ZodType<SignUpReqType> = z
   .object({

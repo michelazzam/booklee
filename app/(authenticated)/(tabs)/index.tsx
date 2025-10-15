@@ -126,9 +126,7 @@ const HomePage = () => {
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
   const { data: userData } = UserServices.useGetMe();
-  const { data: needsReviewAppointments } = AppointmentServices.useGetUserAppointments({
-    needsReview: true,
-  });
+  const { data: needsReviewAppointments } = AppointmentServices.useGetUserAppointmentsNeedsReview();
   const {
     refetch,
     isLoading,

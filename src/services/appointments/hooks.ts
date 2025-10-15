@@ -19,55 +19,25 @@ import type {
   CancelAppointmentResType,
   CancelAppointmentReqType,
   UserAppointmentsResType,
-  UserAppointmentsReqType,
   AvailabilityResponse,
   BookingDataResponse,
   UserAppointmentType,
 } from './types';
 
-/*** Create Appointment Hook ***/
-const useCreateAppointment = () => {
-  /*** Constants ***/
-  const queryClient = useQueryClient();
-
-  return useMutation<CreateAppointmentResType, Error, CreateAppointmentReqType>({
-    mutationFn: createAppointment,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['getUserAppointments'],
-      });
-    },
-  });
-};
-
-/*** Get Location Booking Data Hook ***/
-const useGetLocationBookingData = (locationId: string) => {
-  return useQuery<BookingDataResponse, Error>({
-    queryKey: ['location-booking-data', locationId],
-    queryFn: () => getLocationBookingData(locationId),
-    enabled: !!locationId,
-  });
-};
-
-/*** Get User Appointments Hook ***/
-const useGetUserAppointments = (filters?: UserAppointmentsReqType) => {
+/*** Get Upcoming User Appointments Hook ***/
+const useGetUpcomingUserAppointments = () => {
   return useInfiniteQuery<UserAppointmentsResType, ResErrorType, UserAppointmentType[]>({
     initialPageParam: 1,
     refetchOnMount: false,
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
-    queryKey: ['getUserAppointments', filters],
+    queryKey: ['getUpcomingUserAppointments'],
     select: (data) =>
       data.pages.flatMap((page) => {
-        if (filters?.upcoming || filters?.needsReview) {
-          return page.appointments.filter((appointment) => appointment.status === 'confirmed');
-        }
-
-        return page.appointments;
+        return page.appointments.filter((appointment) => appointment.status === 'confirmed');
       }),
-    queryFn: ({ pageParam, queryKey }) =>
-      getUserAppointments(pageParam as number, queryKey[1] ?? {}),
+    queryFn: ({ pageParam }) => getUserAppointments(pageParam as number, { upcoming: true }),
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage && lastPage.appointments.length > 0) {
         return allPages.length + 1;
@@ -80,6 +50,85 @@ const useGetUserAppointments = (filters?: UserAppointmentsReqType) => {
       }
       return undefined;
     },
+  });
+};
+
+/*** Get Past User Appointments Hook ***/
+const useGetPastUserAppointments = () => {
+  return useInfiniteQuery<UserAppointmentsResType, ResErrorType, UserAppointmentType[]>({
+    initialPageParam: 1,
+    refetchOnMount: false,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: false,
+    queryKey: ['getPastUserAppointments'],
+    select: (data) => data.pages.flatMap((page) => page.appointments),
+    queryFn: ({ pageParam }) => getUserAppointments(pageParam as number, { past: true }),
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage && lastPage.appointments.length > 0) {
+        return allPages.length + 1;
+      }
+      return undefined;
+    },
+    getPreviousPageParam: (_, allPages) => {
+      if (allPages.length > 1) {
+        return allPages.length - 1;
+      }
+      return undefined;
+    },
+  });
+};
+
+/*** Get User Appointments needs review Hook ***/
+const useGetUserAppointmentsNeedsReview = () => {
+  return useInfiniteQuery<UserAppointmentsResType, ResErrorType, UserAppointmentType[]>({
+    initialPageParam: 1,
+    refetchOnMount: false,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: false,
+    queryKey: ['getUserAppointmentsNeedsReview'],
+    select: (data) =>
+      data.pages.flatMap((page) =>
+        page.appointments.filter((appointment) => appointment.status === 'confirmed')
+      ),
+    queryFn: ({ pageParam }) => getUserAppointments(pageParam as number, { needsReview: true }),
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage && lastPage.appointments.length > 0) {
+        return allPages.length + 1;
+      }
+      return undefined;
+    },
+    getPreviousPageParam: (_, allPages) => {
+      if (allPages.length > 1) {
+        return allPages.length - 1;
+      }
+      return undefined;
+    },
+  });
+};
+
+/*** Create Appointment Hook ***/
+const useCreateAppointment = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation<CreateAppointmentResType, Error, CreateAppointmentReqType>({
+    mutationFn: createAppointment,
+    onSuccess: () => {
+      queryClient.refetchQueries({
+        queryKey: ['getUpcomingUserAppointments'],
+      });
+    },
+  });
+};
+
+/*** Get Location Booking Data Hook ***/
+const useGetLocationBookingData = (locationId: string) => {
+  return useQuery<BookingDataResponse, Error>({
+    queryKey: ['location-booking-data', locationId],
+    queryFn: () => getLocationBookingData(locationId),
+    enabled: !!locationId,
   });
 };
 
@@ -107,7 +156,10 @@ const useCancelAppointment = () => {
     mutationFn: cancelAppointment,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['getUserAppointments'],
+        queryKey: ['getUpcomingUserAppointments'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['getPastUserAppointments'],
       });
     },
   });
@@ -122,16 +174,21 @@ const useRescheduleAppointment = () => {
     mutationFn: rescheduleAppointment,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['getUserAppointments'],
+        queryKey: ['getUpcomingUserAppointments'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['getPastUserAppointments'],
       });
     },
   });
 };
 
 export const AppointmentServices = {
+  useGetUserAppointmentsNeedsReview,
+  useGetUpcomingUserAppointments,
+  useGetPastUserAppointments,
   useGetLocationBookingData,
   useRescheduleAppointment,
-  useGetUserAppointments,
   useCreateAppointment,
   useGetAvailabilities,
   useCancelAppointment,
