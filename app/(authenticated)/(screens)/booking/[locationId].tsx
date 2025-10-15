@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, Fragment } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';

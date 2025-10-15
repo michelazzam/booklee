@@ -2,6 +2,7 @@ import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Toast } from 'toastify-react-native';
 import { useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
+import Constants from 'expo-constants';
 
 import { theme } from '~/src/constants/theme';
 import {
@@ -109,6 +110,12 @@ const AccountPage = () => {
         <SettingsCard data={personalInformationData} title="PERSONAL INFORMATION" />
 
         <SettingsCard data={appSettingsData} />
+
+        <View style={styles.footerContainer}>
+          <Text size={theme.typography.fontSizes.sm} weight="medium">
+            Version {Constants.expoConfig?.version}
+          </Text>
+        </View>
       </AwareScrollView>
     </View>
   );
@@ -122,31 +129,13 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     gap: theme.spacing.lg,
+    paddingTop: theme.spacing['2xl'],
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing['2xl'],
   },
-  businessModeContainer: {
-    flexDirection: 'row',
+  footerContainer: {
+    flex: 1,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    backgroundColor: theme.colors.white.DEFAULT,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  sectionTitle: {
-    ...theme.typography.textVariants.ctaSecondaryBold,
-    color: theme.colors.darkText[100],
-    marginBottom: theme.spacing.sm,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: theme.colors.border,
-    marginVertical: theme.spacing.sm,
+    justifyContent: 'flex-end',
   },
 });
 
