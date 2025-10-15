@@ -60,7 +60,7 @@ export type BookingDataResponse = {
 };
 
 /*** Booking Flow Types ***/
-export type BookingStep = 'service' | 'professional' | 'datetime' | 'confirm';
+export type BookingStep = 'service' | 'datetime' | 'timeprofessional' | 'confirm';
 export type SelectedService = {
   id: string;
   name: string;
@@ -107,6 +107,14 @@ export type LocationData = {
       closed: boolean;
     }
   >;
+};
+
+export type AvailabilityReqType = {
+  date: string;
+  enabled: boolean;
+  serviceId: string;
+  locationId: string;
+  baseDurationMinutes: number;
 };
 
 export type AvailabilityResponse = {

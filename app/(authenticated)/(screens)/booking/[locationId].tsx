@@ -13,8 +13,8 @@ import {
   type CancelBookingConfirmationModalRef,
 } from '~/src/components/modals';
 
-import ProfessionalSelectionStep from '~/src/components/booking/ProfessionalSelectionStep';
 import DateTimeSelectionStep from '~/src/components/booking/DateTimeSelectionStep';
+import TimeAndProfessionalStep from '~/src/components/booking/TimeAndProfessionalStep';
 import ConfirmationStep from '~/src/components/booking/ConfirmationStep';
 import { Toast } from 'toastify-react-native';
 import { ArrowLeftIcon, XIcon, DoneStepIcon, CurrentStepIcon } from '~/src/assets/icons';
@@ -67,60 +67,32 @@ const BookingFlow = () => {
     serviceBookings: initialServiceBookings,
     currentServiceIndex: 0,
   });
-  const [hasChosenOption, setHasChosenOption] = useState(false);
 
   const steps: { key: BookingStep; title: string }[] = [
     { key: 'service', title: 'Select Service' },
-    { key: 'datetime', title: 'Select Date & Time' },
-    { key: 'professional', title: 'Select Professional' },
+    { key: 'datetime', title: 'Select Date' },
+    { key: 'timeprofessional', title: 'Select Professional & Time' },
     { key: 'confirm', title: 'Confirm' },
   ];
 
   const currentStepIndex = steps.findIndex((step) => step.key === currentStep);
 
-  // Get the current service being booked
-  const currentService = selectedServices[bookingData.currentServiceIndex];
-  const isLastService = bookingData.currentServiceIndex >= selectedServices.length - 1;
+  // No longer needed since we handle all services together
 
   const handleNext = () => {
     if (currentStep === 'datetime') {
-      setCurrentStep('professional');
-    } else if (currentStep === 'professional') {
-      if (isLastService) {
-        // All services have been booked, go to confirmation
-        setCurrentStep('confirm');
-      } else {
-        // Move to next service, back to datetime selection
-        setBookingData((prev) => ({
-          ...prev,
-          currentServiceIndex: prev.currentServiceIndex + 1,
-        }));
-        setCurrentStep('datetime');
-        setHasChosenOption(false);
-      }
+      setCurrentStep('timeprofessional');
+    } else if (currentStep === 'timeprofessional') {
+      setCurrentStep('confirm');
     }
   };
   const handleBack = () => {
     if (currentStep === 'confirm') {
-      // Go back to professional selection of last service
-      setBookingData((prev) => ({
-        ...prev,
-        currentServiceIndex: selectedServices.length - 1,
-      }));
-      setCurrentStep('professional');
-    } else if (currentStep === 'professional') {
+      setCurrentStep('timeprofessional');
+    } else if (currentStep === 'timeprofessional') {
       setCurrentStep('datetime');
     } else if (currentStep === 'datetime') {
-      if (bookingData.currentServiceIndex > 0) {
-        // Go back to professional selection of previous service
-        setBookingData((prev) => ({
-          ...prev,
-          currentServiceIndex: prev.currentServiceIndex - 1,
-        }));
-        setCurrentStep('professional');
-      } else {
-        router.back();
-      }
+      router.back();
     }
   };
   const handleCancelBooking = () => {
@@ -259,67 +231,70 @@ const BookingFlow = () => {
   };
 
   const renderStepContent = () => {
-    if (!currentService) return null;
-
     switch (currentStep) {
       case 'datetime':
-        const currentServiceBooking = bookingData.serviceBookings[currentService.id];
+        const currentServiceBooking = bookingData.serviceBookings[selectedServices[0]?.id];
         return (
           <DateTimeSelectionStep
-            service={currentService}
-            locationId={locationId || ''}
             selectedDate={currentServiceBooking?.selectedDate}
-            selectedTime={currentServiceBooking?.selectedTime}
+            onDateSelect={(date) =>
+              setBookingData((prev) => {
+                const updatedServiceBookings = { ...prev.serviceBookings };
+
+                // Set the selected date for ALL selected services
+                selectedServices.forEach((service) => {
+                  updatedServiceBookings[service.id] = {
+                    ...updatedServiceBookings[service.id],
+                    selectedDate: date,
+                    selectedTime: undefined, // Clear previously selected time when date changes
+                    selectedEmployee: undefined, // Also clear employee selection
+                  };
+                });
+
+                return {
+                  ...prev,
+                  serviceBookings: updatedServiceBookings,
+                };
+              })
+            }
+            onDateSelectAndProceed={() => {
+              // Automatically move to next step when date is selected
+              setCurrentStep('timeprofessional');
+            }}
+          />
+        );
+      case 'timeprofessional':
+        return (
+          <TimeAndProfessionalStep
+            selectedServices={selectedServices}
+            locationId={locationId || ''}
             serviceBookings={bookingData.serviceBookings}
             hasTimeConflict={hasTimeConflict}
-            onDateSelect={(date) =>
+            onEmployeeSelect={(serviceId, employee) =>
               setBookingData((prev) => ({
                 ...prev,
                 serviceBookings: {
                   ...prev.serviceBookings,
-                  [currentService.id]: {
-                    ...prev.serviceBookings[currentService.id],
-                    selectedDate: date,
-                    selectedTime: undefined, // Reset time when date changes
+                  [serviceId]: {
+                    ...prev.serviceBookings[serviceId],
+                    selectedEmployee: employee,
                   },
                 },
               }))
             }
-            onTimeSelect={(time, availabilityData) =>
+            onTimeSelect={(serviceId, time, availabilityData) =>
               setBookingData((prev) => ({
                 ...prev,
                 serviceBookings: {
                   ...prev.serviceBookings,
-                  [currentService.id]: {
-                    ...prev.serviceBookings[currentService.id],
+                  [serviceId]: {
+                    ...prev.serviceBookings[serviceId],
                     selectedTime: time,
                     availabilityData,
                   },
                 },
               }))
             }
-          />
-        );
-      case 'professional':
-        return (
-          <ProfessionalSelectionStep
-            locationId={locationId || ''}
-            service={currentService}
-            availabilityData={bookingData.serviceBookings[currentService.id]?.availabilityData}
-            selectedEmployee={bookingData.serviceBookings[currentService.id]?.selectedEmployee}
-            onEmployeeSelect={(employee) =>
-              setBookingData((prev) => ({
-                ...prev,
-                serviceBookings: {
-                  ...prev.serviceBookings,
-                  [currentService.id]: {
-                    ...prev.serviceBookings[currentService.id],
-                    selectedEmployee: employee,
-                  },
-                },
-              }))
-            }
-            onOptionChosen={() => setHasChosenOption(true)}
           />
         );
       case 'confirm':
@@ -336,15 +311,16 @@ const BookingFlow = () => {
   };
 
   const canProceed = () => {
-    if (!currentService) return false;
-
-    const currentServiceBooking = bookingData.serviceBookings[currentService.id];
-
     switch (currentStep) {
       case 'datetime':
-        return currentServiceBooking?.selectedDate && currentServiceBooking?.selectedTime;
-      case 'professional':
-        return true; // Can proceed with or without selecting specific professional
+        const selectedDate = bookingData.serviceBookings[selectedServices[0]?.id]?.selectedDate;
+        return !!selectedDate;
+      case 'timeprofessional':
+        // Check if all services have both professional and time selected
+        return selectedServices.every((service) => {
+          const booking = bookingData.serviceBookings[service.id];
+          return booking?.selectedTime; // Professional selection is optional
+        });
       case 'confirm':
         return true;
       default:
@@ -364,10 +340,9 @@ const BookingFlow = () => {
           <Text size={theme.typography.fontSizes.md} weight="medium">
             BOOK AN APPOINTMENT
           </Text>
-          {currentStep !== 'confirm' && currentService && (
+          {currentStep !== 'confirm' && (
             <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
-              {currentService.name} ({bookingData.currentServiceIndex + 1}/{selectedServices.length}
-              )
+              {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
             </Text>
           )}
         </View>
@@ -446,15 +421,9 @@ const BookingFlow = () => {
           />
         ) : (
           <Button
-            title={
-              currentStep === 'professional'
-                ? isLastService
-                  ? 'Review Booking'
-                  : `Book ${selectedServices[bookingData.currentServiceIndex + 1]?.name || 'Next Service'}`
-                : 'Next'
-            }
+            title={currentStep === 'timeprofessional' ? 'Review Booking' : 'Next'}
             onPress={handleNext}
-            disabled={currentStep === 'professional' ? !hasChosenOption : !canProceed()}
+            disabled={!canProceed()}
           />
         )}
       </View>

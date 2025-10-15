@@ -1,58 +1,27 @@
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  PanResponder,
-  Animated,
-} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, PanResponder, Animated } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { useState, useRef } from 'react';
 
 import { theme } from '~/src/constants/theme';
 import { Text, Icon } from '../base';
-import { AppointmentServices } from '~/src/services';
-import type { SelectedService, ServiceBooking, AvailabilityResponse } from '~/src/services';
 
 type DateTimeSelectionStepProps = {
-  service: SelectedService;
-  locationId: string;
   selectedDate?: string;
-  selectedTime?: string;
-  serviceBookings: Record<string, ServiceBooking>;
-  hasTimeConflict: (
-    date: string,
-    time: string,
-    duration: number,
-    excludeServiceId?: string
-  ) => boolean;
   onDateSelect: (date: string) => void;
-  onTimeSelect: (time: string, availabilityData: AvailabilityResponse) => void;
+  onDateSelectAndProceed?: (date: string) => void;
 };
 
 const DateTimeSelectionStep = ({
-  service,
-  locationId,
   selectedDate,
-  selectedTime,
-  hasTimeConflict,
   onDateSelect,
-  onTimeSelect,
+  onDateSelectAndProceed,
 }: DateTimeSelectionStepProps) => {
   const [showWeekView, setShowWeekView] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0); // Track which week we're viewing
   const [baseWeekDate, setBaseWeekDate] = useState<string | null>(null); // Track the base week for week view
   const pan = useRef(new Animated.Value(0)).current;
 
-  // Fetch availability data when date is selected
-  const { data: availabilityData, isLoading: isLoadingAvailability } =
-    AppointmentServices.useGetAvailabilities(
-      locationId,
-      selectedDate || '',
-      service.id,
-      service.duration,
-      !!selectedDate
-    );
+  // No need to fetch availability data here since we only handle date selection
 
   // PanResponder for swipe-down gesture
   const panResponder = useRef(
@@ -92,27 +61,12 @@ const DateTimeSelectionStep = ({
     })
   ).current;
 
-  // Get time slots from availability data
-  const timeSlots = availabilityData?.availability.slots || [];
-
-  // Check if selected date is today
-  const isToday = selectedDate === new Date().toISOString().split('T')[0];
-
-  // Helper function to check if a time slot has passed
-  const isTimeSlotPassed = (timeValue: string) => {
-    if (!isToday) return false;
-
-    const now = new Date();
-    const [hours, minutes] = timeValue.split(':').map(Number);
-    const slotTime = new Date();
-    slotTime.setHours(hours, minutes, 0, 0);
-
-    return now >= slotTime;
-  };
+  // No time slot logic needed for date-only selection
 
   const handleDateSelect = (day: any) => {
     if (day && day.dateString) {
       onDateSelect(day.dateString);
+      onDateSelectAndProceed?.(day.dateString);
       setShowWeekView(true);
       setWeekOffset(0); // Reset to current week when selecting from monthly view
       setBaseWeekDate(day.dateString); // Set the base week date
@@ -135,6 +89,7 @@ const DateTimeSelectionStep = ({
 
   const handleWeekDaySelect = (date: string) => {
     onDateSelect(date);
+    onDateSelectAndProceed?.(date);
     // Don't change weekOffset - keep the same week view
   };
 
@@ -377,94 +332,6 @@ const DateTimeSelectionStep = ({
           </Animated.View>
         )}
       </View>
-
-      {/* Time Slots Card */}
-      {selectedDate && (
-        <View style={styles.timeSlotsCard}>
-          <Text size={theme.typography.fontSizes.lg} weight="medium" style={styles.timeSlotsTitle}>
-            Available Times for {service.name}
-          </Text>
-
-          {isLoadingAvailability ? (
-            <View style={styles.loadingContainer}>
-              <Text size={theme.typography.fontSizes.md} color={theme.colors.darkText['50']}>
-                Loading available times...
-              </Text>
-            </View>
-          ) : (
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ flexGrow: 1 }}>
-              {timeSlots.map((slot) => {
-                const hasConflict = hasTimeConflict(
-                  selectedDate,
-                  slot.value,
-                  service.duration,
-                  service.id
-                );
-                const isPassed = isTimeSlotPassed(slot.value);
-                const isDisabled = !slot.isAvailable || hasConflict || isPassed;
-                const isSelected = selectedTime === slot.value;
-
-                return (
-                  <TouchableOpacity
-                    key={slot.value}
-                    style={[
-                      styles.timeSlot,
-                      isSelected && styles.selectedTimeSlot,
-                      isDisabled && styles.disabledTimeSlot,
-                    ]}
-                    disabled={isDisabled}
-                    onPress={() => {
-                      if (availabilityData) {
-                        onTimeSelect(slot.value, availabilityData);
-                      }
-                    }}>
-                    <View style={styles.timeSlotContent}>
-                      <Text
-                        size={theme.typography.fontSizes.md}
-                        color={
-                          isDisabled
-                            ? theme.colors.darkText['25']
-                            : isSelected
-                              ? theme.colors.white.DEFAULT
-                              : theme.colors.darkText['100']
-                        }>
-                        {slot.label}
-                      </Text>
-                      {!isPassed && !hasConflict && !slot.isAvailable && (
-                        <Text
-                          size={theme.typography.fontSizes.xs}
-                          color={theme.colors.darkText['50']}>
-                          {slot.reason || 'Not available'}
-                        </Text>
-                      )}
-                      {!isPassed && !hasConflict && slot.isAvailable && (
-                        <Text
-                          size={theme.typography.fontSizes.xs}
-                          color={
-                            isSelected ? theme.colors.white.DEFAULT : theme.colors.darkText['50']
-                          }>
-                          {slot.availableEmployeeCount} professional
-                          {slot.availableEmployeeCount !== 1 ? 's' : ''} available
-                        </Text>
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-              {timeSlots.length === 0 && !isLoadingAvailability && (
-                <Text
-                  size={theme.typography.fontSizes.md}
-                  color={theme.colors.darkText['50']}
-                  style={styles.noSlotsText}>
-                  No available times for this date
-                </Text>
-              )}
-            </ScrollView>
-          )}
-        </View>
-      )}
     </View>
   );
 };
@@ -541,49 +408,5 @@ const styles = StyleSheet.create({
   },
   disabledWeekDayCell: {
     opacity: 0.5,
-  },
-  timeSlotsCard: {
-    backgroundColor: theme.colors.white.DEFAULT,
-    borderRadius: theme.radii.md,
-    padding: theme.spacing.md,
-
-    gap: theme.spacing.md,
-  },
-  timeSlotsTitle: {
-    marginBottom: theme.spacing.sm,
-  },
-  timeSlot: {
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    marginBottom: theme.spacing.sm,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    alignItems: 'center',
-  },
-  selectedTimeSlot: {
-    backgroundColor: theme.colors.primaryBlue['100'],
-    borderColor: theme.colors.primaryBlue['100'],
-  },
-  disabledTimeSlot: {
-    backgroundColor: theme.colors.grey['10'],
-    borderColor: theme.colors.grey['100'],
-    opacity: 0.6,
-  },
-  timeSlotContent: {
-    height: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.spacing.xs,
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing.xl,
-  },
-  noSlotsText: {
-    textAlign: 'center',
-    fontStyle: 'italic',
-    paddingVertical: theme.spacing.xl,
   },
 });
