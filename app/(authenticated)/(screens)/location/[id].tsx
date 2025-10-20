@@ -102,29 +102,35 @@ const SalonDetailPage = () => {
         </Text>
 
         <View style={{ gap: theme.spacing.sm }}>
-          {location?.locationServices?.map((service) => (
-            <Services
-              data={service}
-              key={service.id}
-              onPress={handleServiceToggle}
-              isActive={selectedServices.includes(service.id)}
-            />
-          ))}
+          {location?.locationServices
+            ?.filter((service) => service.service)
+            .map((service) => (
+              <Services
+                data={service}
+                key={service.id}
+                onPress={handleServiceToggle}
+                isActive={selectedServices.includes(service.id)}
+              />
+            ))}
         </View>
       </View>
     );
   }, [location?.locationServices, handleServiceToggle, selectedServices, category?.title]);
   const RenderAbout = useCallback(() => {
-    const aboutItemData: AboutItemData[] = [
-      {
+    let aboutItemData: AboutItemData[] = [];
+
+    if (phone) {
+      aboutItemData.push({
         title: 'CONTACT',
         value: phone || '',
         onPress: () => {
           Linking.openURL(`tel:${phone}`);
         },
-      },
+      });
+    }
 
-      {
+    if (address) {
+      aboutItemData.push({
         title: 'DIRECTIONS',
         value: address || '',
         onPress: () => {
@@ -132,13 +138,15 @@ const SalonDetailPage = () => {
             `https://www.google.com/maps/dir/?api=1&destination=${geo?.lat},${geo?.lng}`
           );
         },
-      },
+      });
+    }
 
-      {
+    if (operatingHours) {
+      aboutItemData.push({
         title: 'OPENING HOURS',
         value: operatingHours || {},
-      },
-    ];
+      });
+    }
 
     return aboutItemData.map(({ title, value, onPress }, index) => (
       <View
@@ -245,31 +253,35 @@ const SalonDetailPage = () => {
             </Text>
 
             <View style={styles.storeInfoContainer}>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                style={styles.ratingContainer}
-                onPress={() => {
-                  router.navigate({
-                    params: { id },
-                    pathname: '/(authenticated)/(screens)/location/reviews',
-                  });
-                }}>
-                <StarIcon width={18} height={18} />
+              {rating && (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.ratingContainer}
+                  onPress={() => {
+                    router.navigate({
+                      params: { id },
+                      pathname: '/(authenticated)/(screens)/location/reviews',
+                    });
+                  }}>
+                  <StarIcon width={18} height={18} />
 
-                <Text
-                  weight={'bold'}
-                  size={theme.typography.fontSizes.xs}
-                  style={{ textDecorationLine: 'underline' }}>
-                  {rating}
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    weight={'bold'}
+                    size={theme.typography.fontSizes.xs}
+                    style={{ textDecorationLine: 'underline' }}>
+                    {rating}
+                  </Text>
+                </TouchableOpacity>
+              )}
 
-              <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
+              {operatingHoursText && (
+                <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
+              )}
             </View>
           </View>
 
           <View style={{ gap: theme.spacing.sm }}>
-            <Text size={theme.typography.fontSizes.sm}>{address}</Text>
+            {address && <Text size={theme.typography.fontSizes.sm}>{address}</Text>}
 
             {tags && tags.length > 0 && (
               <View style={styles.tagContainer}>
@@ -331,7 +343,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   storeContentContainer: {
-    gap: theme.spacing.xl,
+    gap: theme.spacing.sm,
     padding: theme.spacing.lg,
   },
   storeInfoContainer: {
