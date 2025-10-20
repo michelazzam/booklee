@@ -14,6 +14,7 @@ import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
 
 import { UserProvider, useUserProvider } from '~/src/store';
+import { AuthServices } from '~/src/services';
 
 import { CustomToast } from '~/src/components/base';
 
@@ -53,6 +54,8 @@ const toastConfig = {
 const Navigation = () => {
   /*** Constants ***/
   const { isInitialized } = useUserProvider();
+  const { isFetched: isUserFetched } = AuthServices.useGetMe();
+  const { isAuthenticated, isLoading: isAuthLoading } = AuthServices.useGetBetterAuthUser();
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../src/assets/fonts/Montserrat-Regular.ttf'),
     'Montserrat-Medium': require('../src/assets/fonts/Montserrat-Medium.ttf'),
@@ -62,8 +65,19 @@ const Navigation = () => {
 
   /*** Memoization ***/
   const appInitialized = useMemo(() => {
-    return fontsLoaded && isInitialized;
-  }, [fontsLoaded, isInitialized]);
+    // Will only run on initial app start
+    if (!(fontsLoaded && isInitialized) && isAuthLoading) {
+      return false;
+    }
+
+    // If not authenticated, we can hide
+    if (!isAuthenticated) {
+      return true;
+    }
+
+    // If authenticated, wait for user to be fetched
+    return !!isUserFetched;
+  }, [fontsLoaded, isInitialized, isAuthLoading, isAuthenticated, isUserFetched]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
