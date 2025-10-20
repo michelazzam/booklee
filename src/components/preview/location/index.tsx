@@ -27,6 +27,7 @@ type LocationCardProps = {
   animatedStyle?: 'slideUp' | 'slideLeft' | 'fadeIn';
 };
 
+const DEFAULT_PLACEHOLDER_COLORS = ['#7A79E9', '#ED818A', '#54BEEF'];
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 const LocationCard = ({
   data,
@@ -41,6 +42,16 @@ const LocationCard = ({
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(_id);
 
   /***** Memoization *****/
+  const randomColor = useMemo(() => {
+    const hash = _id.split('').reduce((a, b) => {
+      a = (a << 5) - a + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+
+    const randomIndex = Math.abs(hash) % DEFAULT_PLACEHOLDER_COLORS.length;
+
+    return DEFAULT_PLACEHOLDER_COLORS[randomIndex];
+  }, [_id]);
   const getEnteringAnimation = useMemo(() => {
     switch (animatedStyle) {
       case 'slideUp':
@@ -85,7 +96,14 @@ const LocationCard = ({
       exiting={getExitingAnimation}
       entering={getEnteringAnimation}
       style={[styles.container, { width }]}>
-      <View style={styles.imageContainer}>
+      <View
+        style={[
+          styles.imageContainer,
+          !photos?.[0] && {
+            shadowColor: randomColor + '80',
+            backgroundColor: randomColor + '80',
+          },
+        ]}>
         {photos?.[0] ? (
           <Image
             transition={100}
@@ -95,7 +113,7 @@ const LocationCard = ({
             source={{ uri: photos?.[0] }}
           />
         ) : (
-          <View style={styles.imagePlaceholder}>
+          <View style={[styles.imagePlaceholder, { backgroundColor: randomColor + '80' }]}>
             <AppLogo />
           </View>
         )}
@@ -162,6 +180,14 @@ const styles = StyleSheet.create({
     width: '100%',
     overflow: 'hidden',
     borderRadius: theme.radii.md,
+
+    // iOS Shadows
+    shadowRadius: 1,
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+
+    // Android Shadows
+    elevation: 4,
   },
   image: {
     width: '100%',
@@ -171,7 +197,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.lightText + '70',
   },
   favoriteButton: {
     width: 42,

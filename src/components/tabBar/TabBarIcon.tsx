@@ -1,7 +1,20 @@
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useMemo } from 'react';
 
-import { AccountIcon, BookingIcon, FavoritesIcon, HomeIcon, SearchIcon } from '~/src/assets/icons';
+import {
+  AccountIcon,
+  BookingIcon,
+  FavoritesIcon,
+  FilledBookingIcon,
+  FilledFavoritesIcon,
+  FilledHomeIcon,
+  FilledAccountIcon,
+  FilledSearchIcon,
+  HomeIcon,
+  SearchIcon,
+  FilledAnalyticsIcon,
+  FilledDashboardIcon,
+} from '~/src/assets/icons';
 import DashboardIcon from '~/src/assets/icons/DashboardIcon';
 import AnalyticsIcon from '~/src/assets/icons/AnalyticsIcon';
 
@@ -36,23 +49,23 @@ const TabBarIcon = ({ icon, color, focused = false }: TabBarIconProps) => {
   const IconComponent = useMemo(() => {
     switch (icon) {
       case 'home':
-        return <HomeIcon color={color} />;
+        return focused ? <FilledHomeIcon color={color} /> : <HomeIcon color={color} />;
       case 'magnify':
-        return <SearchIcon color={color} />;
+        return focused ? <FilledSearchIcon color={color} /> : <SearchIcon color={color} />;
       case 'heart':
-        return <FavoritesIcon color={color} />;
+        return focused ? <FilledFavoritesIcon color={color} /> : <FavoritesIcon color={color} />;
       case 'calendar-check':
-        return <BookingIcon color={color} />;
+        return focused ? <FilledBookingIcon color={color} /> : <BookingIcon color={color} />;
       case 'account':
-        return <AccountIcon color={color} />;
+        return focused ? <FilledAccountIcon color={color} /> : <AccountIcon color={color} />;
       case 'dashboard':
-        return <DashboardIcon color={color} />;
+        return focused ? <FilledDashboardIcon color={color} /> : <DashboardIcon color={color} />;
       case 'analytics':
-        return <AnalyticsIcon color={color} />;
+        return focused ? <FilledAnalyticsIcon color={color} /> : <AnalyticsIcon color={color} />;
       default:
         return null;
     }
-  }, [icon, color]);
+  }, [icon, color, focused]);
 
   return <Animated.View style={iconAnimatedStyle}>{IconComponent}</Animated.View>;
 };

@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 
 import { theme } from '~/src/constants/theme';
@@ -42,6 +43,8 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabBarLabel,
         tabBarActiveTintColor: theme.colors.primaryBlue[100],
         sceneStyle: {
           backgroundColor: theme.colors.white.DEFAULT,
@@ -62,3 +65,23 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: theme.colors.white.DEFAULT,
+
+    // iOS shadow
+    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -2 },
+
+    // Android shadow
+    elevation: 8,
+  },
+  tabBarLabel: {
+    fontFamily: 'Montserrat-Medium',
+    fontSize: theme.typography.fontSizes.xs,
+    fontWeight: theme.typography.fontWeights.semiBold,
+  },
+});
