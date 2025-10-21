@@ -100,8 +100,8 @@ const LocationCard = ({
         style={[
           styles.imageContainer,
           !photos?.[0] && {
-            shadowColor: randomColor + '80',
-            backgroundColor: randomColor + '80',
+            shadowColor: randomColor + '50',
+            backgroundColor: randomColor + '50',
           },
         ]}>
         {photos?.[0] ? (

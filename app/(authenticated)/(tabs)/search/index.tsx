@@ -1,6 +1,7 @@
 import { TouchableOpacity, View, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import {
   type GetLocationsReqType,
@@ -19,6 +20,7 @@ import { type FilterModalRef, FilterModal } from '~/src/components/modals';
 import { SearchInput } from '~/src/components/textInputs';
 import { Icon, Text } from '~/src/components/base';
 
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 const LocationListing = () => {
   /*** Refs ***/
   const filterModalRef = useRef<FilterModalRef>(null);
@@ -147,20 +149,23 @@ const LocationListing = () => {
       </View>
 
       <View style={{ flex: 1 }}>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.mapIconContainer}
-          onPress={() =>
-            router.replace({
-              pathname: '/(authenticated)/(tabs)/search/map',
-              params: { filterSlug: selectedFilter?.category },
-            })
-          }>
-          <Text color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.xs}>
-            Map
-          </Text>
-          <MapIcon />
-        </TouchableOpacity>
+        {!isRefreshing && (
+          <AnimatedTouchable
+            entering={FadeIn}
+            activeOpacity={0.8}
+            style={styles.mapIconContainer}
+            onPress={() =>
+              router.replace({
+                pathname: '/(authenticated)/(tabs)/search/map',
+                params: { filterSlug: selectedFilter?.category },
+              })
+            }>
+            <Text color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.xs}>
+              Map
+            </Text>
+            <MapIcon />
+          </AnimatedTouchable>
+        )}
 
         <FlatList
           data={locationsData}

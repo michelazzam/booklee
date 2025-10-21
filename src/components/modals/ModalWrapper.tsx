@@ -131,6 +131,7 @@ const ModalWrapper = forwardRef<ModalWrapperRef, ModalWrapperProps>(
         onDismiss={handleDismiss}
         ref={bottomSheetModalRef}
         onChange={handleSheetChanges}
+        keyboardBehavior="interactive"
         enablePanDownToClose={!disable}
         backdropComponent={renderBackdrop}
         enableHandlePanningGesture={!disable}
@@ -139,6 +140,7 @@ const ModalWrapper = forwardRef<ModalWrapperRef, ModalWrapperProps>(
         <View style={{ flex: 1 }}>
           <BottomSheetScrollView
             bounces={false}
+            automaticallyAdjustKeyboardInsets
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
               flexGrow: 1,

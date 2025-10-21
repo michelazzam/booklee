@@ -1,122 +1,21 @@
-import { useCallback, memo, useState, useEffect, useRef } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import * as Location from 'expo-location';
-import { useRouter } from 'expo-router';
-import {
-  TouchableOpacity,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  FlatList,
-  View,
-} from 'react-native';
 
-import {
-  type LocationCategoryType,
-  AppointmentServices,
-  LocationServices,
-  UserServices,
-  LocationType,
-} from '~/src/services';
+import { AppointmentServices, LocationServices, UserServices } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
 import { RatingModal, type RatingModalRef } from '~/src/components/modals';
-import { LocationCard, HomePageSkeleton } from '~/src/components/preview';
-import { ScreenHeader } from '~/src/components/utils';
+import { ScreenHeader, LocationCategory } from '~/src/components/utils';
+import { HomePageSkeleton } from '~/src/components/preview';
 import { Text } from '~/src/components/base';
-
-const CategorySection = memo(({ category }: { category: LocationCategoryType }) => {
-  /*** Constants ***/
-  const router = useRouter();
-
-  const RenderItem = useCallback(
-    ({ item }: { item: LocationType }) => {
-      const handlePress = () => {
-        router.navigate({
-          pathname: `/(authenticated)/(screens)/location/[id]`,
-          params: {
-            id: item._id,
-            image: item.photos?.[0],
-          },
-        });
-      };
-
-      return (
-        <LocationCard
-          width={200}
-          data={item}
-          duration={0}
-          key={item._id}
-          onPress={handlePress}
-          animatedStyle="slideLeft"
-        />
-      );
-    },
-    [router]
-  );
-  const RenderListEmptyComponent = useCallback(() => {
-    return (
-      <Text
-        weight="medium"
-        style={styles.emptyTextStyle}
-        color={theme.colors.darkText['50']}
-        size={theme.typography.fontSizes.md}>
-        No locations found
-      </Text>
-    );
-  }, []);
-
-  return (
-    <View style={{ gap: theme.spacing.md }} key={category._id}>
-      <View style={styles.sectionTitle}>
-        <Text
-          weight="medium"
-          color={theme.colors.darkText[100]}
-          size={theme.typography.fontSizes.sm}
-          style={{ textTransform: 'uppercase', flex: 1 }}>
-          {category.title}
-        </Text>
-
-        {category.locations.length > 0 && (
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() =>
-              router.navigate({
-                params: { filterSlug: category.slug },
-                pathname: '/(authenticated)/(tabs)/search',
-              })
-            }>
-            <Text
-              weight="semiBold"
-              color={theme.colors.darkText[100]}
-              size={theme.typography.fontSizes.sm}
-              style={{
-                textDecorationLine: 'underline',
-                opacity: category.locations.length > 1 ? 1 : 0.5,
-              }}>
-              see all
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <FlatList
-        horizontal
-        renderItem={RenderItem}
-        data={category.locations}
-        keyExtractor={(item) => item._id}
-        showsHorizontalScrollIndicator={false}
-        ListEmptyComponent={RenderListEmptyComponent}
-        contentContainerStyle={styles.sectionContainer}
-      />
-    </View>
-  );
-});
 
 const HomePage = () => {
   /*** Refs ***/
   const ratingModalRef = useRef<RatingModalRef>(null);
+
   /*** States ***/
   const [isRefetching, setIsRefetching] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(
@@ -217,7 +116,7 @@ const HomePage = () => {
         {isLoading || isRefetching ? (
           <HomePageSkeleton />
         ) : (
-          categories?.map((category) => <CategorySection key={category._id} category={category} />)
+          categories?.map((category) => <LocationCategory key={category._id} category={category} />)
         )}
       </ScrollView>
 
@@ -234,28 +133,11 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xl,
     paddingTop: theme.spacing['2xl'],
   },
-  sectionTitle: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
-  },
-  sectionContainer: {
-    flexGrow: 1,
-    gap: theme.spacing.xl,
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.lg,
-  },
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: theme.spacing['3xl'],
-  },
-  emptyTextStyle: {
-    flex: 1,
-    textAlign: 'center',
-    paddingTop: theme.spacing.xl,
   },
   footerLoader: {
     flex: 1,
