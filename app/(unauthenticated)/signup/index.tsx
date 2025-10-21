@@ -84,7 +84,7 @@ export const SignupPage = () => {
           <Input
             inputWidth="48%"
             label="First Name*"
-            placeholder="John"
+            placeholder="Enter first name"
             error={validationErrors.errors?.firstName}
             onChangeText={(value) => onTextChange(value, 'firstName')}
           />
@@ -92,7 +92,7 @@ export const SignupPage = () => {
           <Input
             inputWidth="48%"
             label="Last Name*"
-            placeholder="Doe"
+            placeholder="Enter last name"
             error={validationErrors.errors?.lastName}
             onChangeText={(value) => onTextChange(value, 'lastName')}
           />
@@ -101,7 +101,7 @@ export const SignupPage = () => {
         <Input
           label="Email*"
           variant="email"
-          placeholder="john.doe@example.com"
+          placeholder="Enter your email address"
           error={validationErrors.errors?.email}
           onChangeText={(value) => onTextChange(value, 'email')}
         />
@@ -134,7 +134,7 @@ export const SignupPage = () => {
 
         <PhoneInput
           isRequired
-          placeholder="xx-xxx-xxxx"
+          placeholder="Enter phone number"
           error={validationErrors.errors?.phone}
           onChangeText={(value) => onTextChange(value, 'phone')}
         />
@@ -142,14 +142,14 @@ export const SignupPage = () => {
         <Input
           label="Password*"
           variant="password"
-          placeholder="********"
+          placeholder="Create a password"
           error={validationErrors.errors?.password}
           onChangeText={(value) => onTextChange(value, 'password')}
         />
 
         <Input
           variant="password"
-          placeholder="********"
+          placeholder="Confirm your password"
           label="Confirm Password*"
           error={validationErrors.errors?.confirmPassword}
           onChangeText={(value) => onTextChange(value, 'confirmPassword')}
