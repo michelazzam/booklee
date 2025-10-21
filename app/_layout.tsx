@@ -4,10 +4,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { useEffect, useMemo, useState } from 'react';
 import * as NavigationBar from 'expo-navigation-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import ToastManager from 'toastify-react-native';
-import { useEffect, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
 import { useFonts } from 'expo-font';
@@ -52,20 +52,26 @@ const toastConfig = {
 };
 
 const Navigation = () => {
+  /*** States ***/
+  const [isFirstLaunch, setIsFirstLaunch] = useState(true);
+
   /*** Constants ***/
   const { isInitialized } = useUserProvider();
   const { isFetched: isUserFetched } = AuthServices.useGetMe();
   const { isAuthenticated, isLoading: isAuthLoading } = AuthServices.useGetBetterAuthUser();
   const [fontsLoaded] = useFonts({
-    'Montserrat-Regular': require('../src/assets/fonts/Montserrat-Regular.ttf'),
-    'Montserrat-Medium': require('../src/assets/fonts/Montserrat-Medium.ttf'),
-    'Montserrat-SemiBold': require('../src/assets/fonts/Montserrat-SemiBold.ttf'),
     'Montserrat-Bold': require('../src/assets/fonts/Montserrat-Bold.ttf'),
+    'Montserrat-Medium': require('../src/assets/fonts/Montserrat-Medium.ttf'),
+    'Montserrat-Regular': require('../src/assets/fonts/Montserrat-Regular.ttf'),
+    'Montserrat-SemiBold': require('../src/assets/fonts/Montserrat-SemiBold.ttf'),
   });
 
   /*** Memoization ***/
   const appInitialized = useMemo(() => {
-    // Will only run on initial app start
+    if (!isFirstLaunch) {
+      return true;
+    }
+
     if (!(fontsLoaded && isInitialized) && isAuthLoading) {
       return false;
     }
@@ -77,7 +83,7 @@ const Navigation = () => {
 
     // If authenticated, wait for user to be fetched
     return !!isUserFetched;
-  }, [fontsLoaded, isInitialized, isAuthLoading, isAuthenticated, isUserFetched]);
+  }, [fontsLoaded, isInitialized, isAuthLoading, isAuthenticated, isUserFetched, isFirstLaunch]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -87,6 +93,8 @@ const Navigation = () => {
     if (appInitialized) {
       setTimeout(() => {
         SplashScreen.hideAsync();
+        // Mark first launch as complete
+        setIsFirstLaunch(false);
       }, 1000);
     }
   }, [appInitialized]);
