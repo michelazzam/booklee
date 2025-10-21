@@ -129,6 +129,45 @@ const BookingFlow = () => {
 
     return false;
   };
+
+  // Check if a professional is already selected for another service at the same time
+  const hasProfessionalConflict = (
+    professionalId: string,
+    newDate: string,
+    newTime: string,
+    newDuration: number,
+    excludeServiceId?: string
+  ): boolean => {
+    const newStart = new Date(`${newDate}T${newTime}:00`);
+    const newEnd = new Date(newStart.getTime() + newDuration * 60 * 1000);
+
+    for (const [serviceId, booking] of Object.entries(bookingData.serviceBookings)) {
+      if (
+        serviceId === excludeServiceId ||
+        !booking.selectedDate ||
+        !booking.selectedTime ||
+        !booking.selectedEmployee
+      ) {
+        continue;
+      }
+
+      // Check if the same professional is selected
+      if (booking.selectedEmployee._id === professionalId) {
+        const service = selectedServices.find((s) => s.id === serviceId);
+        if (!service) continue;
+
+        const existingStart = new Date(`${booking.selectedDate}T${booking.selectedTime}:00`);
+        const existingEnd = new Date(existingStart.getTime() + service.duration * 60 * 1000);
+
+        // Check if there's time overlap with the same professional
+        if (newStart < existingEnd && newEnd > existingStart) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
   const handleConfirmBooking = async () => {
     try {
       // Validate that all services have been scheduled
@@ -270,6 +309,7 @@ const BookingFlow = () => {
             locationId={locationId || ''}
             serviceBookings={bookingData.serviceBookings}
             hasTimeConflict={hasTimeConflict}
+            hasProfessionalConflict={hasProfessionalConflict}
             onEmployeeSelect={(serviceId, employee) =>
               setBookingData((prev) => ({
                 ...prev,
