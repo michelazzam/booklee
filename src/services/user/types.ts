@@ -42,9 +42,6 @@ export type UpdateUserResType = {
 };
 
 /*** Update user Image type ***/
-export type UpdateUserImageReqType = {
-  image: string;
-};
 export type UpdateUserImageResType = {
   user: UserType;
 };
