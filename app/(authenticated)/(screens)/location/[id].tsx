@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import {
   type LocationOperatingHoursType,
+  type LocationServiceType,
   type SelectedService,
   LocationServices,
 } from '~/src/services';
@@ -35,8 +36,7 @@ const SalonDetailPage = () => {
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(id);
   const { data: location, isLoading, isFetched } = LocationServices.useGetLocationById(id || '');
-  const { photos, name, address, category, rating, phone, tags, operatingHours, geo } =
-    location || {};
+  const { photos, name, address, rating, phone, tags, operatingHours, geo } = location || {};
 
   /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -92,30 +92,51 @@ const SalonDetailPage = () => {
   }, [id, router, selectedServiceData]);
 
   const RenderServices = useCallback(() => {
-    return (
-      <View style={{ gap: theme.spacing.md }}>
-        <Text
-          weight={'medium'}
-          size={theme.typography.fontSizes.sm}
-          style={{ textTransform: 'uppercase' }}>
-          {category?.title}
-        </Text>
+    if (!location?.locationServices) return null;
 
-        <View style={{ gap: theme.spacing.sm }}>
-          {location?.locationServices
-            ?.filter((service) => service.service)
-            .map((service) => (
-              <Services
-                data={service}
-                key={service.id}
-                onPress={handleServiceToggle}
-                isActive={selectedServices.includes(service.id)}
-              />
-            ))}
-        </View>
+    const groupedServices = location.locationServices.reduce(
+      (acc, locationService) => {
+        if (!locationService.service) return acc;
+
+        const categoryId = locationService.service.categoryId;
+        if (!acc[categoryId]) {
+          acc[categoryId] = {
+            categoryName: locationService.service.category,
+            services: [],
+          };
+        }
+        acc[categoryId].services.push(locationService);
+        return acc;
+      },
+      {} as Record<string, { categoryName: string; services: LocationServiceType[] }>
+    );
+
+    return (
+      <View style={{ gap: theme.spacing.lg }}>
+        {Object.entries(groupedServices).map(([categoryId, { categoryName, services }]) => (
+          <View key={categoryId} style={{ gap: theme.spacing.md }}>
+            <Text
+              weight={'medium'}
+              size={theme.typography.fontSizes.sm}
+              style={{ textTransform: 'uppercase' }}>
+              {categoryName}
+            </Text>
+
+            <View style={{ gap: theme.spacing.sm }}>
+              {services.map((locationService) => (
+                <Services
+                  data={locationService}
+                  key={locationService.id}
+                  onPress={handleServiceToggle}
+                  isActive={selectedServices.includes(locationService.id)}
+                />
+              ))}
+            </View>
+          </View>
+        ))}
       </View>
     );
-  }, [location?.locationServices, handleServiceToggle, selectedServices, category?.title]);
+  }, [location?.locationServices, handleServiceToggle, selectedServices]);
   const RenderAbout = useCallback(() => {
     let aboutItemData: AboutItemData[] = [];
 

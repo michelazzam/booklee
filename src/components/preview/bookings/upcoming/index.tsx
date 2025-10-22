@@ -1,12 +1,12 @@
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { formatDate } from 'date-fns';
 import { Image } from 'expo-image';
 
 import { type AppointmentItem, type UserAppointmentType } from '~/src/services';
 
-import { AppLogo, BookingIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
+import { AppLogo, BookingIcon, CheckCircleIcon, ClockIcon, StarIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants';
 
 import type { ModifyBookingModalRef } from '../../../modals/ModifyBookingModal';
@@ -25,7 +25,43 @@ const Booking = ({ data }: BookingProps) => {
   const modifyBookingModalRef = useRef<ModifyBookingModalRef>(null);
 
   /***** Constants *****/
-  const { items, startAt, location, totalPrice, totalDurationMinutes } = data;
+  const { items, startAt, location, totalPrice, totalDurationMinutes, status } = data;
+
+  /***** Memoized *****/
+  const statusConfig = useMemo(() => {
+    switch (status) {
+      case 'confirmed':
+        return {
+          color: theme.colors.primaryGreen[100],
+          borderColor: theme.colors.primaryGreen[100],
+          backgroundColor: theme.colors.primaryGreen[10],
+        };
+      case 'cancelled':
+        return {
+          color: theme.colors.red[100],
+          borderColor: theme.colors.red[100],
+          backgroundColor: theme.colors.red[10],
+        };
+      case 'completed':
+        return {
+          color: theme.colors.primaryBlue[100],
+          borderColor: theme.colors.primaryBlue[100],
+          backgroundColor: theme.colors.primaryBlue[10],
+        };
+      case 'pending':
+        return {
+          color: theme.colors.orange[100],
+          borderColor: theme.colors.orange[100],
+          backgroundColor: theme.colors.orange[10],
+        };
+      default:
+        return {
+          color: theme.colors.lightText,
+          borderColor: theme.colors.lightText,
+          backgroundColor: theme.colors.lightText,
+        };
+    }
+  }, [status]);
 
   const RenderService = useCallback(({ service }: { service: AppointmentItem }) => {
     const { serviceName, price, employeeName, durationMinutes } = service;
@@ -51,7 +87,10 @@ const Booking = ({ data }: BookingProps) => {
 
   return (
     <>
-      <Animated.View style={styles.container} entering={FadeIn} exiting={FadeOut}>
+      <Animated.View
+        entering={FadeIn}
+        exiting={FadeOut}
+        style={[styles.container, { borderColor: statusConfig.borderColor }]}>
         <View style={[styles.headerContainer, styles.borderStyle]}>
           {location.photos?.[0] ? (
             <Image
@@ -83,7 +122,31 @@ const Booking = ({ data }: BookingProps) => {
               </View>
             </View>
 
-            <Text size={theme.typography.fontSizes.sm}>{location.city}</Text>
+            <View style={styles.headerInfoContainer}>
+              <Text size={theme.typography.fontSizes.sm}>{location.city}</Text>
+
+              <View
+                style={[
+                  styles.statusContainer,
+                  {
+                    borderColor: statusConfig.borderColor,
+                    backgroundColor: statusConfig.backgroundColor,
+                  },
+                ]}>
+                <Text
+                  size={12}
+                  weight={'semiBold'}
+                  style={{ textTransform: 'capitalize', color: statusConfig.color }}>
+                  {status}
+                </Text>
+
+                {status === 'confirmed' ? (
+                  <CheckCircleIcon width={16} height={16} color={statusConfig.color} />
+                ) : (
+                  <ClockIcon width={16} height={16} color={statusConfig.color} strokeWidth={2} />
+                )}
+              </View>
+            </View>
           </View>
         </View>
 
@@ -154,7 +217,6 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
     padding: theme.spacing.md,
     borderRadius: theme.radii.md,
-    borderColor: theme.colors.border,
     backgroundColor: theme.colors.white.DEFAULT,
   },
   borderStyle: {
@@ -190,6 +252,20 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  headerInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  statusContainer: {
+    height: 24,
+    borderWidth: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    borderRadius: theme.radii.sm,
+    paddingHorizontal: theme.spacing.md,
   },
   bookingDetails: {
     gap: theme.spacing.md,

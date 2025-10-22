@@ -100,6 +100,7 @@ const LocationCard = ({
         style={[
           styles.imageContainer,
           !photos?.[0] && {
+            overflow: 'hidden',
             shadowColor: randomColor + '50',
             backgroundColor: randomColor + '50',
           },
@@ -178,20 +179,31 @@ const styles = StyleSheet.create({
   imageContainer: {
     height: 200,
     width: '100%',
-    overflow: 'hidden',
     borderRadius: theme.radii.md,
+    backgroundColor: theme.colors.white.DEFAULT,
 
     // iOS Shadows
     shadowRadius: 1,
     shadowOpacity: 0.1,
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
 
     // Android Shadows
     elevation: 4,
+
+    // // iOS Shadows
+    // shadowRadius: 2,
+    // shadowOpacity: 0.3,
+    // shadowColor: '#000000',
+    // shadowOffset: { width: 0, height: 0 },
+
+    // // Android Shadows
+    // elevation: 8,
   },
   image: {
     width: '100%',
     height: '100%',
+    borderRadius: theme.radii.md,
   },
   imagePlaceholder: {
     flex: 1,

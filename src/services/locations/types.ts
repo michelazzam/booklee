@@ -38,6 +38,9 @@ export type LocationServiceType = {
     _id: string;
     name: string;
     slug: string;
+    category: string;
+    categoryId: string;
+    description: string;
   };
   price: {
     min: number;
@@ -142,6 +145,8 @@ export type LocationReviewLocationType = {
   id: string;
   name: string;
   city: string;
+  rating: number;
+  totalReviews: number;
 };
 export type LocationReviewType = {
   rating: number;

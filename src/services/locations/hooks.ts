@@ -36,7 +36,7 @@ import type {
 
 const useGetLocationsCategories = (filters?: GetLocationsReqType) => {
   return useQuery<GetLocationsCategorizedResType, ResErrorType, LocationCategoryType[]>({
-    select: ({ categories }) => categories,
+    select: ({ categories }) => categories.filter((category) => category.slug !== 'uncategorized'),
     queryKey: ['getLocationsCategories', filters],
     queryFn: () => getLocationsCategoriesApi(filters),
   });

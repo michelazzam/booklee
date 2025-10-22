@@ -214,6 +214,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     flexGrow: 1,
+    paddingHorizontal: 1,
     gap: theme.spacing.xl,
   },
   mapIconContainer: {

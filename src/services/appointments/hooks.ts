@@ -33,10 +33,7 @@ const useGetUpcomingUserAppointments = () => {
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
     queryKey: ['getUpcomingUserAppointments'],
-    select: (data) =>
-      data.pages.flatMap((page) => {
-        return page.appointments.filter((appointment) => appointment.status === 'confirmed');
-      }),
+    select: (data) => data.pages.flatMap((page) => page.appointments),
     queryFn: ({ pageParam }) => getUserAppointments(pageParam as number, { upcoming: true }),
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage && lastPage.appointments.length > 0) {

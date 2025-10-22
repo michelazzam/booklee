@@ -63,7 +63,7 @@ const LocationCategory = ({ category }: { category: LocationCategoryType }) => {
     <View style={{ gap: theme.spacing.md }} key={category._id}>
       <View style={styles.sectionTitle}>
         <Text
-          weight="medium"
+          weight="semiBold"
           color={theme.colors.darkText[100]}
           size={theme.typography.fontSizes.sm}
           style={{ textTransform: 'uppercase', flex: 1 }}>

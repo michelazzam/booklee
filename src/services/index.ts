@@ -34,6 +34,7 @@ export type {
   SearchHistoryType,
   DetailedLocationType,
   LocationType,
+  LocationServiceType,
   LocationRatingResType,
   LocationReviewType,
   LocationRatingSortType,
