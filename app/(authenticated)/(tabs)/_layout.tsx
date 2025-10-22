@@ -1,9 +1,10 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Tabs } from 'expo-router';
 
 import { theme } from '~/src/constants/theme';
 
 import { TabBarIcon } from '~/src/components/tabBar';
+import { Text } from '~/src/components/base';
 
 type TabType = {
   name: string;
@@ -43,8 +44,8 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarShowLabel: false,
         tabBarStyle: styles.tabBar,
-        tabBarLabelStyle: styles.tabBarLabel,
         tabBarActiveTintColor: theme.colors.primaryBlue[100],
         sceneStyle: {
           backgroundColor: theme.colors.white.DEFAULT,
@@ -57,7 +58,16 @@ export default function TabLayout() {
           options={{
             title: title,
             tabBarIcon: ({ color, focused }) => (
-              <TabBarIcon icon={icon} color={color} focused={focused} size={24} />
+              <View style={styles.tabContent}>
+                <TabBarIcon icon={icon} color={color} focused={focused} size={24} />
+
+                <Text
+                  weight={focused ? 'bold' : 'regular'}
+                  size={focused ? theme.typography.fontSizes.xs : 10}
+                  color={focused ? theme.colors.primaryBlue[100] : theme.colors.lightText[100]}>
+                  {title}
+                </Text>
+              </View>
             ),
           }}
         />
@@ -79,9 +89,10 @@ const styles = StyleSheet.create({
     // Android shadow
     elevation: 8,
   },
-  tabBarLabel: {
-    fontFamily: 'Montserrat-Medium',
-    fontSize: theme.typography.fontSizes.xs,
-    fontWeight: theme.typography.fontWeights.semiBold,
+  tabContent: {
+    width: 100,
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    marginTop: theme.spacing.xl,
   },
 });

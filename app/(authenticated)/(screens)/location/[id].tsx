@@ -1,7 +1,14 @@
-import { View, ScrollView, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
+import {
+  TouchableOpacity,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Linking,
+  View,
+} from 'react-native';
 
 import {
   type LocationOperatingHoursType,
@@ -35,7 +42,13 @@ const SalonDetailPage = () => {
   const { top, bottom } = useAppSafeAreaInsets();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(id);
-  const { data: location, isLoading, isFetched } = LocationServices.useGetLocationById(id || '');
+  const {
+    data: location,
+    isLoading,
+    isFetched,
+    refetch,
+    isRefetching,
+  } = LocationServices.useGetLocationById(id || '');
   const { photos, name, address, rating, phone, tags, operatingHours, geo } = location || {};
 
   /***** States *****/
@@ -213,6 +226,16 @@ const SalonDetailPage = () => {
       </View>
     ));
   }, [phone, address, geo?.lat, geo?.lng, operatingHours]);
+  const RenderRefreshControl = useCallback(() => {
+    return (
+      <RefreshControl
+        onRefresh={refetch}
+        refreshing={isRefetching}
+        colors={[theme.colors.primaryBlue[100]]}
+        tintColor={theme.colors.primaryBlue[100]}
+      />
+    );
+  }, [isRefetching, refetch]);
 
   /***** Memoization *****/
   const TabItems = useMemo(() => {
@@ -248,8 +271,8 @@ const SalonDetailPage = () => {
       {!location && <LocationSplashImage imageUri={image} isLoading={isLoading} />}
 
       <ScrollView
-        bounces={false}
         showsVerticalScrollIndicator={false}
+        refreshControl={RenderRefreshControl()}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom }}>
         <View style={[styles.headerComponent, { paddingTop: top }]}>
           <TouchableOpacity activeOpacity={0.8} onPress={() => router.back()}>
@@ -274,7 +297,7 @@ const SalonDetailPage = () => {
             </Text>
 
             <View style={styles.storeInfoContainer}>
-              {rating && (
+              {!isNaN(rating || 0) && (
                 <TouchableOpacity
                   activeOpacity={0.8}
                   style={styles.ratingContainer}
@@ -362,6 +385,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.lg,
+  },
+  imageContainer: {
+    height: 300,
+    overflow: 'hidden',
   },
   storeContentContainer: {
     gap: theme.spacing.sm,
