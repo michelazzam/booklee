@@ -190,15 +190,6 @@ const styles = StyleSheet.create({
 
     // Android Shadows
     elevation: 4,
-
-    // // iOS Shadows
-    // shadowRadius: 2,
-    // shadowOpacity: 0.3,
-    // shadowColor: '#000000',
-    // shadowOffset: { width: 0, height: 0 },
-
-    // // Android Shadows
-    // elevation: 8,
   },
   image: {
     width: '100%',

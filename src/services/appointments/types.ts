@@ -1,4 +1,4 @@
-export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'rejected';
 export type AppointmentSource = 'online' | 'phone' | 'walk-in' | 'mobile';
 export type AppointmentItem = {
   price: number;

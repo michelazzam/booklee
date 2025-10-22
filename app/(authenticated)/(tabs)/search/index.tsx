@@ -35,9 +35,12 @@ const LocationListing = () => {
   const { filterSlug } = useLocalSearchParams<{ filterSlug: string }>();
   const { data: filtersData } = LocationServices.useGetLocationsCategories();
   const {
-    data: locationsData,
-    isLoading,
     refetch,
+    isLoading,
+    isFetching,
+    hasNextPage,
+    fetchNextPage,
+    data: locationsData,
   } = LocationServices.useGetLocations(selectedFilter);
 
   /*** Memoization ***/
@@ -74,6 +77,11 @@ const LocationListing = () => {
       setIsRefreshing(false);
     });
   }, [refetch]);
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetching) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetching, fetchNextPage]);
 
   const RenderItem = useCallback(
     ({ item }: { item: LocationType }) => (
@@ -84,6 +92,11 @@ const LocationListing = () => {
     ),
     [router]
   );
+  const RenderFooter = useCallback(() => {
+    if (!isFetching) return null;
+
+    return <LocationCardSkeleton />;
+  }, [isFetching]);
   const RenderEmptyComponent = useCallback(() => {
     if (isLoading) {
       return Array.from({ length: 10 }).map((_, index) => (
@@ -149,7 +162,7 @@ const LocationListing = () => {
       </View>
 
       <View style={{ flex: 1 }}>
-        {!isRefreshing && (
+        {!isRefreshing && !isFetching && (
           <AnimatedTouchable
             entering={FadeIn}
             activeOpacity={0.8}
@@ -170,7 +183,10 @@ const LocationListing = () => {
         <FlatList
           data={locationsData}
           renderItem={RenderItem}
+          onEndReachedThreshold={0.8}
+          onEndReached={handleEndReached}
           keyExtractor={(item) => item._id}
+          ListFooterComponent={RenderFooter}
           showsVerticalScrollIndicator={false}
           refreshControl={RenderRefreshControl()}
           ListEmptyComponent={RenderEmptyComponent}
