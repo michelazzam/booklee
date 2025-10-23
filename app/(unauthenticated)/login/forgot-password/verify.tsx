@@ -8,24 +8,24 @@ import { AuthServices } from '~/src/services';
 import { useTimer } from '~/src/hooks/useTimer';
 import { theme } from '~/src/constants/theme';
 
+import { AwareScrollView, Text } from '~/src/components/base';
 import { CodeInputs } from '~/src/components/textInputs';
 import { Button } from '~/src/components/buttons';
-import { AwareScrollView, Text } from '~/src/components/base';
 
 type LocalSearchParamsType = {
   email: string;
+  fromLogin: string;
 };
 
-const EmailVerificationPage = () => {
+const VerifyPasswordResetPage = () => {
   /*** States ***/
   const [hasOtpError, setHasOtpError] = useState(false);
 
   /*** Constants ***/
   const router = useRouter();
-  const { email } = useLocalSearchParams<LocalSearchParamsType>();
   const { mutate: verifyEmailOtp } = AuthServices.useVerifyEmailOtp();
+  const { email, fromLogin } = useLocalSearchParams<LocalSearchParamsType>();
   const { formattedTokenExpiry, resendEmailTimer, resetTimer } = useTimer(10, 10);
-  const { mutate: sendEmailOtpVerification } = AuthServices.useSendEmailOtpVerification();
   const { mutate: resendEmailVerification, isPending: isResendEmailVerificationPending } =
     AuthServices.useResendEmailVerification();
 
@@ -34,7 +34,14 @@ const EmailVerificationPage = () => {
       verifyEmailOtp(
         { email, otp: code },
         {
+          onSuccess: () => {
+            router.replace({
+              params: { email, otp: code },
+              pathname: '/(unauthenticated)/login/forgot-password/reset',
+            });
+          },
           onError: () => {
+            Toast.error('Invalid verification code');
             setHasOtpError(true);
           },
         }
@@ -43,19 +50,15 @@ const EmailVerificationPage = () => {
       setHasOtpError(true);
     }
   };
-  const handleResendEmailVerification = () => {
-    resendEmailVerification(email, {
-      onSuccess: () => {
-        resetTimer();
-      },
-      onError: () => {
-        Toast.error('Failed to resend email verification');
-      },
-    });
-  };
 
   useEffect(() => {
-    sendEmailOtpVerification(email);
+    if (Boolean(fromLogin)) {
+      resendEmailVerification(email, {
+        onSuccess: () => {
+          resetTimer();
+        },
+      });
+    }
 
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -110,8 +113,8 @@ const EmailVerificationPage = () => {
       <View style={styles.resendSection}>
         <Button
           variant="outline"
-          onPress={handleResendEmailVerification}
           isLoading={isResendEmailVerificationPending}
+          onPress={() => resendEmailVerification(email)}
           disabled={isResendEmailVerificationPending || resendEmailTimer > 0}
           title={resendEmailTimer > 0 ? `Resend Email in ${formattedTokenExpiry}` : 'Resend Email'}
         />
@@ -122,7 +125,7 @@ const EmailVerificationPage = () => {
   );
 };
 
-export default EmailVerificationPage;
+export default VerifyPasswordResetPage;
 
 const styles = StyleSheet.create({
   container: {

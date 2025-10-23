@@ -4,9 +4,12 @@ import { apiClient } from '../axios/interceptor';
 import { authClient } from './auth-client';
 
 import {
+  sendEmailOtpVerificationApi,
   resendEmailVerificationApi,
+  verifyEmailOtpApi,
   loginWithEmailApi,
   forgotPasswordApi,
+  resetPasswordApi,
   googleLoginApi,
   signUpApi,
   logoutApi,
@@ -80,6 +83,24 @@ const useSignUp = () => {
   });
 };
 
+const useSendEmailOtpVerification = () => {
+  return useMutation({
+    mutationFn: sendEmailOtpVerificationApi,
+  });
+};
+
+const useVerifyEmailOtp = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: verifyEmailOtpApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['getMe'] });
+    },
+  });
+};
+
 const useLogout = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
@@ -116,6 +137,12 @@ const useForgotPassword = () => {
   });
 };
 
+const useResetPassword = () => {
+  return useMutation({
+    mutationFn: resetPasswordApi,
+  });
+};
+
 const useResendEmailVerification = () => {
   return useMutation({
     mutationFn: resendEmailVerificationApi,
@@ -123,9 +150,12 @@ const useResendEmailVerification = () => {
 };
 
 export const AuthServices = {
+  useSendEmailOtpVerification,
   useResendEmailVerification,
   useGetBetterAuthUser,
   useForgotPassword,
+  useVerifyEmailOtp,
+  useResetPassword,
   useGoogleLogin,
   useSession,
   useLogout,

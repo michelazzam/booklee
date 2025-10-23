@@ -25,6 +25,7 @@ export type {
   GetMeResType,
   SessionType,
   RoleType,
+  ResetPasswordReqType,
 } from './auth/types';
 export type {
   CategoryType,

@@ -76,6 +76,20 @@ export type SignUpResType = {
   };
 };
 
+/*** Verify Email OTP types ***/
+export type VerifyEmailOtpReqType = {
+  otp: string;
+  email: string;
+};
+
+/*** Reset password types ***/
+export type ResetPasswordReqType = {
+  otp: string;
+  email: string;
+  password: string;
+  confirmPassword?: string;
+};
+
 /*** Auth error types ***/
 export type AuthErrorType = {
   code: string;
