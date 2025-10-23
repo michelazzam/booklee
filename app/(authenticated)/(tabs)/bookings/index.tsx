@@ -51,24 +51,25 @@ const UpcomingBookingsPage = () => {
 
     return (
       <View style={styles.emptyStateContent}>
-        <Image source={IMAGES.favorites.placeholder} style={styles.emptyStateImage} />
+        <Image source={IMAGES.bookings.placeholder} style={styles.emptyStateImage} />
 
-        <Text
-          size={18}
-          weight="semiBold"
-          style={{ textAlign: 'center' }}
-          color={theme.colors.darkText[100]}>
-          No bookings yet
-        </Text>
+        <View style={{ gap: theme.spacing.md }}>
+          <Text
+            size={18}
+            weight="semiBold"
+            style={{ textAlign: 'center' }}
+            color={theme.colors.darkText[100]}>
+            No bookings yet
+          </Text>
 
-        <Text
-          size={14}
-          weight="regular"
-          color={theme.colors.lightText}
-          style={styles.emptyStateDescription}>
-          You can add a place to your favorites by tapping on the heart icon at the top right corner
-          of the listing.
-        </Text>
+          <Text
+            size={14}
+            weight="regular"
+            color={theme.colors.lightText}
+            style={styles.emptyStateDescription}>
+            Once you confirm a booking, your listing will be shown here.
+          </Text>
+        </View>
 
         <Button
           title="Start Exploring"

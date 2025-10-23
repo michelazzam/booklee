@@ -7,6 +7,9 @@ export const IMAGES = {
   favorites: {
     placeholder: require('../assets/images/appImages/FavoritesPlaceholder.png'),
   },
+  bookings: {
+    placeholder: require('../assets/images/appImages/bookingPlaceholder.png'),
+  },
   background: {
     texturedBackground: require('../assets/images/appImages/texturedBackground.png'),
   },
