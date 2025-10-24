@@ -1,7 +1,7 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { View, StyleSheet, Keyboard } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
 import { Toast } from 'toastify-react-native';
-import { useRef, useState } from 'react';
 
 import { type ValidationResultType, validateResetPassword } from '~/src/helper/validation';
 import { AuthServices, type ResetPasswordReqType } from '~/src/services';
@@ -39,6 +39,13 @@ const ResetPasswordScreen = () => {
     success: false,
   });
 
+  useEffect(() => {
+    if (email && otp) {
+      data.current.email = email;
+      data.current.otp = otp;
+    }
+  }, [email, otp]);
+
   const onTextChange = (text: string, field: keyof ResetPasswordReqType) => {
     data.current[field] = text;
 
@@ -59,10 +66,9 @@ const ResetPasswordScreen = () => {
 
     resetPassword(
       {
-        email,
         otp,
+        email,
         password: data.current.password,
-        confirmPassword: data.current.confirmPassword,
       },
       {
         onSuccess: () => {
@@ -102,6 +108,7 @@ const ResetPasswordScreen = () => {
         onPress={handleResetPassword}
         disabled={isResetPasswordPending}
         isLoading={isResetPasswordPending}
+        containerStyle={{ marginHorizontal: theme.spacing.lg }}
       />
     </AwareScrollView>
   );
@@ -117,5 +124,6 @@ const styles = StyleSheet.create({
   formSection: {
     flex: 1,
     gap: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.lg,
   },
 });

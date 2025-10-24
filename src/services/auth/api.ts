@@ -7,8 +7,8 @@ import { apiClient } from '../axios/interceptor';
 import {
   VerifyEmailOtpReqType,
   ResetPasswordReqType,
-  GetMeResType,
   SignUpReqType,
+  GetMeResType,
   LoginReqType,
 } from './types';
 
@@ -30,22 +30,14 @@ export const getMeApi = async () => {
 
 /*** API for sign up ***/
 export const signUpApi = async (data: SignUpReqType) => {
-  const { firstName, lastName, email, password, role, phone, salonName } = data;
-  const name = `${firstName} ${lastName}`.trim();
+  const { email, ...rest } = data;
 
   const [response] = await withErrorCatch(
-    authClient.signUp.email({
-      name,
+    authClient.emailOtp.sendVerificationOtp({
       email,
-      password,
+      type: 'sign-in',
       fetchOptions: {
-        body: {
-          role,
-          phone,
-          lastName,
-          firstName,
-          salonName,
-        },
+        body: rest,
       },
     })
   );
@@ -62,27 +54,13 @@ export const signUpApi = async (data: SignUpReqType) => {
   return response?.data;
 };
 
-/*** API for send email OTP verification ***/
-export const sendEmailOtpVerificationApi = async (email: string) => {
-  const [response] = await withErrorCatch(
-    authClient.emailOtp.sendVerificationOtp({ email, type: 'email-verification' })
-  );
-
-  if (response?.error instanceof AxiosError) {
-    throw {
-      ...response?.error.response?.data,
-      status: response?.error.response?.status,
-    };
-  } else if (response?.error) {
-    throw response?.error;
-  }
-
-  return response?.data;
-};
-
 /*** API for verify Email OTP ***/
 export const verifyEmailOtpApi = async (data: VerifyEmailOtpReqType) => {
-  const [response] = await withErrorCatch(authClient.emailOtp.verifyEmail(data));
+  const { email, otp } = data;
+
+  const [response] = await withErrorCatch(
+    authClient.emailOtp.checkVerificationOtp({ email, otp, type: 'sign-in' })
+  );
 
   if (response?.error instanceof AxiosError) {
     throw {
@@ -173,21 +151,15 @@ export const forgotPasswordApi = async (email: string) => {
 
 /*** API for verify Reset Password Email OTP ***/
 export const verifyResetPasswordOtpApi = async (data: VerifyEmailOtpReqType) => {
-  const [response] = await withErrorCatch(authClient.emailOtp.verifyEmail(data));
+  const { email, otp } = data;
 
-  if (response?.error instanceof AxiosError) {
-    throw {
-      ...response?.error.response?.data,
-      status: response?.error.response?.status,
-    };
-  } else if (response?.error) {
-    throw response?.error;
-  }
-};
-
-/*** API for reset password ***/
-export const resetPasswordApi = async (data: ResetPasswordReqType) => {
-  const [response] = await withErrorCatch(authClient.emailOtp.resetPassword(data));
+  const [response] = await withErrorCatch(
+    authClient.emailOtp.checkVerificationOtp({
+      otp,
+      email,
+      type: 'forget-password',
+    })
+  );
 
   if (response?.error instanceof AxiosError) {
     throw {
@@ -201,13 +173,9 @@ export const resetPasswordApi = async (data: ResetPasswordReqType) => {
   return response?.data;
 };
 
-/*** API for resend email verification ***/
-export const resendEmailVerificationApi = async (email: string) => {
-  const [response] = await withErrorCatch(
-    authClient.sendVerificationEmail({
-      email,
-    })
-  );
+/*** API for reset password ***/
+export const resetPasswordApi = async (data: ResetPasswordReqType) => {
+  const [response] = await withErrorCatch(authClient.emailOtp.resetPassword(data));
 
   if (response?.error instanceof AxiosError) {
     throw {

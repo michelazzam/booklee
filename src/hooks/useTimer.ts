@@ -1,11 +1,13 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from 'react';
 
-export const useTimer = (
-  initialTokenTime: number,
-  initialEmailTime: number = 60
-) => {
-  const [tokenExpiry, setTokenExpiry] = useState(initialTokenTime * 60);
-  const [resendEmailTimer, setResendEmailTimer] = useState(initialEmailTime);
+type TimerConfig = {
+  tokenExpiryMinutes: number;
+  resendEmailMinutes: number;
+};
+
+export const useTimer = ({ tokenExpiryMinutes, resendEmailMinutes }: TimerConfig) => {
+  const [tokenExpiry, setTokenExpiry] = useState(tokenExpiryMinutes * 60);
+  const [resendEmailTimerSeconds, setResendEmailTimerSeconds] = useState(resendEmailMinutes * 60);
 
   useEffect(() => {
     const tokenInterval = setInterval(() => {
@@ -19,7 +21,7 @@ export const useTimer = (
     }, 1000);
 
     const emailInterval = setInterval(() => {
-      setResendEmailTimer((prev) => {
+      setResendEmailTimerSeconds((prev) => {
         if (prev === 0) {
           clearInterval(emailInterval);
           return 0;
@@ -32,24 +34,26 @@ export const useTimer = (
       clearInterval(tokenInterval);
       clearInterval(emailInterval);
     };
-  }, [initialTokenTime, initialEmailTime]);
+  }, [tokenExpiryMinutes, resendEmailMinutes]);
 
   const formatTime = useCallback((time: number): string => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }, []);
 
   const resetTimer = () => {
-    setTokenExpiry(initialTokenTime * 60);
-    setResendEmailTimer(initialEmailTime);
+    setTokenExpiry(tokenExpiryMinutes * 60);
+    setResendEmailTimerSeconds(resendEmailMinutes * 60);
   };
 
   const formattedTokenExpiry = formatTime(tokenExpiry);
+  const formattedResendEmailTimer = formatTime(resendEmailTimerSeconds);
 
   return {
     resetTimer,
-    resendEmailTimer,
+    resendEmailTimerSeconds,
+    formattedResendEmailTimer,
     formattedTokenExpiry,
   };
 };

@@ -18,14 +18,13 @@ export type {
   TimeSlot,
 } from './appointments/types';
 export type {
+  ResetPasswordReqType,
   BetterAuthUserType,
   AuthErrorType,
   SignUpReqType,
   LoginReqType,
   GetMeResType,
   SessionType,
-  RoleType,
-  ResetPasswordReqType,
 } from './auth/types';
 export type {
   CategoryType,

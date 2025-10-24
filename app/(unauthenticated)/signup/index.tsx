@@ -20,7 +20,6 @@ export const SignupPage = () => {
 
   /***** Refs *****/
   const data = useRef<SignUpReqType & { confirmPassword: string }>({
-    role: '',
     phone: '',
     email: '',
     password: '',
@@ -105,32 +104,6 @@ export const SignupPage = () => {
           error={validationErrors.errors?.email}
           onChangeText={(value) => onTextChange(value, 'email')}
         />
-
-        {/* <Input
-          label="Role*"
-          editable={false}
-          variant="dropdown"
-          value={data.current.role}
-          trailingIcon="chevron-down"
-          error={validationErrors.errors?.role}
-          onChangeText={(value) => onTextChange(value, 'role')}
-          options={['owner', 'manager', 'stylist', 'receptionist']}
-        /> */}
-
-        {/* {role !== 'owner' ? (
-          <Input
-            placeholder="123456"
-            label="Invitation Key*"
-            onChangeText={() => onTextChange('', 'salonName')}
-          />
-        ) : (
-          <Input
-            label="Salon Name*"
-            placeholder="John Doe's Salon"
-            error={validationErrors.errors?.salonName}
-            onChangeText={(value) => onTextChange(value, 'salonName')}
-          />
-        )} */}
 
         <PhoneInput
           isRequired

@@ -1,7 +1,7 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import { Toast } from 'toastify-react-native';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { AuthServices } from '~/src/services';
 
@@ -24,8 +24,10 @@ const EmailVerificationPage = () => {
   const router = useRouter();
   const { email } = useLocalSearchParams<LocalSearchParamsType>();
   const { mutate: verifyEmailOtp } = AuthServices.useVerifyEmailOtp();
-  const { formattedTokenExpiry, resendEmailTimer, resetTimer } = useTimer(10, 10);
-  const { mutate: sendEmailOtpVerification } = AuthServices.useSendEmailOtpVerification();
+  const { resendEmailTimerSeconds, formattedResendEmailTimer, resetTimer } = useTimer({
+    tokenExpiryMinutes: 10,
+    resendEmailMinutes: 10,
+  });
   const { mutate: resendEmailVerification, isPending: isResendEmailVerificationPending } =
     AuthServices.useResendEmailVerification();
 
@@ -54,11 +56,11 @@ const EmailVerificationPage = () => {
     });
   };
 
-  useEffect(() => {
-    sendEmailOtpVerification(email);
+  // useEffect(() => {
+  //   sendEmailOtpVerification(email);
 
-    //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  //   //eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   return (
     <AwareScrollView contentContainerStyle={styles.container}>
@@ -112,8 +114,12 @@ const EmailVerificationPage = () => {
           variant="outline"
           onPress={handleResendEmailVerification}
           isLoading={isResendEmailVerificationPending}
-          disabled={isResendEmailVerificationPending || resendEmailTimer > 0}
-          title={resendEmailTimer > 0 ? `Resend Email in ${formattedTokenExpiry}` : 'Resend Email'}
+          disabled={isResendEmailVerificationPending || resendEmailTimerSeconds > 0}
+          title={
+            resendEmailTimerSeconds > 0
+              ? `Resend Email in ${formattedResendEmailTimer}`
+              : 'Resend Email'
+          }
         />
 
         <Button title="Back to Login" onPress={() => router.back()} variant="ghost" />

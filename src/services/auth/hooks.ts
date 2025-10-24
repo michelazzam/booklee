@@ -4,8 +4,7 @@ import { apiClient } from '../axios/interceptor';
 import { authClient } from './auth-client';
 
 import {
-  sendEmailOtpVerificationApi,
-  resendEmailVerificationApi,
+  verifyResetPasswordOtpApi,
   verifyEmailOtpApi,
   loginWithEmailApi,
   forgotPasswordApi,
@@ -83,12 +82,6 @@ const useSignUp = () => {
   });
 };
 
-const useSendEmailOtpVerification = () => {
-  return useMutation({
-    mutationFn: sendEmailOtpVerificationApi,
-  });
-};
-
 const useVerifyEmailOtp = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
@@ -137,21 +130,20 @@ const useForgotPassword = () => {
   });
 };
 
+const useVerifyResetPasswordOtp = () => {
+  return useMutation({
+    mutationFn: verifyResetPasswordOtpApi,
+  });
+};
+
 const useResetPassword = () => {
   return useMutation({
     mutationFn: resetPasswordApi,
   });
 };
 
-const useResendEmailVerification = () => {
-  return useMutation({
-    mutationFn: resendEmailVerificationApi,
-  });
-};
-
 export const AuthServices = {
-  useSendEmailOtpVerification,
-  useResendEmailVerification,
+  useVerifyResetPasswordOtp,
   useGetBetterAuthUser,
   useForgotPassword,
   useVerifyEmailOtp,

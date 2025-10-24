@@ -23,11 +23,14 @@ const VerifyPasswordResetPage = () => {
 
   /*** Constants ***/
   const router = useRouter();
-  const { mutate: verifyEmailOtp } = AuthServices.useVerifyEmailOtp();
   const { email, fromLogin } = useLocalSearchParams<LocalSearchParamsType>();
-  const { formattedTokenExpiry, resendEmailTimer, resetTimer } = useTimer(10, 10);
+  const { mutate: verifyEmailOtp } = AuthServices.useVerifyResetPasswordOtp();
   const { mutate: resendEmailVerification, isPending: isResendEmailVerificationPending } =
-    AuthServices.useResendEmailVerification();
+    AuthServices.useForgotPassword();
+  const { resendEmailTimerSeconds, formattedResendEmailTimer, resetTimer } = useTimer({
+    tokenExpiryMinutes: 10,
+    resendEmailMinutes: 10,
+  });
 
   const handleOtpComplete = (code: string) => {
     if (code.length === 6) {
@@ -50,18 +53,21 @@ const VerifyPasswordResetPage = () => {
       setHasOtpError(true);
     }
   };
+  const handleResetPassword = () => {
+    resendEmailVerification(email, {
+      onSuccess: () => {
+        resetTimer();
+      },
+    });
+  };
 
   useEffect(() => {
     if (Boolean(fromLogin)) {
-      resendEmailVerification(email, {
-        onSuccess: () => {
-          resetTimer();
-        },
-      });
+      handleResetPassword();
     }
 
     //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fromLogin]);
 
   return (
     <AwareScrollView contentContainerStyle={styles.container}>
@@ -113,10 +119,14 @@ const VerifyPasswordResetPage = () => {
       <View style={styles.resendSection}>
         <Button
           variant="outline"
+          onPress={handleResetPassword}
           isLoading={isResendEmailVerificationPending}
-          onPress={() => resendEmailVerification(email)}
-          disabled={isResendEmailVerificationPending || resendEmailTimer > 0}
-          title={resendEmailTimer > 0 ? `Resend Email in ${formattedTokenExpiry}` : 'Resend Email'}
+          disabled={isResendEmailVerificationPending || resendEmailTimerSeconds > 0}
+          title={
+            resendEmailTimerSeconds > 0
+              ? `Resend Email in ${formattedResendEmailTimer}`
+              : 'Resend Email'
+          }
         />
 
         <Button title="Back to Login" onPress={() => router.back()} variant="ghost" />
