@@ -180,7 +180,7 @@ export type LocationRatingResType = {
 export type LocationRatingSubmitReqType = {
   userId: string;
   rating: number;
-  message: string;
+  message?: string;
   appointmentId: string;
 };
 export type LocationRatingSubmitResType = {
