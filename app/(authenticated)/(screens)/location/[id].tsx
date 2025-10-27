@@ -43,13 +43,14 @@ const SalonDetailPage = () => {
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(id);
   const {
-    data: location,
+    refetch,
     isLoading,
     isFetched,
-    refetch,
     isRefetching,
+    data: location,
   } = LocationServices.useGetLocationById(id || '');
-  const { photos, name, address, rating, phone, tags, operatingHours, geo } = location || {};
+  const { photos, address, rating, phone, tags, operatingHours, geo, organization } =
+    location || {};
 
   /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -293,7 +294,7 @@ const SalonDetailPage = () => {
         <View style={styles.storeContentContainer}>
           <View style={{ gap: theme.spacing.sm }}>
             <Text size={theme.typography.fontSizes['2xl']} weight={'semiBold'}>
-              {name}
+              {organization}
             </Text>
 
             <View style={styles.storeInfoContainer}>
