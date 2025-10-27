@@ -7,6 +7,11 @@ import { ENV } from '~/src/constants';
 
 export const authClient = createAuthClient({
   baseURL: `${ENV.API_URL}/auth`,
+  fetchOptions: {
+    headers: {
+      Origin: 'booklee://',
+    },
+  },
   plugins: [
     emailOTPClient(),
     expoClient({
