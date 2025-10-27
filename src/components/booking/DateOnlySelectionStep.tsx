@@ -1,82 +1,32 @@
-import { View, StyleSheet, TouchableOpacity, PanResponder, Animated } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { useState, useRef } from 'react';
-
+import { useState } from 'react';
 import { theme } from '~/src/constants/theme';
 import { Text, Icon } from '../base';
 
-type DateTimeSelectionStepProps = {
+type DateOnlySelectionStepProps = {
   selectedDate?: string;
   onDateSelect: (date: string) => void;
-  onDateSelectAndProceed?: (date: string) => void;
 };
 
-const DateTimeSelectionStep = ({
-  selectedDate,
-  onDateSelect,
-  onDateSelectAndProceed,
-}: DateTimeSelectionStepProps) => {
+const DateOnlySelectionStep = ({ selectedDate, onDateSelect }: DateOnlySelectionStepProps) => {
   const [showWeekView, setShowWeekView] = useState(false);
-  const [weekOffset, setWeekOffset] = useState(0); // Track which week we're viewing
-  const [baseWeekDate, setBaseWeekDate] = useState<string | null>(null); // Track the base week for week view
-  const pan = useRef(new Animated.Value(0)).current;
-
-  // No need to fetch availability data here since we only handle date selection
-
-  // PanResponder for swipe-down gesture
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => showWeekView,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only respond to vertical swipes when in week view
-        return (
-          showWeekView &&
-          Math.abs(gestureState.dy) > Math.abs(gestureState.dx) &&
-          Math.abs(gestureState.dy) > 5
-        );
-      },
-      onPanResponderGrant: () => {
-        pan.setOffset((pan as any)._value);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        // Only allow downward swipes (positive dy values)
-        if (gestureState.dy > 0) {
-          pan.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        pan.flattenOffset();
-
-        // If swipe down is significant enough, expand to monthly view
-        if (gestureState.dy > 30) {
-          setShowWeekView(false);
-        }
-
-        // Reset the pan value
-        Animated.spring(pan, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      },
-    })
-  ).current;
-
-  // No time slot logic needed for date-only selection
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [baseWeekDate, setBaseWeekDate] = useState<string | null>(null);
 
   const handleDateSelect = (day: any) => {
     if (day && day.dateString) {
       onDateSelect(day.dateString);
-      onDateSelectAndProceed?.(day.dateString);
       setShowWeekView(true);
-      setWeekOffset(0); // Reset to current week when selecting from monthly view
-      setBaseWeekDate(day.dateString); // Set the base week date
+      setWeekOffset(0);
+      setBaseWeekDate(day.dateString);
     }
   };
 
   const handleExpandToMonthly = () => {
     setShowWeekView(false);
-    setWeekOffset(0); // Reset week offset when going back to monthly view
-    setBaseWeekDate(null); // Clear base week date
+    setWeekOffset(0);
+    setBaseWeekDate(null);
   };
 
   const handlePreviousWeek = () => {
@@ -89,23 +39,19 @@ const DateTimeSelectionStep = ({
 
   const handleWeekDaySelect = (date: string) => {
     onDateSelect(date);
-    onDateSelectAndProceed?.(date);
-    // Don't change weekOffset - keep the same week view
   };
 
-  // Format week date range for display
   const getWeekDateRange = () => {
     if (!baseWeekDate) return 'Week View';
 
     const baseDate = new Date(baseWeekDate);
     const startOfWeek = new Date(baseDate);
-    startOfWeek.setDate(baseDate.getDate() - baseDate.getDay() + 1); // Start from Monday
+    startOfWeek.setDate(baseDate.getDate() - baseDate.getDay() + 1);
 
-    // Apply week offset
     startOfWeek.setDate(startOfWeek.getDate() + weekOffset * 7);
 
     const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // End on Sunday
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
 
     const startMonth = startOfWeek.toLocaleDateString('en-US', { month: 'long' });
     const startDay = startOfWeek.getDate();
@@ -119,7 +65,6 @@ const DateTimeSelectionStep = ({
     }
   };
 
-  // Generate marked dates for disabled dates
   const getMarkedDates = () => {
     const marked: any = {};
 
@@ -131,7 +76,6 @@ const DateTimeSelectionStep = ({
       };
     }
 
-    // Mark today
     const today = new Date().toISOString().split('T')[0];
     marked[today] = {
       ...marked[today],
@@ -142,27 +86,22 @@ const DateTimeSelectionStep = ({
     return marked;
   };
 
-  // Generate disabled dates
   const getDisabledDates = () => {
     const disabled: any = {};
     const today = new Date();
     const currentYear = today.getFullYear();
 
-    // Disable past dates and specific dates (like 17th)
     for (let month = 0; month < 12; month++) {
       for (let day = 1; day <= 31; day++) {
         const date = new Date(currentYear, month, day);
         const dateString = date.toISOString().split('T')[0];
 
-        // Skip invalid dates
         if (date.getMonth() !== month) continue;
 
-        // Disable past dates
         if (date < today) {
           disabled[dateString] = { disabled: true, disableTouchEvent: true };
         }
 
-        // Disable 17th of any month (as shown in the image)
         if (day === 17) {
           disabled[dateString] = { disabled: true, disableTouchEvent: true };
         }
@@ -172,19 +111,17 @@ const DateTimeSelectionStep = ({
     return disabled;
   };
 
-  // Generate week view data
   const getWeekViewData = () => {
     if (!baseWeekDate) return [];
 
     const baseDate = new Date(baseWeekDate);
     const startOfWeek = new Date(baseDate);
-    startOfWeek.setDate(baseDate.getDate() - baseDate.getDay() + 1); // Start from Monday
+    startOfWeek.setDate(baseDate.getDate() - baseDate.getDay() + 1);
 
-    // Apply week offset
     startOfWeek.setDate(startOfWeek.getDate() + weekOffset * 7);
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+    today.setHours(0, 0, 0, 0);
 
     const week = [];
     for (let i = 0; i < 7; i++) {
@@ -192,7 +129,6 @@ const DateTimeSelectionStep = ({
       date.setDate(startOfWeek.getDate() + i);
       const dateString = date.toISOString().split('T')[0];
 
-      // Check if this date is in the past
       const isPastDate = date < today;
 
       week.push({
@@ -250,19 +186,10 @@ const DateTimeSelectionStep = ({
               textMonthFontSize: theme.typography.fontSizes.lg,
               textDayHeaderFontSize: theme.typography.fontSizes.sm,
             }}
-            firstDay={1} // Start week on Monday
+            firstDay={1}
           />
         ) : (
-          /* Week View */
-          <Animated.View
-            style={[
-              styles.weekView,
-              {
-                transform: [{ translateY: pan }],
-              },
-            ]}
-            {...panResponder.panHandlers}>
-            {/* Week Navigation Header */}
+          <View style={styles.weekView}>
             <View style={styles.weekNavigation}>
               <TouchableOpacity style={styles.weekNavButton} onPress={handlePreviousWeek}>
                 <Icon name="chevron-left" size={20} color={theme.colors.darkText['100']} />
@@ -318,10 +245,8 @@ const DateTimeSelectionStep = ({
               ))}
             </View>
 
-            {/* Click indicator at bottom */}
             <TouchableOpacity style={styles.swipeIndicator} onPress={handleExpandToMonthly}>
               <View style={styles.swipeHandle} />
-
               <Text
                 size={theme.typography.fontSizes.xs}
                 color={theme.colors.darkText['50']}
@@ -329,21 +254,18 @@ const DateTimeSelectionStep = ({
                 Press here to expand
               </Text>
             </TouchableOpacity>
-          </Animated.View>
+          </View>
         )}
       </View>
     </View>
   );
 };
 
-export default DateTimeSelectionStep;
+export default DateOnlySelectionStep;
 
 const styles = StyleSheet.create({
   container: {
     gap: theme.spacing.lg,
-  },
-  header: {
-    gap: theme.spacing.sm,
   },
   calendarCard: {
     backgroundColor: theme.colors.white.DEFAULT,

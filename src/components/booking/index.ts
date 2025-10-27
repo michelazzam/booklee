@@ -1,10 +1,4 @@
-export { default as ProfessionalSelectionStep } from './ProfessionalSelectionStep';
-export { default as DateTimeSelectionStep } from './DateTimeSelectionStep';
-export { default as TimeAndProfessionalStep } from './TimeAndProfessionalStep';
-export { AnimatedServiceSection } from './AnimatedServiceSection';
+export { default as DateOnlySelectionStep } from './DateOnlySelectionStep';
+export { default as TimeSelectionStep } from './TimeSelectionStep';
+export { ProfessionalSelectionOnlyStep } from './ProfessionalSelectionOnlyStep';
 export { default as ConfirmationStep } from './ConfirmationStep';
-export { ProfessionalSelection } from './ProfessionalSelection';
-export { TimeSlotSelection } from './TimeSlotSelection';
-export { ServiceContent } from './ServiceContent';
-export { AnimatedButton } from './AnimatedButton';
-export { ServiceSection } from './ServiceSection';
