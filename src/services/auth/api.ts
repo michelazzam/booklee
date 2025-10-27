@@ -58,9 +58,7 @@ export const signUpApi = async (data: SignUpReqType) => {
 export const verifyEmailOtpApi = async (data: VerifyEmailOtpReqType) => {
   const { email, otp } = data;
 
-  const [response] = await withErrorCatch(
-    authClient.emailOtp.checkVerificationOtp({ email, otp, type: 'sign-in' })
-  );
+  const [response] = await withErrorCatch(authClient.signIn.emailOtp({ email, otp }));
 
   if (response?.error instanceof AxiosError) {
     throw {

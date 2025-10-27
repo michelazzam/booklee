@@ -14,7 +14,6 @@ import { Button } from '~/src/components/buttons';
 
 type LocalSearchParamsType = {
   email: string;
-  fromLogin: string;
 };
 
 const VerifyPasswordResetPage = () => {
@@ -23,7 +22,7 @@ const VerifyPasswordResetPage = () => {
 
   /*** Constants ***/
   const router = useRouter();
-  const { email, fromLogin } = useLocalSearchParams<LocalSearchParamsType>();
+  const { email } = useLocalSearchParams<LocalSearchParamsType>();
   const { mutate: verifyEmailOtp } = AuthServices.useVerifyResetPasswordOtp();
   const { mutate: resendEmailVerification, isPending: isResendEmailVerificationPending } =
     AuthServices.useForgotPassword();
@@ -60,14 +59,6 @@ const VerifyPasswordResetPage = () => {
       },
     });
   };
-
-  useEffect(() => {
-    if (Boolean(fromLogin)) {
-      handleResetPassword();
-    }
-
-    //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromLogin]);
 
   return (
     <AwareScrollView contentContainerStyle={styles.container}>

@@ -5,7 +5,6 @@ import { useState } from 'react';
 
 import { AuthServices } from '~/src/services';
 
-import { useTimer } from '~/src/hooks/useTimer';
 import { theme } from '~/src/constants/theme';
 
 import { CodeInputs } from '~/src/components/textInputs';
@@ -14,6 +13,7 @@ import { AwareScrollView, Text } from '~/src/components/base';
 
 type LocalSearchParamsType = {
   email: string;
+  fromLogin: string;
 };
 
 const EmailVerificationPage = () => {
@@ -24,36 +24,21 @@ const EmailVerificationPage = () => {
   const router = useRouter();
   const { email } = useLocalSearchParams<LocalSearchParamsType>();
   const { mutate: verifyEmailOtp } = AuthServices.useVerifyEmailOtp();
-  const { resendEmailTimerSeconds, formattedResendEmailTimer, resetTimer } = useTimer({
-    tokenExpiryMinutes: 10,
-    resendEmailMinutes: 10,
-  });
-  const { mutate: resendEmailVerification, isPending: isResendEmailVerificationPending } =
-    AuthServices.useResendEmailVerification();
 
   const handleOtpComplete = (code: string) => {
     if (code.length === 6) {
       verifyEmailOtp(
         { email, otp: code },
         {
-          onError: () => {
+          onError: (error) => {
             setHasOtpError(true);
+            Toast.error(error.message || 'Invalid verification code');
           },
         }
       );
     } else {
       setHasOtpError(true);
     }
-  };
-  const handleResendEmailVerification = () => {
-    resendEmailVerification(email, {
-      onSuccess: () => {
-        resetTimer();
-      },
-      onError: () => {
-        Toast.error('Failed to resend email verification');
-      },
-    });
   };
 
   // useEffect(() => {
@@ -110,7 +95,7 @@ const EmailVerificationPage = () => {
       </View>
 
       <View style={styles.resendSection}>
-        <Button
+        {/* <Button
           variant="outline"
           onPress={handleResendEmailVerification}
           isLoading={isResendEmailVerificationPending}
@@ -120,7 +105,7 @@ const EmailVerificationPage = () => {
               ? `Resend Email in ${formattedResendEmailTimer}`
               : 'Resend Email'
           }
-        />
+        /> */}
 
         <Button title="Back to Login" onPress={() => router.back()} variant="ghost" />
       </View>
