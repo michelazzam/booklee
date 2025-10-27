@@ -13,9 +13,7 @@ import {
   type CancelBookingConfirmationModalRef,
 } from '~/src/components/modals';
 
-import DateOnlySelectionStep from '~/src/components/booking/DateOnlySelectionStep';
-import TimeSelectionStep from '~/src/components/booking/TimeSelectionStep';
-import { ProfessionalSelectionOnlyStep } from '~/src/components/booking/ProfessionalSelectionOnlyStep';
+import { ProfessionalSelectionOnlyStep, DateAndTimeSelectionStep } from '~/src/components/booking';
 import ConfirmationStep from '~/src/components/booking/ConfirmationStep';
 import { Toast } from 'toastify-react-native';
 import { ArrowLeftIcon, XIcon, DoneStepIcon, CurrentStepIcon } from '~/src/assets/icons';
@@ -71,8 +69,7 @@ const BookingFlow = () => {
 
   const steps: { key: BookingStep; title: string }[] = [
     { key: 'service', title: 'Select Service' },
-    { key: 'datetime', title: 'Select Date' },
-    { key: 'timeselect', title: 'Select Time' },
+    { key: 'datetime', title: 'Select Date & Time' },
     { key: 'timeprofessional', title: 'Select Professional' },
     { key: 'confirm', title: 'Confirm' },
   ];
@@ -127,8 +124,6 @@ const BookingFlow = () => {
 
   const handleNext = () => {
     if (currentStep === 'datetime') {
-      setCurrentStep('timeselect');
-    } else if (currentStep === 'timeselect') {
       setCurrentStep('timeprofessional');
     } else if (currentStep === 'timeprofessional') {
       // Auto-assign professionals before moving to confirm
@@ -140,8 +135,6 @@ const BookingFlow = () => {
     if (currentStep === 'confirm') {
       setCurrentStep('timeprofessional');
     } else if (currentStep === 'timeprofessional') {
-      setCurrentStep('timeselect');
-    } else if (currentStep === 'timeselect') {
       setCurrentStep('datetime');
     } else if (currentStep === 'datetime') {
       router.back();
@@ -296,9 +289,14 @@ const BookingFlow = () => {
     switch (currentStep) {
       case 'datetime': {
         const currentServiceBooking = bookingData.serviceBookings[selectedServices[0]?.id];
+        const firstService = selectedServices[0];
         return (
-          <DateOnlySelectionStep
+          <DateAndTimeSelectionStep
             selectedDate={currentServiceBooking?.selectedDate}
+            selectedTime={currentServiceBooking?.selectedTime}
+            locationId={locationId || ''}
+            serviceId={firstService?.id || ''}
+            serviceDuration={firstService?.duration || 0}
             onDateSelect={(date) => {
               setBookingData((prev) => {
                 const updatedServiceBookings = { ...prev.serviceBookings };
@@ -318,33 +316,52 @@ const BookingFlow = () => {
                   serviceBookings: updatedServiceBookings,
                 };
               });
-              // Automatically advance to time selection step
-              setCurrentStep('timeselect');
             }}
-          />
-        );
-      }
-      case 'timeselect': {
-        const currentServiceBooking = bookingData.serviceBookings[selectedServices[0]?.id];
-        return (
-          <TimeSelectionStep
-            selectedServices={selectedServices}
-            locationId={locationId || ''}
-            selectedDate={currentServiceBooking?.selectedDate || ''}
-            serviceBookings={bookingData.serviceBookings}
-            onTimeSelect={(serviceId, time, availabilityData) => {
-              // Set the selected time for the specific service
-              setBookingData((prev) => ({
-                ...prev,
-                serviceBookings: {
-                  ...prev.serviceBookings,
-                  [serviceId]: {
-                    ...prev.serviceBookings[serviceId],
-                    selectedTime: time,
-                    availabilityData,
-                  },
-                },
-              }));
+            onTimeSelect={(time, availabilityData) => {
+              // Calculate sequential times for all services
+              setBookingData((prev) => {
+                const updatedServiceBookings = { ...prev.serviceBookings };
+                const selectedDate = prev.serviceBookings[firstService.id]?.selectedDate;
+
+                if (!selectedDate || !time) return prev;
+
+                // Parse the start time (e.g., "09:00")
+                let currentTime = new Date(`${selectedDate}T${time}:00`);
+
+                // Assign times to each service sequentially
+                selectedServices.forEach((service, index) => {
+                  if (index === 0) {
+                    // First service gets the selected time
+                    updatedServiceBookings[service.id] = {
+                      ...updatedServiceBookings[service.id],
+                      selectedTime: time,
+                      availabilityData,
+                      selectedDate,
+                    };
+                  } else {
+                    // Subsequent services start when previous service ends
+                    const timeString = currentTime.toTimeString().slice(0, 5); // Format: "HH:mm"
+                    updatedServiceBookings[service.id] = {
+                      ...updatedServiceBookings[service.id],
+                      selectedTime: timeString,
+                      availabilityData,
+                      selectedDate,
+                    };
+                  }
+
+                  // Add the service duration to get the start time for the next service
+                  currentTime = new Date(currentTime.getTime() + service.duration * 60 * 1000);
+                });
+
+                return {
+                  ...prev,
+                  serviceBookings: updatedServiceBookings,
+                };
+              });
+            }}
+            onComplete={() => {
+              // Automatically navigate to professional selection step
+              setCurrentStep('timeprofessional');
             }}
           />
         );
@@ -387,15 +404,9 @@ const BookingFlow = () => {
   const canProceed = () => {
     switch (currentStep) {
       case 'datetime':
-        // Check if date is selected
+        // Check if date AND time are selected
         const currentBooking = bookingData.serviceBookings[selectedServices[0]?.id];
-        return !!currentBooking?.selectedDate;
-      case 'timeselect':
-        // Check if ALL services have times selected
-        return selectedServices.every((service) => {
-          const booking = bookingData.serviceBookings[service.id];
-          return !!booking?.selectedTime;
-        });
+        return !!currentBooking?.selectedDate && !!currentBooking?.selectedTime;
       case 'timeprofessional':
         // Professional selection is optional - proceed if all services have an employee (even if undefined/any)
         // All services should have a value (either an employee or undefined for "any")
@@ -423,11 +434,6 @@ const BookingFlow = () => {
           <Text size={theme.typography.fontSizes.md} weight="medium">
             BOOK AN APPOINTMENT
           </Text>
-          {currentStep !== 'confirm' && (
-            <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
-              {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} selected
-            </Text>
-          )}
         </View>
 
         <TouchableOpacity onPress={handleCancelBooking}>
@@ -459,7 +465,8 @@ const BookingFlow = () => {
 
                 {/* Step Text */}
                 <Text
-                  size={11}
+                  size={isCurrent ? 10 : 8}
+                  weight={isCurrent ? 'bold' : 'regular'}
                   style={[
                     styles.stepText,
                     isCurrent && styles.stepTextActive,
@@ -539,7 +546,7 @@ const styles = StyleSheet.create({
   },
   stepsContainer: {
     flexDirection: 'row',
-    paddingRight: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
   },
   stepIndicator: {
     zIndex: 2,
@@ -604,7 +611,7 @@ const styles = StyleSheet.create({
   stepText: {
     color: '#6B7280',
     textAlign: 'center',
-    maxWidth: 70,
+    maxWidth: 80,
     lineHeight: 16,
   },
   stepTextActive: {

@@ -2,7 +2,7 @@ import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useEffect } from 'react';
 import { Text } from '../base';
 import { theme } from '~/src/constants/theme';
-import { CoupleIcon, GroupIcon, StarIcon } from '~/src/assets/icons';
+import { GroupIcon, StarIcon } from '~/src/assets/icons';
 import type { SelectedService, ServiceBooking, Employee } from '~/src/services';
 import { AppointmentServices } from '~/src/services';
 
@@ -94,87 +94,134 @@ export const ProfessionalSelectionOnlyStep = ({
   }, []);
 
   const renderProfessionalOptions = (service: SelectedService) => {
-    const employees = serviceEmployees[service.id] || [];
+    const allEmployees = serviceEmployees[service.id] || [];
     const booking = serviceBookings[service.id];
     const selectedEmployee = booking?.selectedEmployee;
     const selectedDate = booking?.selectedDate;
     const selectedTime = booking?.selectedTime;
 
+    // Filter to only show available employees
+    const availableEmployees = allEmployees.filter((employee) => {
+      // Check if professional has booking conflict with other services in this booking
+      const hasBookingConflict =
+        selectedDate && selectedTime
+          ? hasProfessionalConflict(
+              employee._id,
+              selectedDate,
+              selectedTime,
+              service.duration,
+              service.id
+            )
+          : false;
+
+      // Check if professional is busy at the selected time
+      const isBusy =
+        selectedDate && selectedTime
+          ? isProfessionalBusy(
+              employee._id,
+              selectedDate,
+              selectedTime,
+              service.duration,
+              availabilityData
+            )
+          : false;
+
+      // Only show if available (no conflicts)
+      return !hasBookingConflict && !isBusy;
+    });
+
     return (
       <View key={service.id} style={styles.serviceSection}>
-        <Text size={theme.typography.fontSizes.lg} weight="medium" style={styles.serviceTitle}>
-          {service.name}
-        </Text>
-
-        <View style={styles.professionalGrid}>
-          {/* Any Available Professional Option */}
-          <TouchableOpacity
-            style={[
-              styles.professionalOption,
-              selectedEmployee === undefined && styles.selectedProfessionalOption,
-            ]}
-            onPress={() => onEmployeeSelect(service.id, undefined)}>
-            <GroupIcon width={24} height={24} />
-            <Text size={theme.typography.fontSizes.sm} weight="medium">
-              Any Available
+        {/* Service Header with Duration */}
+        <View style={styles.serviceHeader}>
+          <Text size={theme.typography.fontSizes.lg} weight="semiBold">
+            {service.name}{' '}
+            <Text size={theme.typography.fontSizes.md} color={theme.colors.darkText['50']}>
+              ({service.duration} min)
             </Text>
-          </TouchableOpacity>
+          </Text>
+        </View>
 
-          {/* Specific Professionals */}
-          {employees.map((employee) => {
-            // Check if professional has booking conflict with other services in this booking
-            const hasBookingConflict =
-              selectedDate && selectedTime
-                ? hasProfessionalConflict(
-                    employee._id,
-                    selectedDate,
-                    selectedTime,
-                    service.duration,
-                    service.id
-                  )
-                : false;
+        {availableEmployees.length === 0 ? (
+          <View style={styles.noEmployeesContainer}>
+            <Text
+              size={theme.typography.fontSizes.md}
+              color={theme.colors.darkText['50']}
+              style={styles.noEmployeesText}>
+              No professionals available at this time
+            </Text>
+            <Text
+              size={theme.typography.fontSizes.sm}
+              color={theme.colors.darkText['50']}
+              style={styles.noEmployeesSubtext}>
+              Please select a different time or choose &quot;Anyone&quot; to automatically assign an
+              available professional
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.professionalGrid}>
+            {/* Any Available Professional Option */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={[
+                styles.professionalCard,
+                selectedEmployee === undefined && styles.selectedProfessionalCard,
+              ]}
+              onPress={() => onEmployeeSelect(service.id, undefined)}>
+              <View style={styles.avatarCircle}>
+                <GroupIcon width={24} height={24} color={theme.colors.darkText['100']} />
+              </View>
 
-            // Check if professional is busy at the selected time
-            const isBusy =
-              selectedDate && selectedTime
-                ? isProfessionalBusy(
-                    employee._id,
-                    selectedDate,
-                    selectedTime,
-                    service.duration,
-                    availabilityData
-                  )
-                : false;
+              <Text
+                size={theme.typography.fontSizes.sm}
+                weight="medium"
+                style={styles.professionalName}>
+                Anyone
+              </Text>
+            </TouchableOpacity>
 
-            const hasConflict = hasBookingConflict || isBusy;
-
-            return (
-              <TouchableOpacity
-                activeOpacity={0.8}
-                key={employee._id}
-                disabled={hasConflict}
-                onPress={() => onEmployeeSelect(service.id, employee)}
-                style={[
-                  styles.professionalOption,
-                  selectedEmployee?._id === employee._id && styles.selectedProfessionalOption,
-                  hasConflict && { opacity: 0.5 },
-                ]}>
-                <CoupleIcon width={24} height={24} />
-                <View style={styles.employeeInfo}>
-                  <Text size={theme.typography.fontSizes.sm} weight="medium">
+            {/* Available Professionals Only */}
+            {availableEmployees.map((employee) => {
+              return (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  key={employee._id}
+                  onPress={() => onEmployeeSelect(service.id, employee)}
+                  style={[
+                    styles.professionalCard,
+                    selectedEmployee?._id === employee._id && styles.selectedProfessionalCard,
+                  ]}>
+                  <View style={styles.avatarCircle}>
+                    <Text size={theme.typography.fontSizes.lg} weight="semiBold">
+                      {employee.name[0].toUpperCase()}
+                    </Text>
+                    <View style={styles.ratingContainer}>
+                      <StarIcon width={16} height={16} />
+                      <Text
+                        size={theme.typography.fontSizes.xs}
+                        color={theme.colors.darkText['100']}
+                        weight="bold">
+                        {employee.rating.toFixed(1)}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text
+                    size={theme.typography.fontSizes.sm}
+                    weight="bold"
+                    style={styles.professionalName}>
                     {employee.name}
                   </Text>
-                  <View style={styles.ratingContainer}>
-                    <StarIcon width={14} height={14} />
-                    <Text size={theme.typography.fontSizes.xs} color={theme.colors.darkText['50']}>
-                      {employee.rating}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                  <Text
+                    size={theme.typography.fontSizes.xs}
+                    color={theme.colors.darkText['50']}
+                    style={styles.professionalSpecialty}>
+                    {employee.specialties[0] || 'Professional'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
       </View>
     );
   };
@@ -194,42 +241,85 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xl,
   },
   serviceSection: {
-    gap: theme.spacing.md,
+    gap: theme.spacing.lg,
   },
-  serviceTitle: {
-    marginBottom: theme.spacing.md,
+  serviceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.sm,
   },
   professionalGrid: {
-    gap: theme.spacing.sm,
-  },
-  professionalOption: {
-    padding: theme.spacing.md,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    flexWrap: 'wrap',
     flexDirection: 'row',
-    alignItems: 'center',
     gap: theme.spacing.md,
   },
-  selectedProfessionalOption: {
-    borderColor: theme.colors.darkText['100'],
-    backgroundColor: theme.colors.grey['10'],
-  },
-  conflictProfessionalOption: {
-    borderColor: theme.colors.red['100'],
-    backgroundColor: theme.colors.red['10'],
-  },
-  employeeInfo: {
-    flex: 1,
-    gap: theme.spacing.xs,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
+  professionalCard: {
+    width: '45%',
+    height: 180,
+    justifyContent: 'center',
+    padding: theme.spacing.md,
+    borderRadius: theme.radii.lg,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.white.DEFAULT,
     alignItems: 'center',
     gap: theme.spacing.xs,
   },
-  conflictText: {
-    fontSize: 10,
+  selectedProfessionalCard: {
+    borderColor: theme.colors.darkText['100'],
+  },
+  avatarCircle: {
+    position: 'relative',
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: theme.colors.grey['10'],
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.xl,
+  },
+  ratingContainer: {
+    position: 'absolute',
+    bottom: -16,
+    left: '50%',
+    transform: [{ translateX: -25 }],
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    backgroundColor: theme.colors.white.DEFAULT,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  professionalName: {
+    textAlign: 'center',
+    marginTop: theme.spacing.xs,
+  },
+  professionalSpecialty: {
+    textAlign: 'center',
+  },
+  noEmployeesContainer: {
+    padding: theme.spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.md,
+  },
+  noEmployeesText: {
+    textAlign: 'center',
     fontWeight: '600',
+  },
+  noEmployeesSubtext: {
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
