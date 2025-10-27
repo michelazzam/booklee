@@ -1,9 +1,9 @@
-import { ActivityIndicator, StyleSheet, FlatList, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 
-import { type DetailedLocationType, type LocationType, LocationServices } from '~/src/services';
+import { type DetailedLocationType, LocationServices } from '~/src/services';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
@@ -96,10 +96,10 @@ const Search = () => {
         </View>
 
         <View style={{ gap: theme.spacing.xl }}>
-          {searchHistory?.map((history) => (
+          {searchHistory?.map((history, index) => (
             <SearchHistory
+              key={index}
               data={history}
-              key={history.query}
               onPress={() => setSearchQuery(history.query)}
             />
           ))}

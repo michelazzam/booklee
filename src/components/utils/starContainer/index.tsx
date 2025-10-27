@@ -16,7 +16,7 @@ type StarContainerProps = {
 
 const StarContainer = ({ data, containerStyle }: StarContainerProps) => {
   /*** Constants ***/
-  const { count = 0, reviews = [], locations = [] } = data || {};
+  const { reviews = [], locations = [] } = data || {};
 
   /*** Memoization ***/
   const ratingData = useMemo(() => {
@@ -42,11 +42,6 @@ const StarContainer = ({ data, containerStyle }: StarContainerProps) => {
       percentage: (ratingCounts[stars] / totalReviews) * 100,
     }));
   }, [reviews]);
-  const averageRating = useMemo(() => {
-    if (reviews.length === 0) return '0.0';
-    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-    return (sum / reviews.length).toFixed(1);
-  }, [reviews]);
 
   return (
     <View style={[styles.ratingContainer, containerStyle]}>
@@ -66,12 +61,12 @@ const StarContainer = ({ data, containerStyle }: StarContainerProps) => {
             <StarIcon width={40} height={40} />
 
             <Text size={theme.typography.fontSizes['3xl']} weight={'bold'}>
-              {averageRating}
+              {locations[0].rating}
             </Text>
           </View>
 
           <Text size={theme.typography.fontSizes.sm} color={theme.colors.lightText}>
-            ({count} reviews)
+            ({locations[0].totalReviews} reviews)
           </Text>
         </View>
 

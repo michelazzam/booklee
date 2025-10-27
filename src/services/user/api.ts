@@ -3,11 +3,11 @@ import { AxiosError } from 'axios';
 import { apiClient } from '../axios/interceptor';
 import { withErrorCatch } from '../axios/error';
 
+import type { ImageType } from '~/src/components/utils';
 import {
   RemoveFromFavoritesReqType,
   RemoveFromFavoritesResType,
   GetUserLocationsResType,
-  UpdateUserImageReqType,
   UpdateUserImageResType,
   AddToFavoritesReqType,
   AddToFavoritesResType,
@@ -53,9 +53,20 @@ export const updateUserMeApi = async (data: UpdateUserReqType) => {
 };
 
 /*** API for update user image ***/
-export const updateUserImageApi = async (data: UpdateUserImageReqType) => {
+export const updateUserImageApi = async (data: ImageType) => {
+  const formData = new FormData();
+  formData.append('image', {
+    uri: data.uri,
+    type: data.type,
+    name: data.name,
+  } as any);
+
   const [response, error] = await withErrorCatch(
-    apiClient.post<UpdateUserImageResType>('/user/avatar', data)
+    apiClient.post<UpdateUserImageResType>('/user/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
   );
 
   if (error instanceof AxiosError) {

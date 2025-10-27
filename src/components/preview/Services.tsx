@@ -39,12 +39,24 @@ const ServicesPreview = ({ data, onPress, isActive }: ServicesPreviewProps) => {
           {isActive && <Icon name="check" size={18} color={theme.colors.white.DEFAULT} />}
         </View>
 
-        <Text
-          style={{ flex: 1 }}
-          size={theme.typography.fontSizes.sm}
-          weight={isActive ? 'medium' : 'regular'}>
-          {service?.name ?? ''}
-        </Text>
+        <View style={{ gap: theme.spacing.xs }}>
+          <Text
+            size={theme.typography.fontSizes.sm}
+            weight={isActive ? 'medium' : 'regular'}
+            numberOfLines={1}>
+            {service?.name ?? ''}
+          </Text>
+
+          {service?.description && (
+            <Text
+              numberOfLines={2}
+              color={theme.colors.lightText}
+              size={theme.typography.fontSizes.xs}
+              weight={isActive ? 'medium' : 'regular'}>
+              {service?.description}
+            </Text>
+          )}
+        </View>
       </View>
 
       <View style={styles.pricingContainer}>
@@ -89,5 +101,9 @@ const styles = StyleSheet.create({
   pricingContainer: {
     gap: theme.spacing.xs,
     alignItems: 'flex-end',
+  },
+  serviceNameContainer: {
+    gap: theme.spacing.xs,
+    backgroundColor: 'red',
   },
 });

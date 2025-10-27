@@ -1,4 +1,4 @@
-export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'rejected';
 export type AppointmentSource = 'online' | 'phone' | 'walk-in' | 'mobile';
 export type AppointmentItem = {
   price: number;
@@ -60,7 +60,7 @@ export type BookingDataResponse = {
 };
 
 /*** Booking Flow Types ***/
-export type BookingStep = 'service' | 'professional' | 'datetime' | 'confirm';
+export type BookingStep = 'service' | 'datetime' | 'timeselect' | 'timeprofessional' | 'confirm';
 export type SelectedService = {
   id: string;
   name: string;
@@ -107,6 +107,14 @@ export type LocationData = {
       closed: boolean;
     }
   >;
+};
+
+export type AvailabilityReqType = {
+  date: string;
+  enabled: boolean;
+  serviceId: string;
+  locationId: string;
+  baseDurationMinutes: number;
 };
 
 export type AvailabilityResponse = {

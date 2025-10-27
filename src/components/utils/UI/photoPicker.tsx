@@ -1,8 +1,8 @@
+import { TouchableOpacity, StyleSheet, ViewStyle, StyleProp, View, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useState, useEffect } from 'react';
 import { Image } from 'expo-image';
-import { TouchableOpacity, StyleSheet, ViewStyle, StyleProp, View, Alert } from 'react-native';
 
 import Icon from '../../base/icon';
 

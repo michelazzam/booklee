@@ -54,16 +54,22 @@ export const useGetMe = () => {
 const useLogin = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
-  const cookies = authClient.getCookie();
-  const headers = {
-    Cookie: cookies,
-  };
 
   return useMutation({
     mutationFn: loginWithEmailApi,
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['getMe'] });
-      apiClient.defaults.headers.common = headers;
+
+      try {
+        const cookies = await authClient.getCookie();
+        const headers = {
+          Cookie: cookies,
+        };
+
+        apiClient.defaults.headers.common = headers;
+      } catch (error) {
+        console.error('Error getting cookies', error);
+      }
     },
   });
 };
@@ -82,6 +88,7 @@ const useLogout = () => {
     mutationFn: logoutApi,
     onSuccess: () => {
       queryClient.clear();
+      apiClient.defaults.headers.common = {};
     },
   });
 };

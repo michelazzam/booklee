@@ -11,6 +11,7 @@ import { DropDown, type DropDownItem } from '~/src/components/dropdowns';
 import { HeaderNavigation, Text } from '~/src/components/base';
 import { StarContainer } from '~/src/components/utils';
 import { Review } from '~/src/components/preview';
+import { StarIcon } from '~/src/assets/icons';
 
 const FILTER_ITEMS: DropDownItem<LocationRatingSortType>[] = [
   { label: 'Latest', value: { sort: 'date', dir: 'desc' } },
@@ -53,6 +54,15 @@ const LocationRatingPage = () => {
   const RenderItem = useCallback(({ item }: { item: any }) => {
     return <Review data={item} />;
   }, []);
+  const ListEmptyComponent = useCallback(() => {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text size={theme.typography.fontSizes.md} color={theme.colors.lightText}>
+          No reviews yet
+        </Text>
+      </View>
+    );
+  }, []);
 
   return (
     <>
@@ -67,6 +77,7 @@ const LocationRatingPage = () => {
         renderItem={RenderItem}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={RenderHeaderItem}
+        ListEmptyComponent={ListEmptyComponent}
         ListHeaderComponentStyle={{ zIndex: 1000 }}
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={[styles.container, { paddingBottom: bottom }]}
@@ -92,5 +103,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.sm,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    justifyContent: 'center',
+    marginTop: theme.spacing['3xl'],
   },
 });

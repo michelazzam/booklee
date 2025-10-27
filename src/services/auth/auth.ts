@@ -6,7 +6,6 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true, // Enable authentication using email and password.
   },
-
   social: {
     enabled: true, // Enable authentication using social providers.
     providers: [

@@ -1,10 +1,10 @@
+import { authClient } from './auth-client';
 import { AxiosError } from 'axios';
 
 import { withErrorCatch } from '../axios/error';
 import { apiClient } from '../axios/interceptor';
 
 import { GetMeResType, SignUpReqType, LoginReqType } from './types';
-import { authClient } from './auth-client';
 
 /*** API for get me ***/
 export const getMeApi = async () => {

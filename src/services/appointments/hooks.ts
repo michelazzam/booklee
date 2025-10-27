@@ -34,9 +34,11 @@ const useGetUpcomingUserAppointments = () => {
     refetchIntervalInBackground: false,
     queryKey: ['getUpcomingUserAppointments'],
     select: (data) =>
-      data.pages.flatMap((page) => {
-        return page.appointments.filter((appointment) => appointment.status === 'confirmed');
-      }),
+      data.pages.flatMap((page) =>
+        page.appointments.filter((appointment) =>
+          ['confirmed', 'pending', 'rejected'].includes(appointment.status)
+        )
+      ),
     queryFn: ({ pageParam }) => getUserAppointments(pageParam as number, { upcoming: true }),
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage && lastPage.appointments.length > 0) {
@@ -90,7 +92,7 @@ const useGetUserAppointmentsNeedsReview = () => {
     queryKey: ['getUserAppointmentsNeedsReview'],
     select: (data) =>
       data.pages.flatMap((page) =>
-        page.appointments.filter((appointment) => appointment.status === 'confirmed')
+        page.appointments.filter((appointment) => appointment.status === 'completed')
       ),
     queryFn: ({ pageParam }) => getUserAppointments(pageParam as number, { needsReview: true }),
     getNextPageParam: (lastPage, allPages) => {

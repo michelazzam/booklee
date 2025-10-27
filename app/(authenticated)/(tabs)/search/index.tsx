@@ -1,6 +1,7 @@
 import { TouchableOpacity, View, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import {
   type GetLocationsReqType,
@@ -19,6 +20,7 @@ import { type FilterModalRef, FilterModal } from '~/src/components/modals';
 import { SearchInput } from '~/src/components/textInputs';
 import { Icon, Text } from '~/src/components/base';
 
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 const LocationListing = () => {
   /*** Refs ***/
   const filterModalRef = useRef<FilterModalRef>(null);
@@ -33,9 +35,12 @@ const LocationListing = () => {
   const { filterSlug } = useLocalSearchParams<{ filterSlug: string }>();
   const { data: filtersData } = LocationServices.useGetLocationsCategories();
   const {
-    data: locationsData,
-    isLoading,
     refetch,
+    isLoading,
+    isFetching,
+    hasNextPage,
+    fetchNextPage,
+    data: locationsData,
   } = LocationServices.useGetLocations(selectedFilter);
 
   /*** Memoization ***/
@@ -72,6 +77,11 @@ const LocationListing = () => {
       setIsRefreshing(false);
     });
   }, [refetch]);
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetching) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetching, fetchNextPage]);
 
   const RenderItem = useCallback(
     ({ item }: { item: LocationType }) => (
@@ -82,6 +92,11 @@ const LocationListing = () => {
     ),
     [router]
   );
+  const RenderFooter = useCallback(() => {
+    if (!isFetching) return null;
+
+    return <LocationCardSkeleton />;
+  }, [isFetching]);
   const RenderEmptyComponent = useCallback(() => {
     if (isLoading) {
       return Array.from({ length: 10 }).map((_, index) => (
@@ -147,25 +162,31 @@ const LocationListing = () => {
       </View>
 
       <View style={{ flex: 1 }}>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.mapIconContainer}
-          onPress={() =>
-            router.replace({
-              pathname: '/(authenticated)/(tabs)/search/map',
-              params: { filterSlug: selectedFilter?.category },
-            })
-          }>
-          <Text color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.xs}>
-            Map
-          </Text>
-          <MapIcon />
-        </TouchableOpacity>
+        {!isRefreshing && !isFetching && (
+          <AnimatedTouchable
+            entering={FadeIn}
+            activeOpacity={0.8}
+            style={styles.mapIconContainer}
+            onPress={() =>
+              router.replace({
+                pathname: '/(authenticated)/(tabs)/search/map',
+                params: { filterSlug: selectedFilter?.category },
+              })
+            }>
+            <Text color={theme.colors.white.DEFAULT} size={theme.typography.fontSizes.xs}>
+              Map
+            </Text>
+            <MapIcon />
+          </AnimatedTouchable>
+        )}
 
         <FlatList
           data={locationsData}
           renderItem={RenderItem}
+          onEndReachedThreshold={0.8}
+          onEndReached={handleEndReached}
           keyExtractor={(item) => item._id}
+          ListFooterComponent={RenderFooter}
           showsVerticalScrollIndicator={false}
           refreshControl={RenderRefreshControl()}
           ListEmptyComponent={RenderEmptyComponent}
@@ -209,6 +230,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     flexGrow: 1,
+    paddingHorizontal: 1,
     gap: theme.spacing.xl,
   },
   mapIconContainer: {

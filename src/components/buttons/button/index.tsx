@@ -81,7 +81,7 @@ const Button = ({
   const buttonBorderStyles: StyleProp<ViewStyle> = useMemo(() => {
     if (variant === 'outline') {
       return {
-        borderWidth: 3,
+        borderWidth: 2,
         borderColor: variants.outline.borderColor,
       };
     }

@@ -32,9 +32,9 @@ export const BUTTON_STYLES: ButtonStylesConfigType = {
       backgroundColor: 'transparent',
     },
     outline: {
+      backgroundColor: 'transparent',
       textColor: theme.colors.darkText[100],
       borderColor: theme.colors.darkText[100],
-      backgroundColor: 'transparent',
     },
   },
 

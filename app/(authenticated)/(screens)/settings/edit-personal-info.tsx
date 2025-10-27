@@ -10,9 +10,9 @@ import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
 import { AwareScrollView, HeaderNavigation } from '~/src/components/base';
+import { PhotoPicker, type ImageType } from '~/src/components/utils';
 import { Input } from '~/src/components/textInputs';
 import { Button } from '~/src/components/buttons';
-import { PhotoPicker } from '~/src/components/utils';
 
 export const EditPersonalInfoPage = () => {
   /*** Constants ***/
@@ -24,7 +24,7 @@ export const EditPersonalInfoPage = () => {
     UserServices.useUpdateUserImage();
 
   /*** States ***/
-  const [selectedImage, setSelectedImage] = useState<string | null>(userData?.user?.image || null);
+  const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationResultType<UpdateUserReqType>>(
     {
       success: false,
@@ -45,8 +45,9 @@ export const EditPersonalInfoPage = () => {
   useEffect(() => {
     if (!userData) return;
 
-    const { lastName, firstName } = userData?.user;
+    const { lastName, firstName, image } = userData?.user;
 
+    setSelectedImage({ uri: image || '', name: 'image.jpg', type: 'image/jpeg' });
     setData({
       lastName,
       firstName,
@@ -75,20 +76,17 @@ export const EditPersonalInfoPage = () => {
     }
 
     if (selectedImage) {
-      updateUserImage(
-        { image: selectedImage },
-        {
-          onSuccess: () => {
-            if (!isDataChanged) {
-              router.back();
-            }
-          },
-          onError: (error: any) => {
-            console.error('Update error:', error);
-            Toast.error('Failed to update your profile image');
-          },
-        }
-      );
+      updateUserImage(selectedImage, {
+        onSuccess: () => {
+          if (!isDataChanged) {
+            router.back();
+          }
+        },
+        onError: (error: any) => {
+          console.error('Update error:', error);
+          Toast.error('Failed to update your profile image');
+        },
+      });
     }
 
     if (isDataChanged) {
@@ -111,13 +109,10 @@ export const EditPersonalInfoPage = () => {
       <AwareScrollView contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
         <PhotoPicker
           style={{ alignSelf: 'center' }}
-          onSelect={(image) => setSelectedImage(image.uri)}
-          initialImage={
-            selectedImage
-              ? { uri: selectedImage, name: 'image.jpg', type: 'image/jpeg' }
-              : undefined
-          }
+          onSelect={(image) => setSelectedImage(image)}
+          initialImage={selectedImage ? selectedImage : undefined}
         />
+
         <View style={styles.formSection}>
           <Input
             label="First Name"

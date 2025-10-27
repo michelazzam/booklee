@@ -1,10 +1,18 @@
-import { View, ScrollView, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
+import {
+  TouchableOpacity,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Linking,
+  View,
+} from 'react-native';
 
 import {
   type LocationOperatingHoursType,
+  type LocationServiceType,
   type SelectedService,
   LocationServices,
 } from '~/src/services';
@@ -34,9 +42,14 @@ const SalonDetailPage = () => {
   const { top, bottom } = useAppSafeAreaInsets();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(id);
-  const { data: location, isLoading, isFetched } = LocationServices.useGetLocationById(id || '');
-  const { photos, name, address, category, rating, phone, tags, operatingHours, geo } =
-    location || {};
+  const {
+    data: location,
+    isLoading,
+    isFetched,
+    refetch,
+    isRefetching,
+  } = LocationServices.useGetLocationById(id || '');
+  const { photos, name, address, rating, phone, tags, operatingHours, geo } = location || {};
 
   /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -92,39 +105,66 @@ const SalonDetailPage = () => {
   }, [id, router, selectedServiceData]);
 
   const RenderServices = useCallback(() => {
-    return (
-      <View style={{ gap: theme.spacing.md }}>
-        <Text
-          weight={'medium'}
-          size={theme.typography.fontSizes.sm}
-          style={{ textTransform: 'uppercase' }}>
-          {category?.title}
-        </Text>
+    if (!location?.locationServices) return null;
 
-        <View style={{ gap: theme.spacing.sm }}>
-          {location?.locationServices?.map((service) => (
-            <Services
-              data={service}
-              key={service.id}
-              onPress={handleServiceToggle}
-              isActive={selectedServices.includes(service.id)}
-            />
-          ))}
-        </View>
+    const groupedServices = location.locationServices.reduce(
+      (acc, locationService) => {
+        if (!locationService.service) return acc;
+
+        const categoryId = locationService.service.categoryId;
+        if (!acc[categoryId]) {
+          acc[categoryId] = {
+            categoryName: locationService.service.category,
+            services: [],
+          };
+        }
+        acc[categoryId].services.push(locationService);
+        return acc;
+      },
+      {} as Record<string, { categoryName: string; services: LocationServiceType[] }>
+    );
+
+    return (
+      <View style={{ gap: theme.spacing.lg }}>
+        {Object.entries(groupedServices).map(([categoryId, { categoryName, services }]) => (
+          <View key={categoryId} style={{ gap: theme.spacing.md }}>
+            <Text
+              weight={'medium'}
+              size={theme.typography.fontSizes.sm}
+              style={{ textTransform: 'uppercase' }}>
+              {categoryName}
+            </Text>
+
+            <View style={{ gap: theme.spacing.sm }}>
+              {services.map((locationService) => (
+                <Services
+                  data={locationService}
+                  key={locationService.id}
+                  onPress={handleServiceToggle}
+                  isActive={selectedServices.includes(locationService.id)}
+                />
+              ))}
+            </View>
+          </View>
+        ))}
       </View>
     );
-  }, [location?.locationServices, handleServiceToggle, selectedServices, category?.title]);
+  }, [location?.locationServices, handleServiceToggle, selectedServices]);
   const RenderAbout = useCallback(() => {
-    const aboutItemData: AboutItemData[] = [
-      {
+    let aboutItemData: AboutItemData[] = [];
+
+    if (phone) {
+      aboutItemData.push({
         title: 'CONTACT',
         value: phone || '',
         onPress: () => {
           Linking.openURL(`tel:${phone}`);
         },
-      },
+      });
+    }
 
-      {
+    if (address) {
+      aboutItemData.push({
         title: 'DIRECTIONS',
         value: address || '',
         onPress: () => {
@@ -132,13 +172,15 @@ const SalonDetailPage = () => {
             `https://www.google.com/maps/dir/?api=1&destination=${geo?.lat},${geo?.lng}`
           );
         },
-      },
+      });
+    }
 
-      {
+    if (operatingHours) {
+      aboutItemData.push({
         title: 'OPENING HOURS',
         value: operatingHours || {},
-      },
-    ];
+      });
+    }
 
     return aboutItemData.map(({ title, value, onPress }, index) => (
       <View
@@ -184,6 +226,16 @@ const SalonDetailPage = () => {
       </View>
     ));
   }, [phone, address, geo?.lat, geo?.lng, operatingHours]);
+  const RenderRefreshControl = useCallback(() => {
+    return (
+      <RefreshControl
+        onRefresh={refetch}
+        refreshing={isRefetching}
+        colors={[theme.colors.primaryBlue[100]]}
+        tintColor={theme.colors.primaryBlue[100]}
+      />
+    );
+  }, [isRefetching, refetch]);
 
   /***** Memoization *****/
   const TabItems = useMemo(() => {
@@ -219,8 +271,8 @@ const SalonDetailPage = () => {
       {!location && <LocationSplashImage imageUri={image} isLoading={isLoading} />}
 
       <ScrollView
-        bounces={false}
         showsVerticalScrollIndicator={false}
+        refreshControl={RenderRefreshControl()}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom }}>
         <View style={[styles.headerComponent, { paddingTop: top }]}>
           <TouchableOpacity activeOpacity={0.8} onPress={() => router.back()}>
@@ -245,31 +297,35 @@ const SalonDetailPage = () => {
             </Text>
 
             <View style={styles.storeInfoContainer}>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                style={styles.ratingContainer}
-                onPress={() => {
-                  router.navigate({
-                    params: { id },
-                    pathname: '/(authenticated)/(screens)/location/reviews',
-                  });
-                }}>
-                <StarIcon width={18} height={18} />
+              {!isNaN(rating || 0) && (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.ratingContainer}
+                  onPress={() => {
+                    router.navigate({
+                      params: { id },
+                      pathname: '/(authenticated)/(screens)/location/reviews',
+                    });
+                  }}>
+                  <StarIcon width={18} height={18} />
 
-                <Text
-                  weight={'bold'}
-                  size={theme.typography.fontSizes.xs}
-                  style={{ textDecorationLine: 'underline' }}>
-                  {rating}
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    weight={'bold'}
+                    size={theme.typography.fontSizes.xs}
+                    style={{ textDecorationLine: 'underline' }}>
+                    {rating}
+                  </Text>
+                </TouchableOpacity>
+              )}
 
-              <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
+              {operatingHoursText && (
+                <Text size={theme.typography.fontSizes.xs}>{operatingHoursText}</Text>
+              )}
             </View>
           </View>
 
           <View style={{ gap: theme.spacing.sm }}>
-            <Text size={theme.typography.fontSizes.sm}>{address}</Text>
+            {address && <Text size={theme.typography.fontSizes.sm}>{address}</Text>}
 
             {tags && tags.length > 0 && (
               <View style={styles.tagContainer}>
@@ -330,8 +386,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.lg,
   },
+  imageContainer: {
+    height: 300,
+    overflow: 'hidden',
+  },
   storeContentContainer: {
-    gap: theme.spacing.xl,
+    gap: theme.spacing.sm,
     padding: theme.spacing.lg,
   },
   storeInfoContainer: {

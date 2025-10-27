@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef, useCallback, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useCallback, useState, useEffect } from 'react';
 import { View, StyleSheet, Keyboard } from 'react-native';
 import { Toast } from 'toastify-react-native';
 import BottomSheet, {
@@ -59,15 +59,21 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
     },
   }));
 
+  useEffect(() => {
+    if (appointments.length === 0) {
+      bottomSheetRef.current?.collapse();
+    }
+  }, [appointments]);
+
   const handleSubmit = useCallback(
     (ratingData: RatingDataType) => {
       Keyboard.dismiss();
       const { rating, review, appointmentId = '' } = ratingData;
 
-      if (!rating || !review) {
+      if (!rating) {
         Toast.show({
           type: 'error',
-          text1: 'Please select a rating and write a review',
+          text1: 'Please select a rating',
         });
         return;
       }
