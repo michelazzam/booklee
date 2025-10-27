@@ -1,82 +1,67 @@
-import { View, StyleSheet, TouchableOpacity, PanResponder, Animated } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { useState, useRef } from 'react';
-
+import { useState, useMemo } from 'react';
 import { theme } from '~/src/constants/theme';
 import { Text, Icon } from '../base';
+import { ClockIcon } from '~/src/assets/icons';
+import { AppointmentServices } from '~/src/services';
+import type { AvailabilityResponse } from '~/src/services';
 
-type DateTimeSelectionStepProps = {
+type DateAndTimeSelectionStepProps = {
   selectedDate?: string;
+  selectedTime?: string;
+  locationId: string;
+  serviceId: string;
+  serviceDuration: number;
   onDateSelect: (date: string) => void;
-  onDateSelectAndProceed?: (date: string) => void;
+  onTimeSelect: (time: string, availabilityData: AvailabilityResponse) => void;
+  onComplete?: () => void;
 };
 
-const DateTimeSelectionStep = ({
+const DateAndTimeSelectionStep = ({
   selectedDate,
+  selectedTime,
+  locationId,
+  serviceId,
+  serviceDuration,
   onDateSelect,
-  onDateSelectAndProceed,
-}: DateTimeSelectionStepProps) => {
+  onTimeSelect,
+  onComplete,
+}: DateAndTimeSelectionStepProps) => {
   const [showWeekView, setShowWeekView] = useState(false);
-  const [weekOffset, setWeekOffset] = useState(0); // Track which week we're viewing
-  const [baseWeekDate, setBaseWeekDate] = useState<string | null>(null); // Track the base week for week view
-  const pan = useRef(new Animated.Value(0)).current;
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [baseWeekDate, setBaseWeekDate] = useState<string | null>(null);
 
-  // No need to fetch availability data here since we only handle date selection
+  // Fetch availability when date is selected
+  const availabilityQuery = AppointmentServices.useGetAvailabilities(
+    locationId,
+    selectedDate || '',
+    serviceId,
+    serviceDuration,
+    !!selectedDate
+  );
 
-  // PanResponder for swipe-down gesture
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => showWeekView,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only respond to vertical swipes when in week view
-        return (
-          showWeekView &&
-          Math.abs(gestureState.dy) > Math.abs(gestureState.dx) &&
-          Math.abs(gestureState.dy) > 5
-        );
-      },
-      onPanResponderGrant: () => {
-        pan.setOffset((pan as any)._value);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        // Only allow downward swipes (positive dy values)
-        if (gestureState.dy > 0) {
-          pan.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        pan.flattenOffset();
+  const availabilityData = availabilityQuery?.data;
 
-        // If swipe down is significant enough, expand to monthly view
-        if (gestureState.dy > 30) {
-          setShowWeekView(false);
-        }
-
-        // Reset the pan value
-        Animated.spring(pan, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      },
-    })
-  ).current;
-
-  // No time slot logic needed for date-only selection
+  // Get all time slots
+  const timeSlots = useMemo(() => {
+    if (!availabilityData?.availability?.slots) return [];
+    return availabilityData.availability.slots;
+  }, [availabilityData]);
 
   const handleDateSelect = (day: any) => {
     if (day && day.dateString) {
       onDateSelect(day.dateString);
-      onDateSelectAndProceed?.(day.dateString);
       setShowWeekView(true);
-      setWeekOffset(0); // Reset to current week when selecting from monthly view
-      setBaseWeekDate(day.dateString); // Set the base week date
+      setWeekOffset(0);
+      setBaseWeekDate(day.dateString);
     }
   };
 
   const handleExpandToMonthly = () => {
     setShowWeekView(false);
-    setWeekOffset(0); // Reset week offset when going back to monthly view
-    setBaseWeekDate(null); // Clear base week date
+    setWeekOffset(0);
+    setBaseWeekDate(null);
   };
 
   const handlePreviousWeek = () => {
@@ -89,23 +74,32 @@ const DateTimeSelectionStep = ({
 
   const handleWeekDaySelect = (date: string) => {
     onDateSelect(date);
-    onDateSelectAndProceed?.(date);
-    // Don't change weekOffset - keep the same week view
   };
 
-  // Format week date range for display
+  const isTimeSlotPassed = (timeValue: string) => {
+    if (!selectedDate) return false;
+    const isToday = selectedDate === new Date().toISOString().split('T')[0];
+    if (!isToday) return false;
+
+    const now = new Date();
+    const [hours, minutes] = timeValue.split(':').map(Number);
+    const slotTime = new Date();
+    slotTime.setHours(hours, minutes, 0, 0);
+
+    return now >= slotTime;
+  };
+
   const getWeekDateRange = () => {
     if (!baseWeekDate) return 'Week View';
 
     const baseDate = new Date(baseWeekDate);
     const startOfWeek = new Date(baseDate);
-    startOfWeek.setDate(baseDate.getDate() - baseDate.getDay() + 1); // Start from Monday
+    startOfWeek.setDate(baseDate.getDate() - baseDate.getDay() + 1);
 
-    // Apply week offset
     startOfWeek.setDate(startOfWeek.getDate() + weekOffset * 7);
 
     const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // End on Sunday
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
 
     const startMonth = startOfWeek.toLocaleDateString('en-US', { month: 'long' });
     const startDay = startOfWeek.getDate();
@@ -119,7 +113,6 @@ const DateTimeSelectionStep = ({
     }
   };
 
-  // Generate marked dates for disabled dates
   const getMarkedDates = () => {
     const marked: any = {};
 
@@ -131,7 +124,6 @@ const DateTimeSelectionStep = ({
       };
     }
 
-    // Mark today
     const today = new Date().toISOString().split('T')[0];
     marked[today] = {
       ...marked[today],
@@ -142,27 +134,22 @@ const DateTimeSelectionStep = ({
     return marked;
   };
 
-  // Generate disabled dates
   const getDisabledDates = () => {
     const disabled: any = {};
     const today = new Date();
     const currentYear = today.getFullYear();
 
-    // Disable past dates and specific dates (like 17th)
     for (let month = 0; month < 12; month++) {
       for (let day = 1; day <= 31; day++) {
         const date = new Date(currentYear, month, day);
         const dateString = date.toISOString().split('T')[0];
 
-        // Skip invalid dates
         if (date.getMonth() !== month) continue;
 
-        // Disable past dates
         if (date < today) {
           disabled[dateString] = { disabled: true, disableTouchEvent: true };
         }
 
-        // Disable 17th of any month (as shown in the image)
         if (day === 17) {
           disabled[dateString] = { disabled: true, disableTouchEvent: true };
         }
@@ -172,19 +159,17 @@ const DateTimeSelectionStep = ({
     return disabled;
   };
 
-  // Generate week view data
   const getWeekViewData = () => {
     if (!baseWeekDate) return [];
 
     const baseDate = new Date(baseWeekDate);
     const startOfWeek = new Date(baseDate);
-    startOfWeek.setDate(baseDate.getDate() - baseDate.getDay() + 1); // Start from Monday
+    startOfWeek.setDate(baseDate.getDate() - baseDate.getDay() + 1);
 
-    // Apply week offset
     startOfWeek.setDate(startOfWeek.getDate() + weekOffset * 7);
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+    today.setHours(0, 0, 0, 0);
 
     const week = [];
     for (let i = 0; i < 7; i++) {
@@ -192,7 +177,6 @@ const DateTimeSelectionStep = ({
       date.setDate(startOfWeek.getDate() + i);
       const dateString = date.toISOString().split('T')[0];
 
-      // Check if this date is in the past
       const isPastDate = date < today;
 
       week.push({
@@ -250,23 +234,17 @@ const DateTimeSelectionStep = ({
               textMonthFontSize: theme.typography.fontSizes.lg,
               textDayHeaderFontSize: theme.typography.fontSizes.sm,
             }}
-            firstDay={1} // Start week on Monday
+            firstDay={1}
           />
         ) : (
-          /* Week View */
-          <Animated.View
-            style={[
-              styles.weekView,
-              {
-                transform: [{ translateY: pan }],
-              },
-            ]}
-            {...panResponder.panHandlers}>
-            {/* Week Navigation Header */}
+          <View style={styles.weekView}>
             <View style={styles.weekNavigation}>
-              <TouchableOpacity style={styles.weekNavButton} onPress={handlePreviousWeek}>
-                <Icon name="chevron-left" size={20} color={theme.colors.darkText['100']} />
-              </TouchableOpacity>
+              <Icon
+                size={20}
+                name="chevron-left"
+                onPress={handlePreviousWeek}
+                color={theme.colors.darkText['100']}
+              />
 
               <Text
                 size={theme.typography.fontSizes.md}
@@ -276,9 +254,12 @@ const DateTimeSelectionStep = ({
                 {getWeekDateRange()}
               </Text>
 
-              <TouchableOpacity style={styles.weekNavButton} onPress={handleNextWeek}>
-                <Icon name="chevron-right" size={20} color={theme.colors.darkText['100']} />
-              </TouchableOpacity>
+              <Icon
+                name="chevron-right"
+                size={20}
+                color={theme.colors.darkText['100']}
+                onPress={handleNextWeek}
+              />
             </View>
 
             <View style={styles.weekContainer}>
@@ -318,10 +299,8 @@ const DateTimeSelectionStep = ({
               ))}
             </View>
 
-            {/* Click indicator at bottom */}
             <TouchableOpacity style={styles.swipeIndicator} onPress={handleExpandToMonthly}>
               <View style={styles.swipeHandle} />
-
               <Text
                 size={theme.typography.fontSizes.xs}
                 color={theme.colors.darkText['50']}
@@ -329,21 +308,92 @@ const DateTimeSelectionStep = ({
                 Press here to expand
               </Text>
             </TouchableOpacity>
-          </Animated.View>
+          </View>
         )}
       </View>
+
+      {/* Time Slots - Show after date is selected */}
+      {selectedDate && showWeekView && (
+        <>
+          {availabilityQuery?.isLoading ? (
+            <View style={styles.loadingContainer}>
+              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+                Loading available times...
+              </Text>
+            </View>
+          ) : timeSlots.length === 0 ? (
+            <View style={styles.noSlotsContainer}>
+              <Text size={theme.typography.fontSizes.sm} color={theme.colors.darkText['50']}>
+                No available times for this date
+              </Text>
+            </View>
+          ) : (
+            <ScrollView style={styles.timeSlotsScroll} showsVerticalScrollIndicator={false}>
+              <View style={styles.timeSlotsWrapper}>
+                {timeSlots.map((slot) => {
+                  const isPassed = isTimeSlotPassed(slot.value);
+                  const isSelected = selectedTime === slot.value;
+                  const isDisabled = !slot.isAvailable || isPassed;
+
+                  return (
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      key={slot.value}
+                      style={[
+                        styles.timeSlot,
+                        isSelected && styles.selectedTimeSlot,
+                        isDisabled && styles.disabledTimeSlot,
+                      ]}
+                      disabled={isDisabled && !isSelected}
+                      onPress={() => {
+                        if (availabilityData) {
+                          if (isSelected) {
+                            onTimeSelect('', availabilityData);
+                          } else {
+                            onTimeSelect(slot.value, availabilityData);
+                            // Automatically navigate to professional step after selecting time
+                            setTimeout(() => {
+                              onComplete?.();
+                            }, 300);
+                          }
+                        }
+                      }}>
+                      <ClockIcon
+                        width={16}
+                        height={16}
+                        color={
+                          isSelected ? theme.colors.white.DEFAULT : theme.colors.darkText['100']
+                        }
+                      />
+                      <Text
+                        size={theme.typography.fontSizes.md}
+                        weight={isSelected ? 'medium' : 'regular'}
+                        color={
+                          isDisabled
+                            ? theme.colors.darkText['25']
+                            : isSelected
+                              ? theme.colors.white.DEFAULT
+                              : theme.colors.darkText['100']
+                        }>
+                        {slot.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </ScrollView>
+          )}
+        </>
+      )}
     </View>
   );
 };
 
-export default DateTimeSelectionStep;
+export default DateAndTimeSelectionStep;
 
 const styles = StyleSheet.create({
   container: {
     gap: theme.spacing.lg,
-  },
-  header: {
-    gap: theme.spacing.sm,
   },
   calendarCard: {
     backgroundColor: theme.colors.white.DEFAULT,
@@ -408,5 +458,42 @@ const styles = StyleSheet.create({
   },
   disabledWeekDayCell: {
     opacity: 0.5,
+  },
+  timeSlotsScroll: {
+    maxHeight: 400,
+  },
+  timeSlotsWrapper: {
+    gap: theme.spacing.md,
+  },
+  timeSlot: {
+    width: '100%',
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.white.DEFAULT,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+    flexDirection: 'row',
+    minHeight: 56,
+  },
+  selectedTimeSlot: {
+    backgroundColor: theme.colors.primaryBlue['100'],
+    borderColor: theme.colors.primaryBlue['100'],
+  },
+  disabledTimeSlot: {
+    backgroundColor: theme.colors.grey['10'],
+    borderColor: theme.colors.grey['100'],
+    opacity: 0.6,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xl,
+  },
+  noSlotsContainer: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xl,
   },
 });

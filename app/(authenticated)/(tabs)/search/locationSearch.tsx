@@ -96,10 +96,10 @@ const Search = () => {
         </View>
 
         <View style={{ gap: theme.spacing.xl }}>
-          {searchHistory?.map((history) => (
+          {searchHistory?.map((history, index) => (
             <SearchHistory
+              key={index}
               data={history}
-              key={history.query}
               onPress={() => setSearchQuery(history.query)}
             />
           ))}
