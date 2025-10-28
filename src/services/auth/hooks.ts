@@ -92,6 +92,18 @@ const useSendEmailVerificationOtp = () => {
 const useVerifyEmailOtp = () => {
   return useMutation({
     mutationFn: verifyEmailOtpApi,
+    onSuccess: async () => {
+      try {
+        const cookies = await authClient.getCookie();
+        const headers = {
+          Cookie: cookies,
+        };
+
+        apiClient.defaults.headers.common = headers;
+      } catch (error) {
+        console.error('Error getting cookies', error);
+      }
+    },
   });
 };
 

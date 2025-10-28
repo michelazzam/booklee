@@ -72,6 +72,7 @@ export const sendEmailVerificationOtpApi = async (email: string) => {
 
   return response?.data;
 };
+
 /*** API for verify Email OTP ***/
 export const verifyEmailOtpApi = async (data: VerifyEmailOtpReqType) => {
   const { email, otp } = data;
