@@ -60,7 +60,7 @@ export type BookingDataResponse = {
 };
 
 /*** Booking Flow Types ***/
-export type BookingStep = 'service' | 'datetime' | 'timeprofessional' | 'confirm';
+export type BookingStep = 'service' | 'datetime' | 'timeselect' | 'timeprofessional' | 'confirm';
 export type SelectedService = {
   id: string;
   name: string;

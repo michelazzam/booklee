@@ -70,10 +70,10 @@ const RatingModal = forwardRef<RatingModalRef, RatingModalProps>(({ appointments
       Keyboard.dismiss();
       const { rating, review, appointmentId = '' } = ratingData;
 
-      if (!rating || !review) {
+      if (!rating) {
         Toast.show({
           type: 'error',
-          text1: 'Please select a rating and write a review',
+          text1: 'Please select a rating',
         });
         return;
       }

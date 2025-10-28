@@ -7,9 +7,8 @@ import { AuthServices } from '~/src/services';
 
 import { theme } from '~/src/constants/theme';
 
-import { CodeInputs } from '~/src/components/textInputs';
 import { Button } from '~/src/components/buttons';
-import { AwareScrollView, Text } from '~/src/components/base';
+import { Text } from '~/src/components/base';
 
 type LocalSearchParamsType = {
   email: string;
@@ -48,42 +47,37 @@ const EmailVerificationPage = () => {
   // }, []);
 
   return (
-    <AwareScrollView contentContainerStyle={styles.container}>
-      <View style={styles.headerSection}>
-        <Text size={150} weight="bold" style={{ textAlign: 'center' }}>
-          📧
+    <View style={styles.container}>
+      <Text size={150} weight="bold" style={{ textAlign: 'center' }}>
+        📧
+      </Text>
+
+      <View style={{ gap: theme.spacing.sm }}>
+        <Text size={24} weight="semiBold" style={{ textAlign: 'center' }}>
+          Check Your Email
         </Text>
 
-        <View style={{ gap: theme.spacing.sm }}>
-          <Text size={24} weight="semiBold" style={{ textAlign: 'center' }}>
-            Check Your Email
-          </Text>
-
-          <Text
-            size={16}
-            weight="regular"
-            color={theme.colors.lightText}
-            style={{ textAlign: 'center' }}>
-            We&apos;ve sent a verification code to
-          </Text>
-
-          <Text
-            size={16}
-            weight="semiBold"
-            style={{ textAlign: 'center' }}
-            color={theme.colors.primaryBlue[100]}>
-            {email || 'clasroman1@gmail.com'}
-          </Text>
-        </View>
+        <Text size={14} weight="regular" style={{ textAlign: 'center' }}>
+          {email}
+        </Text>
       </View>
 
-      <View style={styles.otpSection}>
+      <View style={styles.descriptionContainer}>
         <Text
           size={16}
           weight="regular"
           color={theme.colors.lightText}
-          style={{ textAlign: 'center', marginBottom: theme.spacing.lg }}>
-          Enter the 6-digit code below
+          style={{ textAlign: 'center' }}>
+          We&apos;ve sent you a verification link at your email address. Please check your inbox and
+          click the link to verify your account.
+        </Text>
+
+        <Text
+          size={14}
+          weight="regular"
+          color={theme.colors.lightText}
+          style={{ textAlign: 'center' }}>
+          Don&apos;t see the email? Check your spam folder or try again.
         </Text>
 
         <CodeInputs
@@ -113,26 +107,21 @@ const EmailVerificationPage = () => {
   );
 };
 
-export default EmailVerificationPage;
-
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    gap: theme.spacing['3xl'],
-    paddingTop: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.xl,
-  },
-  headerSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  otpSection: {
     flex: 1,
     gap: theme.spacing.lg,
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.xl,
+  },
+  descriptionContainer: {
+    alignItems: 'center',
+    gap: theme.spacing.xl,
+  },
+  buttonContainer: {
+    gap: theme.spacing.sm,
     marginTop: theme.spacing.xl,
   },
-  resendSection: {
-    gap: theme.spacing.sm,
-    paddingTop: theme.spacing.lg,
-  },
 });
+
+export default EmailVerificationPage;
