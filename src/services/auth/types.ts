@@ -53,15 +53,13 @@ export type LoginReqType = {
 };
 
 /*** Sign up types ***/
-export type RoleType = 'owner' | 'manager' | 'stylist' | 'receptionist';
 export type SignUpReqType = {
-  role?: string;
+  role: string;
   email: string;
   phone: string;
   password: string;
   lastName: string;
   firstName: string;
-  salonName?: string;
   confirmPassword?: string;
 };
 export type SignUpResType = {
@@ -74,6 +72,20 @@ export type SignUpResType = {
     updatedAt: string;
     emailVerified: boolean;
   };
+};
+
+/*** Verify Email OTP types ***/
+export type VerifyEmailOtpReqType = {
+  otp: string;
+  email: string;
+};
+
+/*** Reset password types ***/
+export type ResetPasswordReqType = {
+  otp: string;
+  email: string;
+  password: string;
+  confirmPassword?: string;
 };
 
 /*** Auth error types ***/
