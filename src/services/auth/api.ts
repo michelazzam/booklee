@@ -30,12 +30,13 @@ export const getMeApi = async () => {
 
 /*** API for sign up ***/
 export const signUpApi = async (data: SignUpReqType) => {
-  const { email, ...rest } = data;
+  const { email, password, ...rest } = data;
 
   const [response] = await withErrorCatch(
-    authClient.emailOtp.sendVerificationOtp({
+    authClient.signUp.email({
       email,
-      type: 'sign-in',
+      password,
+      name: `${rest.firstName} ${rest.lastName}`,
       fetchOptions: {
         body: rest,
       },
@@ -54,11 +55,28 @@ export const signUpApi = async (data: SignUpReqType) => {
   return response?.data;
 };
 
+/*** API for send Email Verification OTP ***/
+export const sendEmailVerificationOtpApi = async (email: string) => {
+  const [response] = await withErrorCatch(
+    authClient.emailOtp.sendVerificationOtp({ email, type: 'email-verification' })
+  );
+
+  if (response?.error instanceof AxiosError) {
+    throw {
+      ...response?.error.response?.data,
+      status: response?.error.response?.status,
+    };
+  } else if (response?.error) {
+    throw response?.error;
+  }
+
+  return response?.data;
+};
 /*** API for verify Email OTP ***/
 export const verifyEmailOtpApi = async (data: VerifyEmailOtpReqType) => {
   const { email, otp } = data;
 
-  const [response] = await withErrorCatch(authClient.signIn.emailOtp({ email, otp }));
+  const [response] = await withErrorCatch(authClient.emailOtp.verifyEmail({ email, otp }));
 
   if (response?.error instanceof AxiosError) {
     throw {

@@ -22,6 +22,7 @@ export const SignupPage = () => {
   const data = useRef<SignUpReqType & { confirmPassword: string }>({
     phone: '',
     email: '',
+    role: 'user',
     password: '',
     lastName: '',
     firstName: '',
@@ -62,10 +63,8 @@ export const SignupPage = () => {
     signup(signupData, {
       onSuccess: () => {
         router.replace({
+          params: { email: signupData.email },
           pathname: '/(unauthenticated)/signup/email-verification',
-          params: {
-            email: signupData.email,
-          },
         });
       },
       onError: (error: any) => {

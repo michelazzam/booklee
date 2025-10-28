@@ -4,6 +4,7 @@ import { apiClient } from '../axios/interceptor';
 import { authClient } from './auth-client';
 
 import {
+  sendEmailVerificationOtpApi,
   verifyResetPasswordOtpApi,
   verifyEmailOtpApi,
   loginWithEmailApi,
@@ -82,15 +83,15 @@ const useSignUp = () => {
   });
 };
 
-const useVerifyEmailOtp = () => {
-  /*** Constants ***/
-  const queryClient = useQueryClient();
+const useSendEmailVerificationOtp = () => {
+  return useMutation({
+    mutationFn: sendEmailVerificationOtpApi,
+  });
+};
 
+const useVerifyEmailOtp = () => {
   return useMutation({
     mutationFn: verifyEmailOtpApi,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['getMe'] });
-    },
   });
 };
 
@@ -143,6 +144,7 @@ const useResetPassword = () => {
 };
 
 export const AuthServices = {
+  useSendEmailVerificationOtp,
   useVerifyResetPasswordOtp,
   useGetBetterAuthUser,
   useForgotPassword,

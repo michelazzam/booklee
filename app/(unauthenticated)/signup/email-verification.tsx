@@ -1,14 +1,14 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import { Toast } from 'toastify-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { AuthServices } from '~/src/services';
 
 import { theme } from '~/src/constants/theme';
 
-import { CodeInputs } from '~/src/components/textInputs';
 import { AwareScrollView, Text } from '~/src/components/base';
+import { CodeInputs } from '~/src/components/textInputs';
 import { Button } from '~/src/components/buttons';
 
 type LocalSearchParamsType = {
@@ -24,6 +24,7 @@ const EmailVerificationPage = () => {
   const router = useRouter();
   const { email } = useLocalSearchParams<LocalSearchParamsType>();
   const { mutate: verifyEmailOtp } = AuthServices.useVerifyEmailOtp();
+  const { mutate: sendEmailVerificationOtp } = AuthServices.useSendEmailVerificationOtp();
 
   const handleOtpComplete = (code: string) => {
     if (code.length === 6) {
@@ -41,11 +42,19 @@ const EmailVerificationPage = () => {
     }
   };
 
-  // useEffect(() => {
-  //   sendEmailOtpVerification(email);
+  useEffect(() => {
+    sendEmailVerificationOtp(email, {
+      onError: (error) => {
+        Toast.error(error.message || 'Failed to send email verification OTP');
 
-  //   //eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
+        setTimeout(() => {
+          router.back();
+        }, 2000);
+      },
+    });
+
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AwareScrollView contentContainerStyle={styles.container}>

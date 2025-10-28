@@ -54,12 +54,12 @@ export type LoginReqType = {
 
 /*** Sign up types ***/
 export type SignUpReqType = {
+  role: string;
   email: string;
   phone: string;
   password: string;
   lastName: string;
   firstName: string;
-  salonName?: string;
   confirmPassword?: string;
 };
 export type SignUpResType = {
