@@ -7,8 +7,9 @@ import { AuthServices } from '~/src/services';
 
 import { theme } from '~/src/constants/theme';
 
+import { CodeInputs } from '~/src/components/textInputs';
+import { AwareScrollView, Text } from '~/src/components/base';
 import { Button } from '~/src/components/buttons';
-import { Text } from '~/src/components/base';
 
 type LocalSearchParamsType = {
   email: string;
@@ -47,7 +48,7 @@ const EmailVerificationPage = () => {
   // }, []);
 
   return (
-    <View style={styles.container}>
+    <AwareScrollView contentContainerStyle={styles.container}>
       <Text size={150} weight="bold" style={{ textAlign: 'center' }}>
         📧
       </Text>
@@ -88,7 +89,7 @@ const EmailVerificationPage = () => {
         />
       </View>
 
-      <View style={styles.resendSection}>
+      <View>
         {/* <Button
           variant="outline"
           onPress={handleResendEmailVerification}
