@@ -72,7 +72,11 @@ const Navigation = () => {
       return true;
     }
 
-    if (!(fontsLoaded && isInitialized) && isAuthLoading) {
+    if (!fontsLoaded || !isInitialized) {
+      return false;
+    }
+
+    if (isAuthLoading) {
       return false;
     }
 

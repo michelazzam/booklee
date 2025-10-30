@@ -1,7 +1,7 @@
 import { View, StyleSheet, Keyboard } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Toast } from 'toastify-react-native';
 import { useEffect, useRef, useState } from 'react';
+import { Toast } from 'toastify-react-native';
 import { useRouter } from 'expo-router';
 
 import { AuthServices, type LoginReqType } from '~/src/services';
@@ -78,7 +78,13 @@ const LoginScreen = () => {
       },
     });
   };
-
+  const handleGoogleLogin = () => {
+    googleLogin(undefined, {
+      onError: (error) => {
+        Toast.error(error.message || 'Failed to login');
+      },
+    });
+  };
   return (
     <LinearGradient
       style={styles.container}
@@ -147,7 +153,7 @@ const LoginScreen = () => {
             <Button
               variant="outline"
               leadingIcon="google"
-              onPress={googleLogin}
+              onPress={handleGoogleLogin}
               title="Continue With Google"
               isLoading={isGoogleLoginPending}
             />
