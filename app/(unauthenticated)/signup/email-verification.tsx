@@ -1,14 +1,15 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
-import { useEffect } from 'react';
+import { Toast } from 'toastify-react-native';
+import { useEffect, useState } from 'react';
 
 import { AuthServices } from '~/src/services';
 
-import { useTimer } from '~/src/hooks/useTimer';
 import { theme } from '~/src/constants/theme';
 
+import { AwareScrollView, Text } from '~/src/components/base';
+import { CodeInputs } from '~/src/components/textInputs';
 import { Button } from '~/src/components/buttons';
-import { Text } from '~/src/components/base';
 
 type LocalSearchParamsType = {
   email: string;
@@ -16,27 +17,47 @@ type LocalSearchParamsType = {
 };
 
 const EmailVerificationPage = () => {
+  /*** States ***/
+  const [hasOtpError, setHasOtpError] = useState(false);
+
   /*** Constants ***/
   const router = useRouter();
-  const { formattedTokenExpiry, resendEmailTimer, resetTimer } = useTimer(10, 10);
-  const { email, fromLogin } = useLocalSearchParams<LocalSearchParamsType>();
-  const { mutate: resendEmailVerification, isPending: isResendEmailVerificationPending } =
-    AuthServices.useResendEmailVerification();
+  const { email } = useLocalSearchParams<LocalSearchParamsType>();
+  const { mutate: verifyEmailOtp } = AuthServices.useVerifyEmailOtp();
+  const { mutate: sendEmailVerificationOtp } = AuthServices.useSendEmailVerificationOtp();
+
+  const handleOtpComplete = (code: string) => {
+    if (code.length === 6) {
+      verifyEmailOtp(
+        { email, otp: code },
+        {
+          onError: (error) => {
+            setHasOtpError(true);
+            Toast.error(error.message || 'Invalid verification code');
+          },
+        }
+      );
+    } else {
+      setHasOtpError(true);
+    }
+  };
 
   useEffect(() => {
-    if (Boolean(fromLogin)) {
-      resendEmailVerification(email, {
-        onSuccess: () => {
-          resetTimer();
-        },
-      });
-    }
+    sendEmailVerificationOtp(email, {
+      onError: (error) => {
+        Toast.error(error.message || 'Failed to send email verification OTP');
+
+        setTimeout(() => {
+          router.back();
+        }, 2000);
+      },
+    });
 
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <View style={styles.container}>
+    <AwareScrollView contentContainerStyle={styles.container}>
       <Text size={150} weight="bold" style={{ textAlign: 'center' }}>
         📧
       </Text>
@@ -68,22 +89,31 @@ const EmailVerificationPage = () => {
           style={{ textAlign: 'center' }}>
           Don&apos;t see the email? Check your spam folder or try again.
         </Text>
+
+        <CodeInputs
+          length={6}
+          onComplete={handleOtpComplete}
+          onError={(hasError) => setHasOtpError(hasError)}
+          color={hasOtpError ? theme.colors.red[100] : theme.colors.primaryBlue[100]}
+        />
       </View>
 
-      <Button
-        title="Back to Login"
-        onPress={() => router.back()}
-        containerStyle={styles.buttonContainer}
-      />
+      <View>
+        {/* <Button
+          variant="outline"
+          onPress={handleResendEmailVerification}
+          isLoading={isResendEmailVerificationPending}
+          disabled={isResendEmailVerificationPending || resendEmailTimerSeconds > 0}
+          title={
+            resendEmailTimerSeconds > 0
+              ? `Resend Email in ${formattedResendEmailTimer}`
+              : 'Resend Email'
+          }
+        /> */}
 
-      <Button
-        variant="outline"
-        isLoading={isResendEmailVerificationPending}
-        onPress={() => resendEmailVerification(email)}
-        disabled={isResendEmailVerificationPending || resendEmailTimer > 0}
-        title={resendEmailTimer > 0 ? `Resend Email in ${formattedTokenExpiry}` : 'Resend Email'}
-      />
-    </View>
+        <Button title="Back to Login" onPress={() => router.back()} variant="ghost" />
+      </View>
+    </AwareScrollView>
   );
 };
 

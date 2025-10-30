@@ -1,5 +1,5 @@
 /*** Auth Validation ***/
-export { validateLogin, validateSignup } from './auth';
+export { validateLogin, validateSignup, validateResetPassword } from './auth';
 export { validateUpdateUser } from './user';
 
 /*** Types ***/

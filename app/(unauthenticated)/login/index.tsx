@@ -51,13 +51,6 @@ const LoginScreen = () => {
     }));
   };
   const handleLogin = async () => {
-    // router.navigate({
-    //   pathname: '/(unauthenticated)/signup/email-verification',
-    //   params: {
-    //     email: data.current.email,
-    //   },
-    // });
-    // return;
     Keyboard.dismiss();
     setValidationErrors({ success: true });
 

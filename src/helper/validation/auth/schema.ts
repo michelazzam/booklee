@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { isValidPhoneNumber, getCountryByCca2 } from 'react-native-international-phone-number';
 
-import type { LoginReqType, SignUpReqType } from '~/src/services';
+import type { LoginReqType, ResetPasswordReqType, SignUpReqType } from '~/src/services';
 
 const passwordValidation = () => {
   return z
@@ -73,6 +73,25 @@ export const signupSchema: z.ZodType<SignUpReqType> = z
       .string()
       .min(1, { message: 'Last name is required' })
       .min(2, { message: 'Last name must be at least 2 characters' }),
+  })
+  .refine(
+    ({ password, confirmPassword }) => {
+      return passwordMatchValidation(password, confirmPassword);
+    },
+    {
+      path: ['confirmPassword'],
+      message: 'Passwords do not match',
+    }
+  );
+
+export const resetPasswordSchema: z.ZodType<ResetPasswordReqType> = z
+  .object({
+    password: passwordValidation(),
+    otp: z.string().min(1, { message: 'OTP is required' }),
+    confirmPassword: z.string().min(1, { message: 'Confirm password is required' }),
+    email: z
+      .email({ message: 'Please enter a valid email address' })
+      .min(1, { message: 'Email is required' }),
   })
   .refine(
     ({ password, confirmPassword }) => {

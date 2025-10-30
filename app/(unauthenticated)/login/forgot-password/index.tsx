@@ -33,9 +33,10 @@ const ForgotPasswordEmailInput = () => {
     }
   }, [fromLoginEmail]);
 
-  /*** Handlers ***/
   const handleContinue = () => {
     Keyboard.dismiss();
+    setValidationErrors('');
+
     const validationResult = emailSchema.safeParse(email);
 
     if (!validationResult.success) {
@@ -46,7 +47,7 @@ const ForgotPasswordEmailInput = () => {
     forgotPassword(email, {
       onSuccess: () => {
         router.replace({
-          pathname: '/(unauthenticated)/login/forgot-password/success',
+          pathname: '/(unauthenticated)/login/forgot-password/verify',
           params: { email },
         });
       },

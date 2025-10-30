@@ -4,9 +4,12 @@ import { apiClient } from '../axios/interceptor';
 import { authClient } from './auth-client';
 
 import {
-  resendEmailVerificationApi,
+  sendEmailVerificationOtpApi,
+  verifyResetPasswordOtpApi,
+  verifyEmailOtpApi,
   loginWithEmailApi,
   forgotPasswordApi,
+  resetPasswordApi,
   googleLoginApi,
   signUpApi,
   logoutApi,
@@ -80,6 +83,30 @@ const useSignUp = () => {
   });
 };
 
+const useSendEmailVerificationOtp = () => {
+  return useMutation({
+    mutationFn: sendEmailVerificationOtpApi,
+  });
+};
+
+const useVerifyEmailOtp = () => {
+  return useMutation({
+    mutationFn: verifyEmailOtpApi,
+    onSuccess: async () => {
+      try {
+        const cookies = await authClient.getCookie();
+        const headers = {
+          Cookie: cookies,
+        };
+
+        apiClient.defaults.headers.common = headers;
+      } catch (error) {
+        console.error('Error getting cookies', error);
+      }
+    },
+  });
+};
+
 const useLogout = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
@@ -116,16 +143,25 @@ const useForgotPassword = () => {
   });
 };
 
-const useResendEmailVerification = () => {
+const useVerifyResetPasswordOtp = () => {
   return useMutation({
-    mutationFn: resendEmailVerificationApi,
+    mutationFn: verifyResetPasswordOtpApi,
+  });
+};
+
+const useResetPassword = () => {
+  return useMutation({
+    mutationFn: resetPasswordApi,
   });
 };
 
 export const AuthServices = {
-  useResendEmailVerification,
+  useSendEmailVerificationOtp,
+  useVerifyResetPasswordOtp,
   useGetBetterAuthUser,
   useForgotPassword,
+  useVerifyEmailOtp,
+  useResetPassword,
   useGoogleLogin,
   useSession,
   useLogout,
