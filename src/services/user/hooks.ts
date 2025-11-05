@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { authClient } from '../auth/auth-client';
+import { useUserProvider } from '~/src/store';
 
 import {
   removeFromFavoritesApi,
@@ -69,7 +70,10 @@ const useUpdateUserImage = () => {
 };
 
 const useGetFavorites = () => {
+  const { userIsGuest } = useUserProvider();
+
   return useQuery<GetFavoritesResType, ResErrorType, LocationType[]>({
+    enabled: !userIsGuest,
     queryFn: getFavoritesApi,
     queryKey: ['getFavorites'],
     select: ({ favorites }) => favorites,

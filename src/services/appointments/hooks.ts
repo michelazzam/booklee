@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useUserProvider } from '~/src/store';
 import {
   getLocationBookingData,
   rescheduleAppointment,
@@ -26,9 +27,12 @@ import type {
 
 /*** Get Upcoming User Appointments Hook ***/
 const useGetUpcomingUserAppointments = () => {
+  const { userIsGuest } = useUserProvider();
+
   return useInfiniteQuery<UserAppointmentsResType, ResErrorType, UserAppointmentType[]>({
     initialPageParam: 1,
     refetchOnMount: false,
+    enabled: !userIsGuest,
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
@@ -57,8 +61,11 @@ const useGetUpcomingUserAppointments = () => {
 
 /*** Get Past User Appointments Hook ***/
 const useGetPastUserAppointments = () => {
+  const { userIsGuest } = useUserProvider();
+
   return useInfiniteQuery<UserAppointmentsResType, ResErrorType, UserAppointmentType[]>({
     initialPageParam: 1,
+    enabled: !userIsGuest,
     refetchOnMount: false,
     refetchInterval: false,
     refetchOnWindowFocus: false,
@@ -83,9 +90,12 @@ const useGetPastUserAppointments = () => {
 
 /*** Get User Appointments needs review Hook ***/
 const useGetUserAppointmentsNeedsReview = () => {
+  const { userIsGuest } = useUserProvider();
+
   return useInfiniteQuery<UserAppointmentsResType, ResErrorType, UserAppointmentType[]>({
     initialPageParam: 1,
     refetchOnMount: false,
+    enabled: !userIsGuest,
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,

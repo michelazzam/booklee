@@ -15,10 +15,11 @@ export type CardRowDataType = {
   variant?: 'primary' | 'secondary' | 'danger';
 };
 type CardRowProps = {
+  disabled?: boolean;
   data: CardRowDataType;
 };
 
-const CardRow = ({ data }: CardRowProps) => {
+const CardRow = ({ data, disabled = false }: CardRowProps) => {
   /*** Constants ***/
   const { label, leadingIcon, trailingIcon, variant = 'primary', onPress, loading = false } = data;
 
@@ -38,8 +39,8 @@ const CardRow = ({ data }: CardRowProps) => {
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      disabled={!onPress || loading}
-      style={[styles.container, styles[variant], !onPress && { opacity: 0.5 }]}>
+      disabled={disabled || !onPress || loading}
+      style={[styles.container, styles[variant], (disabled || !onPress) && { opacity: 0.5 }]}>
       <View style={styles.iconContainer}>{leadingIcon}</View>
 
       {loading ? (

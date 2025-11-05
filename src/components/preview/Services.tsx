@@ -8,10 +8,11 @@ import { Icon, Text } from '../base';
 
 type ServicesPreviewProps = {
   isActive: boolean;
+  disabled?: boolean;
   data: LocationServiceType;
   onPress: (serviceId: string) => void;
 };
-const ServicesPreview = ({ data, onPress, isActive }: ServicesPreviewProps) => {
+const ServicesPreview = ({ data, onPress, isActive, disabled = false }: ServicesPreviewProps) => {
   /***** Constants *****/
   const { id, service, price, duration } = data;
 
@@ -29,7 +30,11 @@ const ServicesPreview = ({ data, onPress, isActive }: ServicesPreviewProps) => {
   }, [price]);
 
   return (
-    <TouchableOpacity activeOpacity={0.8} style={styles.container} onPress={() => onPress(id)}>
+    <TouchableOpacity
+      activeOpacity={0.8}
+      disabled={disabled}
+      onPress={() => onPress(id)}
+      style={[styles.container, disabled && { opacity: 0.5 }]}>
       <View style={styles.infoContainer}>
         <View
           style={[
