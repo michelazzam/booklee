@@ -37,7 +37,8 @@ const config: ExpoConfig = {
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
   ios: {
-    supportsTablet: true,
+    supportsTablet: false,
+    usesAppleSignIn: true,
     bundleIdentifier: getAppUniqueIdentifier(),
     icon: './src/assets/images/appImages/appleIcon.png',
     infoPlist: {
@@ -67,6 +68,7 @@ const config: ExpoConfig = {
   },
   plugins: [
     'expo-router',
+    'expo-apple-authentication',
     [
       'expo-splash-screen',
       {

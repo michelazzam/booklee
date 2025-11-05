@@ -1,3 +1,4 @@
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { authClient } from './auth-client';
 import { AxiosError } from 'axios';
 
@@ -115,6 +116,47 @@ export const googleLoginApi = async () => {
     authClient.signIn.social({
       provider: 'google',
       callbackURL: '/(authenticated)/(tabs)',
+    })
+  );
+
+  if (response?.error instanceof AxiosError) {
+    throw {
+      ...response?.error.response?.data,
+      status: response?.error.response?.status,
+    };
+  } else if (response?.error) {
+    throw response?.error;
+  }
+
+  return response?.data;
+};
+
+/*** API for Apple login ***/
+export const appleLoginApi = async () => {
+  let credential: AppleAuthentication.AppleAuthenticationCredential | null = null;
+
+  try {
+    credential = await AppleAuthentication.signInAsync({
+      requestedScopes: [
+        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        AppleAuthentication.AppleAuthenticationScope.EMAIL,
+      ],
+    });
+  } catch (error) {
+    throw error;
+  }
+
+  if (!credential) {
+    throw new Error('Apple login failed');
+  }
+
+  const [response] = await withErrorCatch(
+    authClient.signIn.social({
+      provider: 'apple',
+      callbackURL: '/(authenticated)/(tabs)',
+      idToken: {
+        token: credential.identityToken!,
+      },
     })
   );
 
