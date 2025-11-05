@@ -1,13 +1,14 @@
 import { View, StyleSheet, Keyboard } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Toast } from 'toastify-react-native';
 import { useEffect, useRef, useState } from 'react';
+import { Toast } from 'toastify-react-native';
 import { useRouter } from 'expo-router';
 
 import { AuthServices, type LoginReqType } from '~/src/services';
+import { useUserProvider } from '~/src/store';
 
 import { type ValidationResultType, validateLogin } from '~/src/helper/validation';
-import { theme } from '~/src/constants/theme';
+import { theme } from '~/src/constants';
 
 import { AwareScrollView, Text } from '~/src/components/base';
 import { Input } from '~/src/components/textInputs';
@@ -22,11 +23,11 @@ const LoginScreen = () => {
 
   /*** Constants ***/
   const router = useRouter();
+  const { handleGuestLogin } = useUserProvider();
   const { user: authUser } = AuthServices.useGetBetterAuthUser();
   const { data: userData, isLoading: isUserLoading } = AuthServices.useGetMe();
   const { mutate: login, isPending: isLoginPending } = AuthServices.useLogin();
   const { mutate: googleLogin, isPending: isGoogleLoginPending } = AuthServices.useGoogleLogin();
-
   /*** States ***/
   const [validationErrors, setValidationErrors] = useState<ValidationResultType<LoginReqType>>({
     success: false,
@@ -125,12 +126,23 @@ const LoginScreen = () => {
               }}
             />
 
-            <Button
-              title="Next"
-              onPress={handleLogin}
-              disabled={isLoginPending}
-              isLoading={isLoginPending}
-            />
+            <View style={{ gap: theme.spacing.lg }}>
+              <Button
+                title="Next"
+                onPress={handleLogin}
+                disabled={isLoginPending}
+                isLoading={isLoginPending}
+              />
+
+              <Text
+                size={14}
+                weight="regular"
+                onPress={handleGuestLogin}
+                style={styles.guestLoginText}
+                color={theme.colors.darkText[100]}>
+                Login as guest
+              </Text>
+            </View>
           </View>
 
           <View style={{ gap: theme.spacing.lg }}>
@@ -201,5 +213,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  guestLoginText: {
+    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
 });

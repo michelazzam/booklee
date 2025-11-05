@@ -1,5 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useUserProvider } from '~/src/store';
+
 import {
   getLocationsCategoriesApi,
   submitLocationRatingApi,
@@ -81,7 +83,10 @@ const useGetLocationById = (id: string) => {
 };
 
 const useGetSearchHistory = () => {
+  const { userIsGuest } = useUserProvider();
+
   return useQuery<GetSearchHistoryResType, ResErrorType, SearchHistoryType[]>({
+    enabled: !userIsGuest,
     queryKey: ['searchHistory'],
     queryFn: getSearchHistoryApi,
     select: ({ history }) => history,

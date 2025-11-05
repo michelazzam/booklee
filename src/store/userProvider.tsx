@@ -1,11 +1,17 @@
 import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authClient } from '../services/auth/auth-client';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { apiClient } from '../services/axios/interceptor';
 
+import { guestData } from '../constants';
+
 type UserProviderType = {
+  userIsGuest: boolean;
   isInitialized: boolean;
+  logoutGuest: () => void;
+  handleGuestLogin: () => void;
   isOnboardingCompleted: boolean;
   handleOnboardingCompleted: (isOnboardingCompleted: boolean) => void;
 };
@@ -14,7 +20,10 @@ const STORAGE_KEY = {
 };
 
 const UserProviderContext = createContext<UserProviderType>({
+  userIsGuest: false,
   isInitialized: true,
+  logoutGuest: () => {},
+  handleGuestLogin: () => {},
   isOnboardingCompleted: false,
   handleOnboardingCompleted: () => {},
 });
@@ -22,7 +31,11 @@ const UserProviderContext = createContext<UserProviderType>({
 export const useUserProvider = () => useContext(UserProviderContext);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+
   /*** States ***/
+  const [userIsGuest, setUserIsGuest] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState(false);
 
@@ -51,11 +64,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setIsOnboardingCompleted(isOnboardingCompleted);
     await AsyncStorage.setItem(STORAGE_KEY.onboardingCompleted, isOnboardingCompleted.toString());
   };
+  const handleGuestLogin = async () => {
+    setUserIsGuest(true);
+    queryClient.setQueryData(['getMe'], { user: guestData, organization: null });
+  };
+  const logoutGuest = async () => {
+    await queryClient.clear();
+    setUserIsGuest(false);
+  };
 
   return (
     <UserProviderContext.Provider
       value={{
+        userIsGuest,
+        logoutGuest,
         isInitialized,
+        handleGuestLogin,
         isOnboardingCompleted,
         handleOnboardingCompleted,
       }}>
