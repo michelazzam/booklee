@@ -20,6 +20,10 @@ export default function UnauthenticatedLayout() {
     return <Redirect href="/(authenticated)/(tabs)" />;
   }
 
+  if (isOnboardingCompleted && userData && userData.role === 'guest') {
+    return <Redirect href="/(authenticated)/(tabs)" />;
+  }
+
   // Redirects users to login if they have completed onboarding and are not logged in
   if (isOnboardingCompleted && !isAuthenticated && !excludedAuthPaths.includes(lastPath)) {
     return <Redirect href="/(unauthenticated)/login" />;

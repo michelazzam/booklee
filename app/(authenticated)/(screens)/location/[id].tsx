@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import { useUserProvider } from '~/src/store';
 import {
   type LocationOperatingHoursType,
   type LocationServiceType,
@@ -17,9 +18,9 @@ import {
   LocationServices,
 } from '~/src/services';
 
+import { BackIcon, HeartIcon, HeartIconFilled, StarIcon } from '~/src/assets/icons';
 import { useAppSafeAreaInsets, useHandleFavorites } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
-import { BackIcon, HeartIcon, HeartIconFilled, StarIcon } from '~/src/assets/icons';
 
 import { ImageCarousel, TabMenu, LocationSplashImage } from '~/src/components/utils';
 import { Icon, Text, HeaderNavigation } from '~/src/components/base';
@@ -39,6 +40,7 @@ type AboutItemData = {
 const SalonDetailPage = () => {
   /***** Constants *****/
   const router = useRouter();
+  const { userIsGuest } = useUserProvider();
   const { top, bottom } = useAppSafeAreaInsets();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(id);
@@ -139,6 +141,7 @@ const SalonDetailPage = () => {
             <View style={{ gap: theme.spacing.sm }}>
               {services.map((locationService) => (
                 <Services
+                  disabled={userIsGuest}
                   data={locationService}
                   key={locationService.id}
                   onPress={handleServiceToggle}
@@ -150,7 +153,7 @@ const SalonDetailPage = () => {
         ))}
       </View>
     );
-  }, [location?.locationServices, handleServiceToggle, selectedServices]);
+  }, [location?.locationServices, handleServiceToggle, selectedServices, userIsGuest]);
   const RenderAbout = useCallback(() => {
     let aboutItemData: AboutItemData[] = [];
 
@@ -280,7 +283,11 @@ const SalonDetailPage = () => {
             <BackIcon width={28} height={28} color={theme.colors.white.DEFAULT} />
           </TouchableOpacity>
 
-          <TouchableOpacity activeOpacity={0.8} onPress={handleToggleFavorites}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            disabled={userIsGuest}
+            onPress={handleToggleFavorites}
+            style={[userIsGuest && { opacity: 0.5 }]}>
             {isInFavorites ? (
               <HeartIconFilled width={28} height={28} color={theme.colors.white.DEFAULT} />
             ) : (
@@ -365,7 +372,7 @@ const SalonDetailPage = () => {
             </Text>
           </View>
 
-          <Button title="Next" onPress={handleBookingNext} width={180} />
+          <Button title="Next" onPress={handleBookingNext} width={180} disabled={userIsGuest} />
         </Animated.View>
       )}
     </>

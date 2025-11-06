@@ -16,7 +16,7 @@ import {
 } from '~/src/assets/icons';
 
 import { AuthServices, UserServices } from '~/src/services';
-// import { useUserProvider } from '~/src/store';
+import { useUserProvider } from '~/src/store';
 
 import { SettingsCard, ScreenHeader, type CardRowDataType } from '~/src/components/utils';
 import { AwareScrollView, Text } from '~/src/components/base';
@@ -25,6 +25,7 @@ const AccountPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { data: userData } = UserServices.useGetMe();
+  const { userIsGuest, logoutGuest } = useUserProvider();
   const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
   const { mutate: deleteUser, isPending: isDeleteUserPending } = UserServices.useDeleteUser();
 
@@ -65,14 +66,23 @@ const AccountPage = () => {
     ];
   }, [userData, router]);
   const appSettingsData: CardRowDataType[] = useMemo(() => {
-    return [
+    let data: CardRowDataType[] = [
       {
-        onPress: logout,
         label: 'LOG OUT',
         loading: isLogoutPending,
         leadingIcon: <LogoutIcon />,
+        onPress: () => {
+          if (userIsGuest) {
+            logoutGuest();
+          } else {
+            logout();
+          }
+        },
       },
-      {
+    ];
+
+    if (!userIsGuest) {
+      data.push({
         variant: 'danger',
         label: 'DELETE ACCOUNT',
         leadingIcon: <TrashIcon />,
@@ -82,9 +92,11 @@ const AccountPage = () => {
             { text: 'Cancel', style: 'cancel' },
             { text: 'Delete', style: 'destructive', onPress: handleDeleteAccount },
           ]),
-      },
-    ];
-  }, [logout, isLogoutPending, isDeleteUserPending, handleDeleteAccount]);
+      });
+    }
+
+    return data;
+  }, [logout, logoutGuest, isLogoutPending, isDeleteUserPending, handleDeleteAccount, userIsGuest]);
 
   return (
     <View style={styles.container}>
@@ -107,7 +119,11 @@ const AccountPage = () => {
       />
 
       <AwareScrollView contentContainerStyle={styles.scrollContent}>
-        <SettingsCard data={personalInformationData} title="PERSONAL INFORMATION" />
+        <SettingsCard
+          disabled={userIsGuest}
+          title="PERSONAL INFORMATION"
+          data={personalInformationData}
+        />
 
         <SettingsCard data={appSettingsData} />
 

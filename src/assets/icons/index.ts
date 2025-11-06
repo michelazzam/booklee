@@ -12,6 +12,7 @@ export { default as XIcon } from './XIcon';
 export { default as FilterIcon } from './FilterIcon';
 export { default as SearchIcon } from './SearchIcon';
 export { default as GoogleIcon } from './GoogleIcon';
+export { default as AppleIcon } from './AppleIcon';
 export { default as LogoutIcon } from './LogoutIcon';
 export { default as ClockIcon } from './ClockIcon';
 export { default as PhoneIcon } from './PhoneIcon';

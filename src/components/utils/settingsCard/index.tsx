@@ -7,11 +7,10 @@ import { Text } from '../../base';
 
 export type SettingsCardProps = {
   title?: string;
+  disabled?: boolean;
   data: CardRowDataType[];
 };
-const SettingsCard = ({ title, data }: SettingsCardProps) => {
-  /*** Constants ***/
-
+const SettingsCard = ({ title, data, disabled = false }: SettingsCardProps) => {
   return (
     <View style={styles.container}>
       {title && (
@@ -21,7 +20,7 @@ const SettingsCard = ({ title, data }: SettingsCardProps) => {
       )}
 
       {data.map((item, index) => (
-        <CardRow key={index} data={item} />
+        <CardRow key={index} data={item} disabled={disabled} />
       ))}
     </View>
   );
