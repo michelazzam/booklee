@@ -27,6 +27,7 @@ const LoginScreen = () => {
   const { user: authUser } = AuthServices.useGetBetterAuthUser();
   const { data: userData, isLoading: isUserLoading } = AuthServices.useGetMe();
   const { mutate: login, isPending: isLoginPending } = AuthServices.useLogin();
+  const { mutate: appleLogin, isPending: isAppleLoginPending } = AuthServices.useAppleLogin();
   const { mutate: googleLogin, isPending: isGoogleLoginPending } = AuthServices.useGoogleLogin();
   /*** States ***/
   const [validationErrors, setValidationErrors] = useState<ValidationResultType<LoginReqType>>({
@@ -163,6 +164,14 @@ const LoginScreen = () => {
               title="Continue With Google"
               isLoading={isGoogleLoginPending}
             />
+
+            <Button
+              variant="outline"
+              leadingIcon="apple"
+              onPress={appleLogin}
+              title="Continue With Apple"
+              isLoading={isAppleLoginPending}
+            />
           </View>
         </View>
 
@@ -190,7 +199,7 @@ export default LoginScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: '30%',
+    paddingTop: '20%',
     gap: theme.spacing.lg,
     paddingHorizontal: theme.spacing.xl,
   },

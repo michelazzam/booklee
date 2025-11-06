@@ -13,6 +13,10 @@ export const auth = betterAuth({
         id: 'google',
         enabled: true,
       },
+      {
+        id: 'apple',
+        enabled: true,
+      },
     ],
   },
 });

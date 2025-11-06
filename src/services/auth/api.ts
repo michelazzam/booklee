@@ -1,4 +1,6 @@
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { authClient } from './auth-client';
+import { randomUUID } from 'expo-crypto';
 import { AxiosError } from 'axios';
 
 import { withErrorCatch } from '../axios/error';
@@ -115,6 +117,41 @@ export const googleLoginApi = async () => {
     authClient.signIn.social({
       provider: 'google',
       callbackURL: '/(authenticated)/(tabs)',
+    })
+  );
+
+  if (response?.error instanceof AxiosError) {
+    throw {
+      ...response?.error.response?.data,
+      status: response?.error.response?.status,
+    };
+  } else if (response?.error) {
+    throw response?.error;
+  }
+
+  return response?.data;
+};
+
+/*** API for Apple login ***/
+export const appleLoginApi = async () => {
+  const rawNonce = randomUUID();
+
+  const cred = await AppleAuthentication.signInAsync({
+    nonce: rawNonce,
+    state: randomUUID(),
+    requestedScopes: [
+      AppleAuthentication.AppleAuthenticationScope.EMAIL,
+      AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+    ],
+  });
+
+  if (!cred?.identityToken) throw new Error('Apple login failed: no idToken');
+
+  const [response] = await withErrorCatch(
+    authClient.signIn.social({
+      provider: 'apple',
+      callbackURL: '/(authenticated)/(tabs)',
+      idToken: { token: cred.identityToken },
     })
   );
 

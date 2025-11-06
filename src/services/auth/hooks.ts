@@ -11,6 +11,7 @@ import {
   forgotPasswordApi,
   resetPasswordApi,
   googleLoginApi,
+  appleLoginApi,
   signUpApi,
   logoutApi,
   getMeApi,
@@ -137,6 +138,23 @@ const useGoogleLogin = () => {
   });
 };
 
+const useAppleLogin = () => {
+  /*** Constants ***/
+  const queryClient = useQueryClient();
+  const cookies = authClient.getCookie();
+  const headers = {
+    Cookie: cookies,
+  };
+
+  return useMutation({
+    mutationFn: appleLoginApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['getMe'] });
+      apiClient.defaults.headers.common = headers;
+    },
+  });
+};
+
 const useForgotPassword = () => {
   return useMutation({
     mutationFn: forgotPasswordApi,
@@ -163,6 +181,7 @@ export const AuthServices = {
   useVerifyEmailOtp,
   useResetPassword,
   useGoogleLogin,
+  useAppleLogin,
   useSession,
   useLogout,
   useSignUp,
