@@ -1,9 +1,13 @@
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { useWindowDimensions, TouchableOpacity, StyleSheet, View } from 'react-native';
+import { useWindowDimensions, TouchableOpacity, StyleSheet, View, Image } from 'react-native';
 import { type Href, useRouter, Slot } from 'expo-router';
 import { useState } from 'react';
 
+import { useUserProvider } from '~/src/store';
+
 import { HeaderNavigation, Text } from '~/src/components/base';
+import { Button } from '~/src/components/buttons';
+import { theme, IMAGES } from '~/src/constants';
 
 type TabType = {
   key: string;
@@ -27,6 +31,7 @@ const LabsLayout = () => {
   /***** Constants *****/
   const router = useRouter();
   const { width } = useWindowDimensions();
+  const { userIsGuest, logoutGuest } = useUserProvider();
 
   /***** States *****/
   const [activeTab, setActiveTab] = useState<TabType>(TABS[0]);
@@ -49,6 +54,37 @@ const LabsLayout = () => {
       duration: 100,
     });
   };
+
+  if (userIsGuest) {
+    return (
+      <>
+        <HeaderNavigation title="BOOKINGS" showBackButton={false} />
+
+        <View style={styles.emptyStateContent}>
+          <Image source={IMAGES.bookings.placeholder} style={styles.emptyStateImage} />
+
+          <Text
+            size={22}
+            weight="bold"
+            style={{ textAlign: 'center' }}
+            color={theme.colors.darkText[100]}>
+            Track Your Bookings
+          </Text>
+
+          <Text
+            size={14}
+            weight="regular"
+            color={theme.colors.lightText}
+            style={styles.emptyStateDescription}>
+            Sign in to view and manage your appointments. Keep track of your upcoming and past
+            bookings all in one place.
+          </Text>
+
+          <Button title="Login" onPress={logoutGuest} />
+        </View>
+      </>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -130,5 +166,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
     backgroundColor: '#476c80',
     width: `${100 / TABS.length}%`,
+  },
+  emptyStateContent: {
+    flex: 1,
+    gap: theme.spacing.lg,
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.xl,
+  },
+  emptyStateImage: {
+    width: 200,
+    height: 200,
+    alignSelf: 'center',
+    marginBottom: theme.spacing.xl,
+  },
+  emptyStateDescription: {
+    lineHeight: 20,
+    textAlign: 'center',
   },
 });

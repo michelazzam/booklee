@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 
 import { type DetailedLocationType, LocationServices } from '~/src/services';
+import { useUserProvider } from '~/src/store';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
@@ -24,6 +25,7 @@ const Search = () => {
   /*** Constants ***/
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { userIsGuest } = useUserProvider();
   const { top, bottom } = useAppSafeAreaInsets();
   const { data: searchHistory } = LocationServices.useGetSearchHistory();
   const { mutate: searchLocations, isPending: isSearching } = LocationServices.useSearchLocations();
@@ -114,16 +116,8 @@ const Search = () => {
       ));
     }
 
-    if (searchQuery.length !== 0 && !isSearching) {
-      return (
-        <Text color={theme.colors.lightText} weight="medium" style={styles.emptyTextStyle}>
-          No locations found
-        </Text>
-      );
-    }
-
-    return <RenderRecentSearches />;
-  }, [RenderRecentSearches, isSearching, searchQuery]);
+    return !userIsGuest ? <RenderRecentSearches /> : null;
+  }, [RenderRecentSearches, userIsGuest, isSearching]);
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>

@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
 
 import { UserServices, type LocationType } from '~/src/services';
+import { useUserProvider } from '~/src/store';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme, IMAGES } from '~/src/constants';
@@ -15,6 +16,7 @@ const FavoritesPage = () => {
   /*** Constants ***/
   const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
+  const { userIsGuest, logoutGuest } = useUserProvider();
   const { data: favorites, refetch, isLoading } = UserServices.useGetFavorites();
 
   /*** States ***/
@@ -38,6 +40,33 @@ const FavoritesPage = () => {
     [router]
   );
   const RenderListEmptyComponent = useCallback(() => {
+    if (userIsGuest) {
+      return (
+        <View style={styles.emptyStateContent}>
+          <Image source={IMAGES.favorites.placeholder} style={styles.emptyStateImage} />
+
+          <Text
+            size={22}
+            weight="bold"
+            style={{ textAlign: 'center' }}
+            color={theme.colors.darkText[100]}>
+            Save Your Favorite Places
+          </Text>
+
+          <Text
+            size={14}
+            weight="regular"
+            color={theme.colors.lightText}
+            style={styles.emptyStateDescription}>
+            Sign in to save and sync your favorite locations across all your devices. Never lose
+            track of the places you love!
+          </Text>
+
+          <Button title="Login" onPress={logoutGuest} />
+        </View>
+      );
+    }
+
     if (isLoading) {
       return Array.from({ length: 10 }).map((_, index) => (
         <LocationCardSkeleton key={index} minWidth={230} />
@@ -71,7 +100,7 @@ const FavoritesPage = () => {
         />
       </View>
     );
-  }, [router, isLoading]);
+  }, [router, isLoading, userIsGuest, logoutGuest]);
   const RenderRefreshControl = useCallback(() => {
     return (
       <RefreshControl

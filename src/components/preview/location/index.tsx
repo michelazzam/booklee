@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { type LocationType } from '~/src/services';
+import { useUserProvider } from '~/src/store';
 
 import { StarIcon, AppLogo, HeartIcon, HeartIconFilled } from '~/src/assets/icons';
 import { useHandleFavorites } from '~/src/hooks';
@@ -38,6 +39,7 @@ const LocationCard = ({
   animatedStyle = 'fadeIn',
 }: LocationCardProps) => {
   /***** Constants *****/
+  const { userIsGuest } = useUserProvider();
   const { _id, city, tags, rating, photos, organization } = data;
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(_id);
 
@@ -121,8 +123,9 @@ const LocationCard = ({
 
         <TouchableOpacity
           activeOpacity={0.8}
-          style={styles.favoriteButton}
-          onPress={handleToggleFavorites}>
+          disabled={userIsGuest}
+          onPress={handleToggleFavorites}
+          style={[styles.favoriteButton, userIsGuest && { opacity: 0.5 }]}>
           {isInFavorites ? (
             <HeartIconFilled width={38} height={38} color={theme.colors.white.DEFAULT} />
           ) : (

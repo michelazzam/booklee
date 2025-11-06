@@ -13,7 +13,7 @@ export default function AuthenticatedLayout() {
   const { isAuthenticated } = AuthServices.useGetBetterAuthUser();
 
   // If not authenticated, redirect to login
-  if (!isAuthenticated || !userData) {
+  if (!userData || (userData.role !== 'guest' && !isAuthenticated)) {
     return <Redirect href="/(unauthenticated)/login" />;
   }
 
@@ -22,7 +22,7 @@ export default function AuthenticatedLayout() {
   }
 
   // Check if user is owner
-  if (userData?.role !== 'user') {
+  if (!['user', 'guest'].includes(userData?.role ?? '')) {
     return <Redirect href={'/(dashboard)/(tabs)'} />;
   }
 
