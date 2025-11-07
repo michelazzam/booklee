@@ -18,8 +18,6 @@ import { AuthServices } from '~/src/services';
 
 import { CustomToast } from '~/src/components/base';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 // Allow Reactotron to be used in development mode
 if (__DEV__) {
   require('../ReactotronConfig');
@@ -96,7 +94,6 @@ const Navigation = () => {
   }, [fontsLoaded, isInitialized, isAuthLoading, isAuthenticated, isUserFetched, isFirstLaunch]);
 
   useEffect(() => {
-    AsyncStorage.removeItem('onboardingCompleted');
     if (Platform.OS === 'android') {
       NavigationBar.setVisibilityAsync('hidden');
     }
