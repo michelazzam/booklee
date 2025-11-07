@@ -86,7 +86,11 @@ const Navigation = () => {
     }
 
     // If authenticated, wait for user to be fetched
-    return !!isUserFetched;
+    if (isUserFetched) {
+      return true;
+    } else {
+      return false;
+    }
   }, [fontsLoaded, isInitialized, isAuthLoading, isAuthenticated, isUserFetched, isFirstLaunch]);
 
   useEffect(() => {

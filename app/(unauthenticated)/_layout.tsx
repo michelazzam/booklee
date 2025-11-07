@@ -5,7 +5,7 @@ import { theme } from '~/src/constants/theme';
 
 import { AuthServices } from '~/src/services';
 
-const excludedAuthPaths = ['login', 'signup'];
+const excludedAuthPaths = ['login', 'signup', 'phoneNumber'];
 
 export default function UnauthenticatedLayout() {
   /*** Constants ***/
@@ -15,12 +15,36 @@ export default function UnauthenticatedLayout() {
   const { isOnboardingCompleted } = useUserProvider();
   const { isAuthenticated, user: authUser } = AuthServices.useGetBetterAuthUser();
 
+  // If user is authenticated and verified, but has no phone number, redirect to phone number
+  if (
+    isOnboardingCompleted &&
+    isAuthenticated &&
+    !!userData &&
+    authUser?.emailVerified &&
+    !userData?.phone &&
+    !excludedAuthPaths.includes(lastPath)
+  ) {
+    console.log('redirecting to phone number');
+    return <Redirect href="/(unauthenticated)/phoneNumber" />;
+  }
+
   // If user is authenticated and has getMe data and is verified, redirect to app
-  if (isOnboardingCompleted && isAuthenticated && userData && authUser?.emailVerified) {
+  if (
+    isOnboardingCompleted &&
+    isAuthenticated &&
+    !!userData &&
+    authUser?.emailVerified &&
+    !excludedAuthPaths.includes(lastPath)
+  ) {
     return <Redirect href="/(authenticated)/(tabs)" />;
   }
 
-  if (isOnboardingCompleted && userData && userData.role === 'guest') {
+  if (
+    isOnboardingCompleted &&
+    !!userData &&
+    userData.role === 'guest' &&
+    !excludedAuthPaths.includes(lastPath)
+  ) {
     return <Redirect href="/(authenticated)/(tabs)" />;
   }
 
