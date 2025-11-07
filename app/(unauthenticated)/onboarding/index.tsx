@@ -46,13 +46,6 @@ const OnboardingStep1 = () => {
           <View style={[styles.paginationDot, styles.inactiveDot]} />
           <View style={[styles.paginationDot, styles.inactiveDot]} />
         </View>
-
-        <Button
-          title="Skip"
-          variant="ghost"
-          onPress={routeToNextStep}
-          containerStyle={styles.skipButton}
-        />
       </View>
     </View>
   );
