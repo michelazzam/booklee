@@ -1,11 +1,13 @@
-import { StyleSheet, Keyboard } from 'react-native';
+import { StyleSheet, Keyboard, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Toast } from 'toastify-react-native';
 import { useRef, useState } from 'react';
+import { useRouter } from 'expo-router';
 
-import { type UpdateUserReqType, UserServices } from '~/src/services';
+import { type UpdateUserReqType, UserServices, AuthServices } from '~/src/services';
 
 import { ValidationResultType, validateUpdateUser } from '~/src/helper/validation';
 import { useAppSafeAreaInsets } from '~/src/hooks';
+import { ArrowLeftIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants/theme';
 
 import { AwareScrollView, HeaderNavigation } from '~/src/components/base';
@@ -14,8 +16,10 @@ import { Button } from '~/src/components/buttons';
 
 export const PhoneNumberPage = () => {
   /*** Constants ***/
+  const router = useRouter();
   const { bottom } = useAppSafeAreaInsets();
   const { mutate: updateProfile, isPending } = UserServices.useUpdateUser();
+  const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
 
   /***** Refs *****/
   const phoneNumber = useRef<string>('');
@@ -54,9 +58,31 @@ export const PhoneNumberPage = () => {
     );
   };
 
+  const handleBack = () => {
+    logout(undefined, {
+      onSuccess: () => {
+        router.replace('/(unauthenticated)/login');
+      },
+      onError: (error) => {
+        Toast.error(error.message || 'There was an error logging out');
+      },
+    });
+  };
+
   return (
     <>
-      <HeaderNavigation title="Phone Number" />
+      <HeaderNavigation
+        title="Phone Number"
+        leftIcon={
+          <TouchableOpacity activeOpacity={0.8} onPress={handleBack} disabled={isLogoutPending}>
+            {isLogoutPending ? (
+              <ActivityIndicator size="small" color={theme.colors.darkText[100]} />
+            ) : (
+              <ArrowLeftIcon />
+            )}
+          </TouchableOpacity>
+        }
+      />
 
       <AwareScrollView contentContainerStyle={[styles.container, { paddingBottom: bottom }]}>
         <PhoneInput

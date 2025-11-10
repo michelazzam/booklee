@@ -24,7 +24,6 @@ export default function UnauthenticatedLayout() {
     !userData?.phone &&
     !excludedAuthPaths.includes(lastPath)
   ) {
-    console.log('redirecting to phone number');
     return <Redirect href="/(unauthenticated)/phoneNumber" />;
   }
 
@@ -39,12 +38,7 @@ export default function UnauthenticatedLayout() {
     return <Redirect href="/(authenticated)/(tabs)" />;
   }
 
-  if (
-    isOnboardingCompleted &&
-    !!userData &&
-    userData.role === 'guest' &&
-    !excludedAuthPaths.includes(lastPath)
-  ) {
+  if (isOnboardingCompleted && !!userData && userData.role === 'guest') {
     return <Redirect href="/(authenticated)/(tabs)" />;
   }
 
