@@ -51,6 +51,9 @@ export const PhoneNumberPage = () => {
     updateProfile(
       { phone: phoneNumber.current },
       {
+        onSuccess: () => {
+          router.replace('/(authenticated)/(tabs)');
+        },
         onError: (error) => {
           Toast.error(error.message || 'There was an error saving your phone number');
         },
