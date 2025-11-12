@@ -40,8 +40,8 @@ type AboutItemData = {
 const SalonDetailPage = () => {
   /***** Constants *****/
   const router = useRouter();
-  const { userIsGuest } = useUserProvider();
   const { top, bottom } = useAppSafeAreaInsets();
+  const { userIsGuest, logoutGuest } = useUserProvider();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(id);
   const {
@@ -98,6 +98,11 @@ const SalonDetailPage = () => {
     [selectedServices]
   );
   const handleBookingNext = useCallback(() => {
+    if (userIsGuest) {
+      logoutGuest();
+      return;
+    }
+
     router.navigate({
       pathname: '/(authenticated)/(screens)/booking/[locationId]',
       params: {
@@ -105,7 +110,7 @@ const SalonDetailPage = () => {
         services: JSON.stringify(selectedServiceData),
       },
     });
-  }, [id, router, selectedServiceData]);
+  }, [id, router, selectedServiceData, logoutGuest, userIsGuest]);
 
   const RenderServices = useCallback(() => {
     if (!location?.locationServices) return null;
@@ -141,7 +146,6 @@ const SalonDetailPage = () => {
             <View style={{ gap: theme.spacing.sm }}>
               {services.map((locationService) => (
                 <Services
-                  disabled={userIsGuest}
                   data={locationService}
                   key={locationService.id}
                   onPress={handleServiceToggle}
@@ -153,7 +157,7 @@ const SalonDetailPage = () => {
         ))}
       </View>
     );
-  }, [location?.locationServices, handleServiceToggle, selectedServices, userIsGuest]);
+  }, [location?.locationServices, handleServiceToggle, selectedServices]);
   const RenderAbout = useCallback(() => {
     let aboutItemData: AboutItemData[] = [];
 
@@ -372,7 +376,7 @@ const SalonDetailPage = () => {
             </Text>
           </View>
 
-          <Button title="Next" onPress={handleBookingNext} width={180} disabled={userIsGuest} />
+          <Button title="Next" onPress={handleBookingNext} width={180} />
         </Animated.View>
       )}
     </>
