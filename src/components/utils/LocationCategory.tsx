@@ -36,7 +36,7 @@ const LocationCategory = ({ category }: { category: LocationCategoryType }) => {
         params: { filterSlug: category.slug },
       });
     }
-  }, [router, category]);
+  }, [router, category, logoutGuest, userIsGuest]);
 
   const RenderItem = useCallback(
     ({ item }: { item: LocationType }) => {
