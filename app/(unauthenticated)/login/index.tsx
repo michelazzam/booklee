@@ -64,8 +64,7 @@ const LoginScreen = () => {
     }
 
     login(data.current, {
-      onError: (error) => {
-        // @ts-expect-error
+      onError: (error: any) => {
         if (error?.code === 'EMAIL_NOT_VERIFIED') {
           router.navigate({
             pathname: '/(unauthenticated)/signup/email-verification',
@@ -75,7 +74,7 @@ const LoginScreen = () => {
             },
           });
         } else {
-          Toast.error(error.message || 'Failed to login');
+          Toast.error(error.message || error.error_description || 'Failed to login');
         }
       },
     });
@@ -87,6 +86,7 @@ const LoginScreen = () => {
       },
     });
   };
+
   return (
     <LinearGradient
       style={styles.container}
