@@ -1,4 +1,4 @@
-import { View, StyleSheet, Keyboard } from 'react-native';
+import { View, StyleSheet, Keyboard, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import { Toast } from 'toastify-react-native';
@@ -81,8 +81,15 @@ const LoginScreen = () => {
   };
   const handleGoogleLogin = () => {
     googleLogin(undefined, {
-      onError: (error) => {
-        Toast.error(error.message || 'Failed to login');
+      onError: (error: any) => {
+        Toast.error(error.error_description || 'Failed to login');
+      },
+    });
+  };
+  const handleAppleLogin = () => {
+    appleLogin(undefined, {
+      onError: (error: any) => {
+        Toast.error(error.error_description || 'Failed to login');
       },
     });
   };
@@ -141,14 +148,18 @@ const LoginScreen = () => {
                 isLoading={isLoginPending}
               />
 
-              <Text
-                size={14}
-                weight="regular"
+              <TouchableOpacity
+                activeOpacity={0.7}
                 onPress={handleGuestLogin}
-                style={styles.guestLoginText}
-                color={theme.colors.darkText[100]}>
-                Login as guest
-              </Text>
+                style={{ alignSelf: 'center' }}>
+                <Text
+                  size={18}
+                  weight="regular"
+                  color={theme.colors.darkText[100]}
+                  style={{ textDecorationLine: 'underline' }}>
+                  Login as guest
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -174,7 +185,7 @@ const LoginScreen = () => {
             <Button
               variant="outline"
               leadingIcon="apple"
-              onPress={appleLogin}
+              onPress={handleAppleLogin}
               title="Continue With Apple"
               isLoading={isAppleLoginPending}
             />
@@ -228,9 +239,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  guestLoginText: {
-    textAlign: 'center',
-    textDecorationLine: 'underline',
   },
 });

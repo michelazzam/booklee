@@ -16,6 +16,7 @@ import {
   type LocationServiceType,
   type SelectedService,
   LocationServices,
+  AuthServices,
 } from '~/src/services';
 
 import { BackIcon, HeartIcon, HeartIconFilled, StarIcon } from '~/src/assets/icons';
@@ -41,6 +42,7 @@ const SalonDetailPage = () => {
   /***** Constants *****/
   const router = useRouter();
   const { top, bottom } = useAppSafeAreaInsets();
+  const { data: userData } = AuthServices.useGetMe();
   const { userIsGuest, logoutGuest } = useUserProvider();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(id);
@@ -103,6 +105,11 @@ const SalonDetailPage = () => {
       return;
     }
 
+    if (!userData?.phone) {
+      router.navigate('/(authenticated)/(screens)/settings/editPhone');
+      return;
+    }
+
     router.navigate({
       pathname: '/(authenticated)/(screens)/booking/[locationId]',
       params: {
@@ -110,7 +117,7 @@ const SalonDetailPage = () => {
         services: JSON.stringify(selectedServiceData),
       },
     });
-  }, [id, router, selectedServiceData, logoutGuest, userIsGuest]);
+  }, [id, router, selectedServiceData, logoutGuest, userIsGuest, userData]);
 
   const RenderServices = useCallback(() => {
     if (!location?.locationServices) return null;

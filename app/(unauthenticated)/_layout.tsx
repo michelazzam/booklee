@@ -15,18 +15,6 @@ export default function UnauthenticatedLayout() {
   const { isOnboardingCompleted } = useUserProvider();
   const { isAuthenticated, user: authUser } = AuthServices.useGetBetterAuthUser();
 
-  // If user is authenticated and verified, but has no phone number, redirect to phone number
-  if (
-    isOnboardingCompleted &&
-    isAuthenticated &&
-    !!userData &&
-    authUser?.emailVerified &&
-    !userData?.phone &&
-    !excludedAuthPaths.includes(lastPath)
-  ) {
-    return <Redirect href="/(unauthenticated)/phoneNumber" />;
-  }
-
   // If user is authenticated and has getMe data and is verified, redirect to app
   if (
     isOnboardingCompleted &&

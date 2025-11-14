@@ -26,10 +26,6 @@ export default function AuthenticatedLayout() {
     return <Redirect href={'/(dashboard)/(tabs)'} />;
   }
 
-  if (userData && userData.role !== 'guest' && !userData?.phone) {
-    return <Redirect href="/(unauthenticated)/phoneNumber" />;
-  }
-
   return (
     <Stack
       screenOptions={{

@@ -58,9 +58,9 @@ export const loginSchema: z.ZodType<LoginReqType> = z.object({
 export const signupSchema: z.ZodType<SignUpReqType> = z
   .object({
     password: passwordValidation(),
-    phone: phoneNumberValidation(),
     salonName: z.string().optional(),
     invitationKey: z.string().optional(),
+    role: z.string().min(1, { message: 'Role is required' }),
     confirmPassword: z.string().min(1, { message: 'Confirm password is required' }),
     email: z
       .email({ message: 'Please enter a valid email address' })
