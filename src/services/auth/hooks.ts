@@ -52,6 +52,7 @@ export const useGetMe = () => {
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
     enabled: !!session?.session?.token,
+    // React Query will return cached data even when disabled (for guest users)
   });
 };
 
