@@ -67,6 +67,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const handleGuestLogin = async () => {
     setUserIsGuest(true);
     queryClient.setQueryData(['getMe'], { user: guestData, organization: null });
+    // Set onboarding as completed for guest users so they can access the app
+    if (!isOnboardingCompleted) {
+      await handleOnboardingCompleted(true);
+    }
   };
   const logoutGuest = async () => {
     await queryClient.clear();
