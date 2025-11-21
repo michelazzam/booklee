@@ -29,7 +29,7 @@ const getAppUniqueIdentifier = () => {
 
 const config: ExpoConfig = {
   slug: 'booklee',
-  version: '1.0.0',
+  version: '1.0.1',
   scheme: 'booklee',
   name: getAppName(),
   newArchEnabled: true,
