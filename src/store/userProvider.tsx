@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { apiClient } from '../services/axios/interceptor';
 
-import { guestData } from '../constants';
+import { ENV, guestData } from '../constants';
 
 type UserProviderType = {
   userIsGuest: boolean;
@@ -43,6 +43,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const cookies = authClient.getCookie();
     const headers = {
       Cookie: cookies,
+      'x-vercel-protection-bypass': ENV.VERCEL_PROTECTION_BYPASS,
     };
 
     const getPersistentData = async () => {
