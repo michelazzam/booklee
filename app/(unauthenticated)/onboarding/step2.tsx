@@ -1,15 +1,19 @@
 import { View, Text, StyleSheet, ImageBackground, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 
+import { useNotification } from '~/src/store';
+
 import { IMAGES } from '~/src/constants/images';
 
 import { Button } from '~/src/components/buttons';
 
 const OnboardingStep2 = () => {
   /*** Constants ***/
+  const { requestPermission } = useNotification();
   const { height: windowHeight } = useWindowDimensions();
 
   const handleEnableNotifications = async () => {
+    await requestPermission();
     routeToNextStep();
   };
 

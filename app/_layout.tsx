@@ -5,16 +5,17 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { useEffect, useMemo, useState } from 'react';
+import * as SecureStore from 'expo-secure-store';
 import * as NavigationBar from 'expo-navigation-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import ToastManager from 'toastify-react-native';
+import { Slot, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
 import { useFonts } from 'expo-font';
-import { Slot } from 'expo-router';
 
 import { UserProvider, useUserProvider, NotificationProvider, useNotification } from '~/src/store';
-import { AuthServices } from '~/src/services';
+import { AuthServices, logScreenView } from '~/src/services';
 
 import { CustomToast } from '~/src/components/base';
 
@@ -56,6 +57,7 @@ const Navigation = () => {
   const [isFirstLaunch, setIsFirstLaunch] = useState(true);
 
   /*** Constants ***/
+  const pathname = usePathname();
   const { isInitialized } = useUserProvider();
   const { isNotificationInitialized } = useNotification();
   const { isFetched: isUserFetched } = AuthServices.useGetMe();
@@ -103,6 +105,7 @@ const Navigation = () => {
   ]);
 
   useEffect(() => {
+    // SecureStore.deleteItemAsync('onboardingCompleted');
     if (Platform.OS === 'android') {
       NavigationBar.setVisibilityAsync('hidden');
     }
@@ -115,6 +118,13 @@ const Navigation = () => {
       }, 1000);
     }
   }, [appInitialized]);
+
+  // Track screen views with Firebase Analytics
+  useEffect(() => {
+    if (appInitialized && pathname) {
+      logScreenView(pathname);
+    }
+  }, [pathname, appInitialized]);
 
   if (!appInitialized) {
     return null;

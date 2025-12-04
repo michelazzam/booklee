@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect, useRef } from 'react';
+import { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
 import { type EventSubscription } from 'expo-modules-core';
 import * as Notifications from 'expo-notifications';
 
@@ -15,6 +15,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   /*** States ***/
   const [error, setError] = useState<Error | null>(null);
   const [fcmToken, setFcmToken] = useState<string | null>(null);
+  const [hasPermission, setHasPermission] = useState(false);
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [isNotificationInitialized, setIsNotificationInitialized] = useState(false);
   const [notifications, setNotifications] = useState<Notifications.Notification[]>([]);
@@ -23,20 +24,43 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   const responseListener = useRef<EventSubscription | null>(null);
   const notificationListener = useRef<EventSubscription | null>(null);
 
+  /*** Request Permission Function ***/
+  const requestPermission = useCallback(async (): Promise<boolean> => {
+    try {
+      const token = await requestNotificationPermission();
+      setFcmToken(token?.fcmToken ?? null);
+      setExpoPushToken(token?.expoPushToken ?? null);
+      setHasPermission(true);
+      setError(null);
+      return true;
+    } catch (err) {
+      setError(err as Error);
+      setHasPermission(false);
+      return false;
+    }
+  }, []);
+
   useEffect(() => {
     const initializeNotifications = async () => {
       try {
-        // Request notification permissions and get tokens
-        const token = await requestNotificationPermission();
-        setFcmToken(token?.fcmToken ?? null);
-        setExpoPushToken(token?.expoPushToken ?? null);
+        // Only check current permission status, don't request
+        const { status } = await Notifications.getPermissionsAsync();
+        const granted = status === 'granted';
+        setHasPermission(granted);
+
+        // If already granted, get tokens
+        if (granted) {
+          const token = await requestNotificationPermission();
+          setFcmToken(token?.fcmToken ?? null);
+          setExpoPushToken(token?.expoPushToken ?? null);
+        }
 
         // Load delivered notifications
         const deliveredNotifications = await Notifications.getPresentedNotificationsAsync();
         setNotifications(deliveredNotifications);
-      } catch (error) {
-        setError(error as Error);
-        console.log('error', error);
+      } catch (err) {
+        setError(err as Error);
+        console.log('error', err);
       } finally {
         setIsNotificationInitialized(true);
       }
@@ -79,6 +103,8 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     fcmToken,
     expoPushToken,
     notifications,
+    hasPermission,
+    requestPermission,
     isNotificationInitialized,
   };
 

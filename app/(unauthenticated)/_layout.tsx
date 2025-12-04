@@ -35,6 +35,10 @@ export default function UnauthenticatedLayout() {
     return <Redirect href="/(unauthenticated)/login" />;
   }
 
+  if (!isOnboardingCompleted && !pathname.includes('onboarding')) {
+    return <Redirect href="/(unauthenticated)/onboarding" />;
+  }
+
   return (
     <Stack
       screenOptions={{

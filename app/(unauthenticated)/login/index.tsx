@@ -46,8 +46,6 @@ const LoginScreen = () => {
     }
   }, [isUserLoading, userData, authUser, router]);
 
-  // console.log('fcmToken', fcmToken);
-
   const onTextChange = (text: string, field: keyof LoginReqType) => {
     data.current[field] = text;
 
@@ -100,9 +98,9 @@ const LoginScreen = () => {
 
   return (
     <LinearGradient
-      style={styles.container}
       end={{ x: 1, y: 1 }}
       start={{ x: 0, y: 0 }}
+      style={styles.container}
       colors={[theme.colors.primaryBlue[100], theme.colors.darkText[100]]}>
       <Text
         size={28}

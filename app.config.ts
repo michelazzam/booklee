@@ -88,7 +88,7 @@ const config: ExpoConfig = {
   },
   plugins: [
     'expo-router',
-    'expo-apple-authentication',
+    '@react-native-firebase/app',
     [
       'expo-splash-screen',
       {
@@ -96,6 +96,14 @@ const config: ExpoConfig = {
         resizeMode: 'contain',
         backgroundColor: '#476c80',
         image: './src/assets/images/splashIcon.png',
+      },
+    ],
+    [
+      'expo-build-properties',
+      {
+        ios: {
+          useFrameworks: 'static',
+        },
       },
     ],
   ],
