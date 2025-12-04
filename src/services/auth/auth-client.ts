@@ -10,7 +10,8 @@ export const authClient = createAuthClient({
   fetchOptions: {
     headers: {
       Origin: 'booklee://',
-    },
+      'x-vercel-protection-bypass': ENV.VERCEL_PROTECTION_BYPASS,
+    } as HeadersInit,
   },
   plugins: [
     emailOTPClient(),

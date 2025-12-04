@@ -16,6 +16,7 @@ import {
   type LocationServiceType,
   type SelectedService,
   LocationServices,
+  AuthServices,
 } from '~/src/services';
 
 import { BackIcon, HeartIcon, HeartIconFilled, StarIcon } from '~/src/assets/icons';
@@ -40,18 +41,20 @@ type AboutItemData = {
 const SalonDetailPage = () => {
   /***** Constants *****/
   const router = useRouter();
-  const { userIsGuest } = useUserProvider();
   const { top, bottom } = useAppSafeAreaInsets();
+  const { data: userData } = AuthServices.useGetMe();
+  const { userIsGuest, logoutGuest } = useUserProvider();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(id);
   const {
-    data: location,
+    refetch,
     isLoading,
     isFetched,
-    refetch,
     isRefetching,
+    data: location,
   } = LocationServices.useGetLocationById(id || '');
-  const { photos, name, address, rating, phone, tags, operatingHours, geo } = location || {};
+  const { photos, address, rating, phone, tags, operatingHours, geo, organization } =
+    location || {};
 
   /***** States *****/
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -97,6 +100,16 @@ const SalonDetailPage = () => {
     [selectedServices]
   );
   const handleBookingNext = useCallback(() => {
+    if (userIsGuest) {
+      logoutGuest();
+      return;
+    }
+
+    if (!userData?.phone) {
+      router.navigate('/(authenticated)/(screens)/settings/editPhone');
+      return;
+    }
+
     router.navigate({
       pathname: '/(authenticated)/(screens)/booking/[locationId]',
       params: {
@@ -104,7 +117,7 @@ const SalonDetailPage = () => {
         services: JSON.stringify(selectedServiceData),
       },
     });
-  }, [id, router, selectedServiceData]);
+  }, [id, router, selectedServiceData, logoutGuest, userIsGuest, userData]);
 
   const RenderServices = useCallback(() => {
     if (!location?.locationServices) return null;
@@ -140,7 +153,6 @@ const SalonDetailPage = () => {
             <View style={{ gap: theme.spacing.sm }}>
               {services.map((locationService) => (
                 <Services
-                  disabled={userIsGuest}
                   data={locationService}
                   key={locationService.id}
                   onPress={handleServiceToggle}
@@ -152,7 +164,7 @@ const SalonDetailPage = () => {
         ))}
       </View>
     );
-  }, [location?.locationServices, handleServiceToggle, selectedServices, userIsGuest]);
+  }, [location?.locationServices, handleServiceToggle, selectedServices]);
   const RenderAbout = useCallback(() => {
     let aboutItemData: AboutItemData[] = [];
 
@@ -300,7 +312,7 @@ const SalonDetailPage = () => {
         <View style={styles.storeContentContainer}>
           <View style={{ gap: theme.spacing.sm }}>
             <Text size={theme.typography.fontSizes['2xl']} weight={'semiBold'}>
-              {name}
+              {organization}
             </Text>
 
             <View style={styles.storeInfoContainer}>
@@ -371,7 +383,7 @@ const SalonDetailPage = () => {
             </Text>
           </View>
 
-          <Button title="Next" onPress={handleBookingNext} width={180} disabled={userIsGuest} />
+          <Button title="Next" onPress={handleBookingNext} width={180} />
         </Animated.View>
       )}
     </>

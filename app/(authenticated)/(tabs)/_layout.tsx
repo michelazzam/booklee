@@ -39,6 +39,25 @@ const TABS: TabType[] = [
   },
 ];
 
+type TabBarItemProps = TabType & {
+  focused: boolean;
+  color: string;
+};
+const TabBarItem = ({ icon, title, focused, color }: TabBarItemProps) => {
+  return (
+    <View style={styles.tabContent}>
+      <TabBarIcon icon={icon} color={color} focused={focused} size={24} />
+
+      <Text
+        weight={focused ? 'bold' : 'regular'}
+        size={focused ? theme.typography.fontSizes.xs : 10}
+        color={focused ? theme.colors.primaryBlue[100] : theme.colors.lightText[100]}>
+        {title}
+      </Text>
+    </View>
+  );
+};
+
 export default function TabLayout() {
   return (
     <Tabs
@@ -58,16 +77,7 @@ export default function TabLayout() {
           options={{
             title: title,
             tabBarIcon: ({ color, focused }) => (
-              <View style={styles.tabContent}>
-                <TabBarIcon icon={icon} color={color} focused={focused} size={24} />
-
-                <Text
-                  weight={focused ? 'bold' : 'regular'}
-                  size={focused ? theme.typography.fontSizes.xs : 10}
-                  color={focused ? theme.colors.primaryBlue[100] : theme.colors.lightText[100]}>
-                  {title}
-                </Text>
-              </View>
+              <TabBarItem name={name} icon={icon} title={title} focused={focused} color={color} />
             ),
           }}
         />
@@ -78,6 +88,9 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
+    paddingTop: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: theme.colors.white.DEFAULT,
 
     // iOS shadow
@@ -93,6 +106,5 @@ const styles = StyleSheet.create({
     width: 100,
     alignItems: 'center',
     gap: theme.spacing.xs,
-    marginTop: theme.spacing.xl,
   },
 });

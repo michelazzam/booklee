@@ -1,13 +1,16 @@
 /*** Hooks ***/
+export { AppointmentServices } from './appointments/hooks';
+export { DashboardServices } from './dashboard/hooks';
+export { AnalyticsServices } from './analytics/hooks';
 export { LocationServices } from './locations/hooks';
 export { authClient } from './auth/auth-client';
 export { apiClient } from './axios/interceptor';
 export { withErrorCatch } from './axios/error';
 export { AuthServices } from './auth/hooks';
 export { UserServices } from './user/hooks';
-export { AppointmentServices } from './appointments/hooks';
-export { DashboardServices } from './dashboard/hooks';
-export { AnalyticsServices } from './analytics/hooks';
+
+/*** Firebase ***/
+export { logScreenView } from './firebase/analytics';
 
 /*** Types ***/
 export type { ResErrorType } from './axios/types';

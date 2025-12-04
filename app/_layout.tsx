@@ -8,13 +8,13 @@ import { useEffect, useMemo, useState } from 'react';
 import * as NavigationBar from 'expo-navigation-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import ToastManager from 'toastify-react-native';
+import { Slot, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
 import { useFonts } from 'expo-font';
-import { Slot } from 'expo-router';
 
-import { UserProvider, useUserProvider } from '~/src/store';
-import { AuthServices } from '~/src/services';
+import { UserProvider, useUserProvider, NotificationProvider, useNotification } from '~/src/store';
+import { AuthServices, logScreenView } from '~/src/services';
 
 import { CustomToast } from '~/src/components/base';
 
@@ -56,7 +56,9 @@ const Navigation = () => {
   const [isFirstLaunch, setIsFirstLaunch] = useState(true);
 
   /*** Constants ***/
+  const pathname = usePathname();
   const { isInitialized } = useUserProvider();
+  const { isNotificationInitialized } = useNotification();
   const { isFetched: isUserFetched } = AuthServices.useGetMe();
   const { isAuthenticated, isLoading: isAuthLoading } = AuthServices.useGetBetterAuthUser();
   const [fontsLoaded] = useFonts({
@@ -72,7 +74,11 @@ const Navigation = () => {
       return true;
     }
 
-    if (!(fontsLoaded && isInitialized) && isAuthLoading) {
+    if (!fontsLoaded || !isInitialized || !isNotificationInitialized) {
+      return false;
+    }
+
+    if (isAuthLoading) {
       return false;
     }
 
@@ -82,10 +88,23 @@ const Navigation = () => {
     }
 
     // If authenticated, wait for user to be fetched
-    return !!isUserFetched;
-  }, [fontsLoaded, isInitialized, isAuthLoading, isAuthenticated, isUserFetched, isFirstLaunch]);
+    if (isUserFetched) {
+      return true;
+    } else {
+      return false;
+    }
+  }, [
+    fontsLoaded,
+    isInitialized,
+    isAuthLoading,
+    isUserFetched,
+    isFirstLaunch,
+    isAuthenticated,
+    isNotificationInitialized,
+  ]);
 
   useEffect(() => {
+    // SecureStore.deleteItemAsync('onboardingCompleted');
     if (Platform.OS === 'android') {
       NavigationBar.setVisibilityAsync('hidden');
     }
@@ -98,6 +117,13 @@ const Navigation = () => {
       }, 1000);
     }
   }, [appInitialized]);
+
+  // Track screen views with Firebase Analytics
+  useEffect(() => {
+    if (appInitialized && pathname) {
+      logScreenView(pathname);
+    }
+  }, [pathname, appInitialized]);
 
   if (!appInitialized) {
     return null;
@@ -124,10 +150,12 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <BottomSheetModalProvider>
             <KeyboardProvider>
-              <UserProvider>
-                <Navigation />
-                <ToastManager config={toastConfig} useModal={false} />
-              </UserProvider>
+              <NotificationProvider>
+                <UserProvider>
+                  <Navigation />
+                  <ToastManager config={toastConfig} useModal={false} />
+                </UserProvider>
+              </NotificationProvider>
             </KeyboardProvider>
           </BottomSheetModalProvider>
         </QueryClientProvider>

@@ -1,16 +1,17 @@
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
+import { useRouter } from 'expo-router';
 import { formatDate } from 'date-fns';
+import { Image } from 'expo-image';
 
-import { type UserAppointmentType } from '~/src/services';
+import { AuthServices, type UserAppointmentType } from '~/src/services';
 
 import { CheckCircleIcon, AppLogo, StarIcon } from '~/src/assets/icons';
 import { theme } from '~/src/constants';
 
 import { BookingDetailsModal, type BookingDetailsModalRef } from '~/src/components/modals';
 import { Text } from '~/src/components/base';
-import { Image } from 'expo-image';
 
 type PastBookingsProps = {
   data: UserAppointmentType;
@@ -22,6 +23,8 @@ const PastBookings = ({ data, onBookAgain }: PastBookingsProps) => {
   const bookingDetailsModalRef = useRef<BookingDetailsModalRef>(null);
 
   /*** Constants ***/
+  const router = useRouter();
+  const { data: userData } = AuthServices.useGetMe();
   const { status, startAt, totalPrice, location, totalServices } = data;
 
   const statusConfig = useMemo(() => {
@@ -53,6 +56,15 @@ const PastBookings = ({ data, onBookAgain }: PastBookingsProps) => {
         };
     }
   }, [status]);
+
+  const handleBookAgain = useCallback(() => {
+    if (!userData?.phone) {
+      router.navigate('/(authenticated)/(screens)/settings/editPhone');
+      return;
+    }
+
+    onBookAgain();
+  }, [userData, router, onBookAgain]);
 
   return (
     <Animated.View style={styles.container} entering={FadeIn} exiting={FadeOut}>
@@ -118,7 +130,10 @@ const PastBookings = ({ data, onBookAgain }: PastBookingsProps) => {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.buttonContainer} onPress={onBookAgain} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.buttonContainer}
+          onPress={handleBookAgain}
+          activeOpacity={0.8}>
           <Text size={theme.typography.fontSizes.sm} weight="semiBold">
             Book Again
           </Text>

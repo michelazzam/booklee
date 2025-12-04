@@ -14,11 +14,8 @@ const OnboardingStep1 = () => {
 
   const handleEnableLocation = async () => {
     await requestLocationPermission().then(() => {
-      routeToNextStep();
+      router.navigate('/(unauthenticated)/onboarding/step2');
     });
-  };
-  const routeToNextStep = () => {
-    router.navigate('/(unauthenticated)/onboarding/step2');
   };
 
   return (
@@ -39,20 +36,13 @@ const OnboardingStep1 = () => {
           Turn on location to see services and offers near you.
         </Text>
 
-        <Button disabled={isLoading} title="Enable Location" onPress={handleEnableLocation} />
+        <Button disabled={isLoading} title="Continue" onPress={handleEnableLocation} />
 
         <View style={styles.paginationContainer}>
           <View style={[styles.paginationDot, styles.activeDot]} />
           <View style={[styles.paginationDot, styles.inactiveDot]} />
           <View style={[styles.paginationDot, styles.inactiveDot]} />
         </View>
-
-        <Button
-          title="Skip"
-          variant="ghost"
-          onPress={routeToNextStep}
-          containerStyle={styles.skipButton}
-        />
       </View>
     </View>
   );

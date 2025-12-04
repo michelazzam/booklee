@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { isValidPhoneNumber, getCountryByCca2 } from 'react-native-international-phone-number';
 
 import type { LoginReqType, ResetPasswordReqType, SignUpReqType } from '~/src/services';
 
@@ -23,30 +22,6 @@ const passwordMatchValidation = (password: string, confirmPassword: string) => {
     return true;
   }
 };
-const phoneNumberValidation = () => {
-  return z
-    .string()
-    .min(1, { message: 'Phone number is required' })
-    .refine(
-      (value) => {
-        if (!value.includes('-')) {
-          return false;
-        }
-
-        const [cca2, phoneNumber] = value.split('-');
-        const countryInfo = getCountryByCca2(cca2);
-
-        if (!countryInfo || !phoneNumber) {
-          return false;
-        }
-
-        return isValidPhoneNumber(phoneNumber, countryInfo);
-      },
-      {
-        message: 'Please enter a valid phone number',
-      }
-    );
-};
 
 export const loginSchema: z.ZodType<LoginReqType> = z.object({
   password: z.string().min(1, { message: 'Password is required' }),
@@ -58,9 +33,9 @@ export const loginSchema: z.ZodType<LoginReqType> = z.object({
 export const signupSchema: z.ZodType<SignUpReqType> = z
   .object({
     password: passwordValidation(),
-    phone: phoneNumberValidation(),
     salonName: z.string().optional(),
     invitationKey: z.string().optional(),
+    role: z.string().min(1, { message: 'Role is required' }),
     confirmPassword: z.string().min(1, { message: 'Confirm password is required' }),
     email: z
       .email({ message: 'Please enter a valid email address' })

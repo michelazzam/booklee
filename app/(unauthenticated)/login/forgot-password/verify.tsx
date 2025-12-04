@@ -1,7 +1,7 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import { Toast } from 'toastify-react-native';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { AuthServices } from '~/src/services';
 

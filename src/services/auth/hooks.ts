@@ -19,6 +19,21 @@ import {
 
 import type { GetMeResType, UserType } from './types';
 import type { ResErrorType } from '../axios/types';
+import { ENV } from '~/src/constants';
+
+const setAuthHeaders = async () => {
+  try {
+    const cookies = await authClient.getCookie();
+    const headers = {
+      Cookie: cookies,
+      'x-vercel-protection-bypass': ENV.VERCEL_PROTECTION_BYPASS,
+    };
+
+    apiClient.defaults.headers.common = headers;
+  } catch (error) {
+    console.error('Error setting auth headers', error);
+  }
+};
 
 export const useSession = () => {
   return authClient.useSession();
@@ -52,6 +67,7 @@ export const useGetMe = () => {
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
     enabled: !!session?.session?.token,
+    // React Query will return cached data even when disabled (for guest users)
   });
 };
 
@@ -63,17 +79,7 @@ const useLogin = () => {
     mutationFn: loginWithEmailApi,
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['getMe'] });
-
-      try {
-        const cookies = await authClient.getCookie();
-        const headers = {
-          Cookie: cookies,
-        };
-
-        apiClient.defaults.headers.common = headers;
-      } catch (error) {
-        console.error('Error getting cookies', error);
-      }
+      setAuthHeaders();
     },
   });
 };
@@ -93,18 +99,7 @@ const useSendEmailVerificationOtp = () => {
 const useVerifyEmailOtp = () => {
   return useMutation({
     mutationFn: verifyEmailOtpApi,
-    onSuccess: async () => {
-      try {
-        const cookies = await authClient.getCookie();
-        const headers = {
-          Cookie: cookies,
-        };
-
-        apiClient.defaults.headers.common = headers;
-      } catch (error) {
-        console.error('Error getting cookies', error);
-      }
-    },
+    onSuccess: setAuthHeaders,
   });
 };
 
@@ -116,7 +111,7 @@ const useLogout = () => {
     mutationFn: logoutApi,
     onSuccess: () => {
       queryClient.clear();
-      apiClient.defaults.headers.common = {};
+      setAuthHeaders();
     },
   });
 };
@@ -124,16 +119,12 @@ const useLogout = () => {
 const useGoogleLogin = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
-  const cookies = authClient.getCookie();
-  const headers = {
-    Cookie: cookies,
-  };
 
   return useMutation({
     mutationFn: googleLoginApi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['getMe'] });
-      apiClient.defaults.headers.common = headers;
+      setAuthHeaders();
     },
   });
 };
@@ -141,16 +132,12 @@ const useGoogleLogin = () => {
 const useAppleLogin = () => {
   /*** Constants ***/
   const queryClient = useQueryClient();
-  const cookies = authClient.getCookie();
-  const headers = {
-    Cookie: cookies,
-  };
 
   return useMutation({
     mutationFn: appleLoginApi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['getMe'] });
-      apiClient.defaults.headers.common = headers;
+      setAuthHeaders();
     },
   });
 };

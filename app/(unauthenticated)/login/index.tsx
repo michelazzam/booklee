@@ -1,11 +1,11 @@
-import { View, StyleSheet, Keyboard } from 'react-native';
+import { View, StyleSheet, Keyboard, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import { Toast } from 'toastify-react-native';
 import { useRouter } from 'expo-router';
 
 import { AuthServices, type LoginReqType } from '~/src/services';
-import { useUserProvider } from '~/src/store';
+import { useNotification, useUserProvider } from '~/src/store';
 
 import { type ValidationResultType, validateLogin } from '~/src/helper/validation';
 import { theme } from '~/src/constants';
@@ -23,12 +23,14 @@ const LoginScreen = () => {
 
   /*** Constants ***/
   const router = useRouter();
+  const { fcmToken } = useNotification();
   const { handleGuestLogin } = useUserProvider();
   const { user: authUser } = AuthServices.useGetBetterAuthUser();
   const { data: userData, isLoading: isUserLoading } = AuthServices.useGetMe();
   const { mutate: login, isPending: isLoginPending } = AuthServices.useLogin();
   const { mutate: appleLogin, isPending: isAppleLoginPending } = AuthServices.useAppleLogin();
   const { mutate: googleLogin, isPending: isGoogleLoginPending } = AuthServices.useGoogleLogin();
+
   /*** States ***/
   const [validationErrors, setValidationErrors] = useState<ValidationResultType<LoginReqType>>({
     success: false,
@@ -64,8 +66,7 @@ const LoginScreen = () => {
     }
 
     login(data.current, {
-      onError: (error) => {
-        // @ts-expect-error
+      onError: (error: any) => {
         if (error?.code === 'EMAIL_NOT_VERIFIED') {
           router.navigate({
             pathname: '/(unauthenticated)/signup/email-verification',
@@ -75,17 +76,31 @@ const LoginScreen = () => {
             },
           });
         } else {
-          Toast.error(error.message || 'Failed to login');
+          Toast.error(error.message || error.error_description || 'Failed to login');
         }
+      },
+    });
+  };
+  const handleGoogleLogin = () => {
+    googleLogin(undefined, {
+      onError: (error: any) => {
+        Toast.error(error.error_description || 'Failed to login');
+      },
+    });
+  };
+  const handleAppleLogin = () => {
+    appleLogin(undefined, {
+      onError: (error: any) => {
+        Toast.error(error.error_description || 'Failed to login');
       },
     });
   };
 
   return (
     <LinearGradient
-      style={styles.container}
       end={{ x: 1, y: 1 }}
       start={{ x: 0, y: 0 }}
+      style={styles.container}
       colors={[theme.colors.primaryBlue[100], theme.colors.darkText[100]]}>
       <Text
         size={28}
@@ -135,14 +150,18 @@ const LoginScreen = () => {
                 isLoading={isLoginPending}
               />
 
-              <Text
-                size={14}
-                weight="regular"
+              <TouchableOpacity
+                activeOpacity={0.7}
                 onPress={handleGuestLogin}
-                style={styles.guestLoginText}
-                color={theme.colors.darkText[100]}>
-                Login as guest
-              </Text>
+                style={{ alignSelf: 'center' }}>
+                <Text
+                  size={18}
+                  weight="regular"
+                  color={theme.colors.darkText[100]}
+                  style={{ textDecorationLine: 'underline' }}>
+                  Login as guest
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -160,7 +179,7 @@ const LoginScreen = () => {
             <Button
               variant="outline"
               leadingIcon="google"
-              onPress={googleLogin}
+              onPress={handleGoogleLogin}
               title="Continue With Google"
               isLoading={isGoogleLoginPending}
             />
@@ -168,7 +187,7 @@ const LoginScreen = () => {
             <Button
               variant="outline"
               leadingIcon="apple"
-              onPress={appleLogin}
+              onPress={handleAppleLogin}
               title="Continue With Apple"
               isLoading={isAppleLoginPending}
             />
@@ -222,9 +241,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  guestLoginText: {
-    textAlign: 'center',
-    textDecorationLine: 'underline',
   },
 });

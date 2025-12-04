@@ -23,6 +23,7 @@ export const ENV = {
 
   // API URLs
   API_URL: process.env.EXPO_PUBLIC_API_URL,
+  VERCEL_PROTECTION_BYPASS: process.env.EXPO_PUBLIC_VERCEL_PROTECTION_BYPASS,
 };
 
 checkIfAllEnvVariablesAreSet(ENV);

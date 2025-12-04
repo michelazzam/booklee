@@ -5,7 +5,7 @@ import { theme } from '~/src/constants/theme';
 
 import { AuthServices } from '~/src/services';
 
-const excludedAuthPaths = ['login', 'signup'];
+const excludedAuthPaths = ['login', 'signup', 'phoneNumber'];
 
 export default function UnauthenticatedLayout() {
   /*** Constants ***/
@@ -16,17 +16,27 @@ export default function UnauthenticatedLayout() {
   const { isAuthenticated, user: authUser } = AuthServices.useGetBetterAuthUser();
 
   // If user is authenticated and has getMe data and is verified, redirect to app
-  if (isOnboardingCompleted && isAuthenticated && userData && authUser?.emailVerified) {
+  if (
+    isOnboardingCompleted &&
+    isAuthenticated &&
+    !!userData &&
+    authUser?.emailVerified &&
+    !excludedAuthPaths.includes(lastPath)
+  ) {
     return <Redirect href="/(authenticated)/(tabs)" />;
   }
 
-  if (isOnboardingCompleted && userData && userData.role === 'guest') {
+  if (isOnboardingCompleted && !!userData && userData.role === 'guest') {
     return <Redirect href="/(authenticated)/(tabs)" />;
   }
 
   // Redirects users to login if they have completed onboarding and are not logged in
   if (isOnboardingCompleted && !isAuthenticated && !excludedAuthPaths.includes(lastPath)) {
     return <Redirect href="/(unauthenticated)/login" />;
+  }
+
+  if (!isOnboardingCompleted && !pathname.includes('onboarding')) {
+    return <Redirect href="/(unauthenticated)/onboarding" />;
   }
 
   return (

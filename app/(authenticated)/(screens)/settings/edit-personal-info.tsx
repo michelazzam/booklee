@@ -47,11 +47,16 @@ export const EditPersonalInfoPage = () => {
 
     const { lastName, firstName, image } = userData?.user;
 
-    setSelectedImage({ uri: image || '', name: 'image.jpg', type: 'image/jpeg' });
-    setData({
-      lastName,
-      firstName,
-    });
+    if (image) {
+      setSelectedImage({ uri: image, name: 'image.jpg', type: 'image/jpeg' });
+    }
+
+    if (lastName && firstName) {
+      setData({
+        lastName,
+        firstName,
+      });
+    }
   }, [userData]);
 
   const onTextChange = (text: string, field: keyof UpdateUserReqType) => {
