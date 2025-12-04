@@ -5,7 +5,7 @@ import { Toast } from 'toastify-react-native';
 import { useRouter } from 'expo-router';
 
 import { AuthServices, type LoginReqType } from '~/src/services';
-import { useUserProvider } from '~/src/store';
+import { useNotification, useUserProvider } from '~/src/store';
 
 import { type ValidationResultType, validateLogin } from '~/src/helper/validation';
 import { theme } from '~/src/constants';
@@ -23,12 +23,14 @@ const LoginScreen = () => {
 
   /*** Constants ***/
   const router = useRouter();
+  const { fcmToken } = useNotification();
   const { handleGuestLogin } = useUserProvider();
   const { user: authUser } = AuthServices.useGetBetterAuthUser();
   const { data: userData, isLoading: isUserLoading } = AuthServices.useGetMe();
   const { mutate: login, isPending: isLoginPending } = AuthServices.useLogin();
   const { mutate: appleLogin, isPending: isAppleLoginPending } = AuthServices.useAppleLogin();
   const { mutate: googleLogin, isPending: isGoogleLoginPending } = AuthServices.useGoogleLogin();
+
   /*** States ***/
   const [validationErrors, setValidationErrors] = useState<ValidationResultType<LoginReqType>>({
     success: false,
@@ -43,6 +45,8 @@ const LoginScreen = () => {
       router.replace('/(authenticated)/(tabs)');
     }
   }, [isUserLoading, userData, authUser, router]);
+
+  // console.log('fcmToken', fcmToken);
 
   const onTextChange = (text: string, field: keyof LoginReqType) => {
     data.current[field] = text;

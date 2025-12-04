@@ -1,4 +1,2 @@
-export {
-  useUserProvider,
-  UserProvider,
-} from "./userProvider";
+export { useNotification, NotificationProvider } from './notification';
+export { useUserProvider, UserProvider } from './userProvider';

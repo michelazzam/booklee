@@ -26,6 +26,24 @@ const getAppUniqueIdentifier = () => {
 
   return 'app.booklee';
 };
+const getIosGoogleServicesFile = () => {
+  // EAS file secret
+  if (process.env.IOS_GOOGLE_SERVICES_PLIST) {
+    return process.env.IOS_GOOGLE_SERVICES_PLIST;
+  }
+
+  const variant = appVariant ?? 'development';
+  return `./credentials/ios/GoogleService-Info-${variant}.plist`;
+};
+const getAndroidGoogleServicesFile = () => {
+  // EAS file secret
+  if (process.env.ANDROID_GOOGLE_SERVICES_JSON) {
+    return process.env.ANDROID_GOOGLE_SERVICES_JSON;
+  }
+
+  const variant = appVariant ?? 'development';
+  return `./credentials/android/google-services-${variant}.json`;
+};
 
 const config: ExpoConfig = {
   slug: 'booklee',
@@ -40,6 +58,7 @@ const config: ExpoConfig = {
     supportsTablet: false,
     usesAppleSignIn: true,
     bundleIdentifier: getAppUniqueIdentifier(),
+    googleServicesFile: getIosGoogleServicesFile(),
     icon: './src/assets/images/appImages/appleIcon.png',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
@@ -55,6 +74,7 @@ const config: ExpoConfig = {
   android: {
     edgeToEdgeEnabled: true,
     package: getAppUniqueIdentifier(),
+    // googleServicesFile: getAndroidGoogleServicesFile(),
     icon: './src/assets/images/appImages/appleIcon.png',
     adaptiveIcon: {
       foregroundImage: './src/assets/images/appImages/androidIcon.png',

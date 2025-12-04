@@ -13,7 +13,7 @@ import { Platform } from 'react-native';
 import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
 
-import { UserProvider, useUserProvider } from '~/src/store';
+import { UserProvider, useUserProvider, NotificationProvider, useNotification } from '~/src/store';
 import { AuthServices } from '~/src/services';
 
 import { CustomToast } from '~/src/components/base';
@@ -57,6 +57,7 @@ const Navigation = () => {
 
   /*** Constants ***/
   const { isInitialized } = useUserProvider();
+  const { isNotificationInitialized } = useNotification();
   const { isFetched: isUserFetched } = AuthServices.useGetMe();
   const { isAuthenticated, isLoading: isAuthLoading } = AuthServices.useGetBetterAuthUser();
   const [fontsLoaded] = useFonts({
@@ -72,7 +73,7 @@ const Navigation = () => {
       return true;
     }
 
-    if (!fontsLoaded || !isInitialized) {
+    if (!fontsLoaded || !isInitialized || !isNotificationInitialized) {
       return false;
     }
 
@@ -91,7 +92,15 @@ const Navigation = () => {
     } else {
       return false;
     }
-  }, [fontsLoaded, isInitialized, isAuthLoading, isAuthenticated, isUserFetched, isFirstLaunch]);
+  }, [
+    fontsLoaded,
+    isInitialized,
+    isAuthLoading,
+    isUserFetched,
+    isFirstLaunch,
+    isAuthenticated,
+    isNotificationInitialized,
+  ]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -132,10 +141,12 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <BottomSheetModalProvider>
             <KeyboardProvider>
-              <UserProvider>
-                <Navigation />
-                <ToastManager config={toastConfig} useModal={false} />
-              </UserProvider>
+              <NotificationProvider>
+                <UserProvider>
+                  <Navigation />
+                  <ToastManager config={toastConfig} useModal={false} />
+                </UserProvider>
+              </NotificationProvider>
             </KeyboardProvider>
           </BottomSheetModalProvider>
         </QueryClientProvider>
