@@ -47,7 +47,7 @@ const getAndroidGoogleServicesFile = () => {
 
 const config: ExpoConfig = {
   slug: 'booklee',
-  version: '1.0.1',
+  version: '1.0.2',
   scheme: 'booklee',
   name: getAppName(),
   newArchEnabled: true,
