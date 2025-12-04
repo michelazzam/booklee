@@ -74,7 +74,7 @@ const config: ExpoConfig = {
   android: {
     edgeToEdgeEnabled: true,
     package: getAppUniqueIdentifier(),
-    // googleServicesFile: getAndroidGoogleServicesFile(),
+    googleServicesFile: getAndroidGoogleServicesFile(),
     icon: './src/assets/images/appImages/appleIcon.png',
     adaptiveIcon: {
       foregroundImage: './src/assets/images/appImages/androidIcon.png',
