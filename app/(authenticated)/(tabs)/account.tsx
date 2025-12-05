@@ -42,6 +42,9 @@ const AccountPage = () => {
           });
         }
       },
+      onError: (error) => {
+        Toast.error(error.message);
+      },
     });
   }, [deleteUser, fcmToken, removeDeviceToken]);
 
