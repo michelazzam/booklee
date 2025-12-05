@@ -15,8 +15,8 @@ import {
   BellIcon,
 } from '~/src/assets/icons';
 
+import { useNotification, useUserProvider } from '~/src/store';
 import { AuthServices, UserServices } from '~/src/services';
-import { useUserProvider } from '~/src/store';
 
 import { SettingsCard, ScreenHeader, type CardRowDataType } from '~/src/components/utils';
 import { AwareScrollView, Text } from '~/src/components/base';
@@ -24,18 +24,26 @@ import { AwareScrollView, Text } from '~/src/components/base';
 const AccountPage = () => {
   /*** Constants ***/
   const router = useRouter();
+  const { fcmToken } = useNotification();
   const { data: userData } = UserServices.useGetMe();
   const { userIsGuest, logoutGuest } = useUserProvider();
+  const { mutate: removeDeviceToken } = AuthServices.useRemoveDeviceToken();
   const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
   const { mutate: deleteUser, isPending: isDeleteUserPending } = UserServices.useDeleteUser();
 
   const handleDeleteAccount = useCallback(() => {
     deleteUser(undefined, {
-      onError: (error) => {
-        Toast.error(error.message);
+      onSuccess: () => {
+        if (fcmToken) {
+          removeDeviceToken(fcmToken, {
+            onError: () => {
+              Toast.error('Failed to remove device token');
+            },
+          });
+        }
       },
     });
-  }, [deleteUser]);
+  }, [deleteUser, fcmToken, removeDeviceToken]);
 
   /*** Memoization ***/
   const personalInformationData: CardRowDataType[] = useMemo(() => {

@@ -6,6 +6,8 @@ import { authClient } from './auth-client';
 import {
   sendEmailVerificationOtpApi,
   verifyResetPasswordOtpApi,
+  removeDeviceTokenApi,
+  addDeviceTokenApi,
   verifyEmailOtpApi,
   loginWithEmailApi,
   forgotPasswordApi,
@@ -160,11 +162,25 @@ const useResetPassword = () => {
   });
 };
 
+const useAddDeviceToken = () => {
+  return useMutation({
+    mutationFn: addDeviceTokenApi,
+  });
+};
+
+const useRemoveDeviceToken = () => {
+  return useMutation({
+    mutationFn: removeDeviceTokenApi,
+  });
+};
+
 export const AuthServices = {
   useSendEmailVerificationOtp,
   useVerifyResetPasswordOtp,
   useGetBetterAuthUser,
+  useRemoveDeviceToken,
   useForgotPassword,
+  useAddDeviceToken,
   useVerifyEmailOtp,
   useResetPassword,
   useGoogleLogin,

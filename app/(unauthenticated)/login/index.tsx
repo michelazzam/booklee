@@ -1,4 +1,4 @@
-import { View, StyleSheet, Keyboard, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Keyboard, TouchableOpacity, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import { Toast } from 'toastify-react-native';
@@ -26,6 +26,7 @@ const LoginScreen = () => {
   const { fcmToken } = useNotification();
   const { handleGuestLogin } = useUserProvider();
   const { user: authUser } = AuthServices.useGetBetterAuthUser();
+  const { mutate: addDeviceToken } = AuthServices.useAddDeviceToken();
   const { data: userData, isLoading: isUserLoading } = AuthServices.useGetMe();
   const { mutate: login, isPending: isLoginPending } = AuthServices.useLogin();
   const { mutate: appleLogin, isPending: isAppleLoginPending } = AuthServices.useAppleLogin();
@@ -46,6 +47,23 @@ const LoginScreen = () => {
     }
   }, [isUserLoading, userData, authUser, router]);
 
+  const handleRegisterDeviceForNotifications = () => {
+    if (!fcmToken) {
+      return;
+    }
+
+    addDeviceToken(
+      {
+        token: fcmToken || '',
+        platform: Platform.OS as 'ios' | 'android',
+      },
+      {
+        onError: () => {
+          Toast.error('Failed to register device for notifications');
+        },
+      }
+    );
+  };
   const onTextChange = (text: string, field: keyof LoginReqType) => {
     data.current[field] = text;
 
@@ -66,6 +84,11 @@ const LoginScreen = () => {
     }
 
     login(data.current, {
+      onSuccess: () => {
+        setTimeout(() => {
+          handleRegisterDeviceForNotifications();
+        }, 800);
+      },
       onError: (error: any) => {
         if (error?.code === 'EMAIL_NOT_VERIFIED') {
           router.navigate({
@@ -83,6 +106,11 @@ const LoginScreen = () => {
   };
   const handleGoogleLogin = () => {
     googleLogin(undefined, {
+      onSuccess: () => {
+        setTimeout(() => {
+          handleRegisterDeviceForNotifications();
+        }, 800);
+      },
       onError: (error: any) => {
         Toast.error(error.error_description || 'Failed to login');
       },
@@ -90,6 +118,11 @@ const LoginScreen = () => {
   };
   const handleAppleLogin = () => {
     appleLogin(undefined, {
+      onSuccess: () => {
+        setTimeout(() => {
+          handleRegisterDeviceForNotifications();
+        }, 800);
+      },
       onError: (error: any) => {
         Toast.error(error.error_description || 'Failed to login');
       },

@@ -92,3 +92,12 @@ export type AuthErrorType = {
   code: string;
   message: string;
 };
+
+/*** Device tokens types ***/
+export type DeviceTokensReqType = {
+  token: string;
+  topics?: string[];
+  appVersion?: string;
+  deviceModel?: string;
+  platform: 'ios' | 'android';
+};

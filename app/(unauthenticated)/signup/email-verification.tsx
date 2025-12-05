@@ -1,9 +1,10 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { Toast } from 'toastify-react-native';
 import { useEffect, useState } from 'react';
 
 import { AuthServices } from '~/src/services';
+import { useNotification } from '~/src/store';
 
 import { theme } from '~/src/constants/theme';
 
@@ -22,8 +23,10 @@ const EmailVerificationPage = () => {
 
   /*** Constants ***/
   const router = useRouter();
+  const { fcmToken } = useNotification();
   const { email } = useLocalSearchParams<LocalSearchParamsType>();
   const { mutate: verifyEmailOtp } = AuthServices.useVerifyEmailOtp();
+  const { mutate: addDeviceToken } = AuthServices.useAddDeviceToken();
   const { mutate: sendEmailVerificationOtp } = AuthServices.useSendEmailVerificationOtp();
 
   const handleOtpComplete = (code: string) => {
@@ -31,6 +34,14 @@ const EmailVerificationPage = () => {
       verifyEmailOtp(
         { email, otp: code },
         {
+          onSuccess: () => {
+            if (fcmToken) {
+              addDeviceToken({
+                token: fcmToken,
+                platform: Platform.OS as 'ios' | 'android',
+              });
+            }
+          },
           onError: (error) => {
             setHasOtpError(true);
             Toast.error(error.message || 'Invalid verification code');

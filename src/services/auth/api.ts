@@ -9,6 +9,7 @@ import { apiClient } from '../axios/interceptor';
 import {
   VerifyEmailOtpReqType,
   ResetPasswordReqType,
+  DeviceTokensReqType,
   SignUpReqType,
   GetMeResType,
   LoginReqType,
@@ -238,6 +239,38 @@ export const resetPasswordApi = async (data: ResetPasswordReqType) => {
     };
   } else if (response?.error) {
     throw response?.error;
+  }
+
+  return response?.data;
+};
+
+/*** API for add device token ***/
+export const addDeviceTokenApi = async (data: DeviceTokensReqType) => {
+  const [response, error] = await withErrorCatch(apiClient.post('/user/device-tokens', data));
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API for remove device token ***/
+export const removeDeviceTokenApi = async (token: string) => {
+  const [response, error] = await withErrorCatch(apiClient.delete(`/user/device-tokens/${token}`));
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
   }
 
   return response?.data;
