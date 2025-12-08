@@ -1,6 +1,7 @@
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
+import { Toast } from 'toastify-react-native';
 import {
   TouchableOpacity,
   RefreshControl,
@@ -41,9 +42,9 @@ type AboutItemData = {
 const SalonDetailPage = () => {
   /***** Constants *****/
   const router = useRouter();
+  const { userIsGuest } = useUserProvider();
   const { top, bottom } = useAppSafeAreaInsets();
   const { data: userData } = AuthServices.useGetMe();
-  const { userIsGuest, logoutGuest } = useUserProvider();
   const { id, image } = useLocalSearchParams<SalonDetailPageProps>();
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(id);
   const {
@@ -101,7 +102,7 @@ const SalonDetailPage = () => {
   );
   const handleBookingNext = useCallback(() => {
     if (userIsGuest) {
-      logoutGuest();
+      Toast.error('Please login or create an account to book an appointment');
       return;
     }
 
@@ -117,7 +118,7 @@ const SalonDetailPage = () => {
         services: JSON.stringify(selectedServiceData),
       },
     });
-  }, [id, router, selectedServiceData, logoutGuest, userIsGuest, userData]);
+  }, [id, router, selectedServiceData, userIsGuest, userData]);
 
   const RenderServices = useCallback(() => {
     if (!location?.locationServices) return null;
@@ -294,11 +295,7 @@ const SalonDetailPage = () => {
             <BackIcon width={28} height={28} color={theme.colors.white.DEFAULT} />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            activeOpacity={0.8}
-            disabled={userIsGuest}
-            onPress={handleToggleFavorites}
-            style={[userIsGuest && { opacity: 0.5 }]}>
+          <TouchableOpacity activeOpacity={0.8} onPress={handleToggleFavorites}>
             {isInFavorites ? (
               <HeartIconFilled width={28} height={28} color={theme.colors.white.DEFAULT} />
             ) : (

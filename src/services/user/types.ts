@@ -58,7 +58,7 @@ export type AddToFavoritesReqType = {
 };
 export type AddToFavoritesResType = {
   ok: boolean;
-  message?: string;
+  favorites: LocationType[];
 };
 
 /*** Remove from user favorites type ***/
@@ -67,7 +67,7 @@ export type RemoveFromFavoritesReqType = {
 };
 export type RemoveFromFavoritesResType = {
   ok: boolean;
-  message?: string;
+  removed: boolean;
 };
 
 /*** User Locations Types ***/

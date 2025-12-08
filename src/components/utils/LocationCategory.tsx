@@ -2,8 +2,6 @@ import { View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
-import { useUserProvider } from '~/src/store';
-
 import { theme } from '~/src/constants';
 
 import type { LocationCategoryType, LocationType } from '~/src/services';
@@ -13,7 +11,6 @@ import { Text } from '../base';
 const LocationCategory = ({ category }: { category: LocationCategoryType }) => {
   /*** Constants ***/
   const router = useRouter();
-  const { userIsGuest, logoutGuest } = useUserProvider();
 
   const handlePress = useCallback(
     (item: LocationType) => {
@@ -28,15 +25,11 @@ const LocationCategory = ({ category }: { category: LocationCategoryType }) => {
     [router]
   );
   const handleSeeAllPress = useCallback(() => {
-    if (userIsGuest) {
-      logoutGuest();
-    } else {
-      router.navigate({
-        pathname: '/(authenticated)/(tabs)/search',
-        params: { filterSlug: category.slug },
-      });
-    }
-  }, [router, category, logoutGuest, userIsGuest]);
+    router.navigate({
+      pathname: '/(authenticated)/(tabs)/search',
+      params: { filterSlug: category.slug },
+    });
+  }, [router, category]);
 
   const RenderItem = useCallback(
     ({ item }: { item: LocationType }) => {

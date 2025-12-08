@@ -1,6 +1,6 @@
 import { View, StyleSheet, Keyboard, TouchableOpacity, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Toast } from 'toastify-react-native';
 import { useRouter } from 'expo-router';
 
@@ -25,9 +25,9 @@ const LoginScreen = () => {
   const router = useRouter();
   const { fcmToken } = useNotification();
   const { handleGuestLogin } = useUserProvider();
-  const { user: authUser } = AuthServices.useGetBetterAuthUser();
+  // const { user: authUser } = AuthServices.useGetBetterAuthUser();
   const { mutate: addDeviceToken } = AuthServices.useAddDeviceToken();
-  const { data: userData, isLoading: isUserLoading } = AuthServices.useGetMe();
+  // const { data: userData, isLoading: isUserLoading } = AuthServices.useGetMe();
   const { mutate: login, isPending: isLoginPending } = AuthServices.useLogin();
   const { mutate: appleLogin, isPending: isAppleLoginPending } = AuthServices.useAppleLogin();
   const { mutate: googleLogin, isPending: isGoogleLoginPending } = AuthServices.useGoogleLogin();
@@ -36,16 +36,6 @@ const LoginScreen = () => {
   const [validationErrors, setValidationErrors] = useState<ValidationResultType<LoginReqType>>({
     success: false,
   });
-
-  useEffect(() => {
-    if (!userData || !authUser || isUserLoading) {
-      return;
-    }
-
-    if (authUser.emailVerified) {
-      router.replace('/(authenticated)/(tabs)');
-    }
-  }, [isUserLoading, userData, authUser, router]);
 
   const handleRegisterDeviceForNotifications = () => {
     if (!fcmToken) {
@@ -85,6 +75,7 @@ const LoginScreen = () => {
 
     login(data.current, {
       onSuccess: () => {
+        router.replace('/(authenticated)/(tabs)');
         setTimeout(() => {
           handleRegisterDeviceForNotifications();
         }, 800);

@@ -1,9 +1,15 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Toast } from 'toastify-react-native';
 
-import { UserServices, type LocationType } from '~/src/services';
+import { UserServices } from '~/src/services';
+import { useUserProvider } from '~/src/store';
 
 export const useHandleFavorites = (_id: string) => {
+  /***** States *****/
+  const [internalFavorites, setInternalFavorites] = useState<string[]>([]);
+
   /***** Constants *****/
+  const { userIsGuest } = useUserProvider();
   const { data: favorites } = UserServices.useGetFavorites();
   const { mutate: addToFavorites, isPending: isAddingToFavorites } =
     UserServices.useAddToFavorites();
@@ -11,21 +17,57 @@ export const useHandleFavorites = (_id: string) => {
     UserServices.useRemoveFromFavorites();
 
   /***** Memoization *****/
+  const isInFavorites = useMemo(() => {
+    return internalFavorites.includes(_id);
+  }, [internalFavorites, _id]);
   const isLoading = useMemo(
     () => isAddingToFavorites || isRemovingFromFavorites,
     [isAddingToFavorites, isRemovingFromFavorites]
   );
-  const isInFavorites = useMemo(() => {
-    return favorites?.some((favorite: LocationType) => favorite._id === _id);
-  }, [favorites, _id]);
 
   const handleToggleFavorites = () => {
+    if (userIsGuest) {
+      Toast.error('Please login or create an account to add to favorites');
+      return;
+    }
+
+    const favorites = internalFavorites;
+    let newFavorites: string[] = [];
+
     if (isInFavorites) {
-      removeFromFavorites({ locationId: _id });
+      newFavorites = favorites.filter((favorite: string) => favorite !== _id);
+      setInternalFavorites(newFavorites);
+
+      removeFromFavorites(
+        { locationId: _id },
+        {
+          onError: () => {
+            Toast.error('Failed to remove from favorites');
+            setInternalFavorites(favorites);
+          },
+        }
+      );
     } else {
-      addToFavorites({ locationId: _id });
+      newFavorites = [...favorites, _id];
+      setInternalFavorites(newFavorites);
+
+      addToFavorites(
+        { locationId: _id },
+        {
+          onError: () => {
+            Toast.error('Failed to add to favorites');
+            setInternalFavorites(favorites);
+          },
+        }
+      );
     }
   };
+
+  useEffect(() => {
+    if (favorites) {
+      setInternalFavorites(favorites.map((favorite) => favorite._id));
+    }
+  }, [favorites]);
 
   return {
     isLoading,

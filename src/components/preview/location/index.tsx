@@ -1,6 +1,6 @@
 import { View, TouchableOpacity, StyleSheet, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import Animated, {
   SlideOutDown,
   SlideOutRight,
@@ -11,7 +11,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { type LocationType } from '~/src/services';
-import { useUserProvider } from '~/src/store';
 
 import { StarIcon, AppLogo, HeartIcon, HeartIconFilled } from '~/src/assets/icons';
 import { useHandleFavorites } from '~/src/hooks';
@@ -39,7 +38,6 @@ const LocationCard = ({
   animatedStyle = 'fadeIn',
 }: LocationCardProps) => {
   /***** Constants *****/
-  const { userIsGuest, logoutGuest } = useUserProvider();
   const { _id, city, tags, rating, photos, organization } = data;
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(_id);
 
@@ -91,14 +89,6 @@ const LocationCard = ({
     }
   }, [animatedStyle, delay, duration]);
 
-  const handleFavoritePress = useCallback(() => {
-    if (userIsGuest) {
-      logoutGuest();
-    } else {
-      handleToggleFavorites();
-    }
-  }, [userIsGuest, handleToggleFavorites, logoutGuest]);
-
   return (
     <AnimatedTouchableOpacity
       onPress={onPress}
@@ -131,8 +121,8 @@ const LocationCard = ({
 
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={handleFavoritePress}
-          style={styles.favoriteButton}>
+          style={styles.favoriteButton}
+          onPress={handleToggleFavorites}>
           {isInFavorites ? (
             <HeartIconFilled width={38} height={38} color={theme.colors.white.DEFAULT} />
           ) : (

@@ -17,8 +17,14 @@ export default function AuthenticatedLayout() {
     return <Redirect href="/(unauthenticated)/login" />;
   }
 
+  // If user is not onboarded and is not on onboarding screen, redirect to onboarding
   if (!isOnboardingCompleted && pathname !== '/onboarding') {
     return <Redirect href="/(unauthenticated)/onboarding" />;
+  }
+
+  // If user is onboarded and has missing profile data, redirect to complete profile
+  if (isOnboardingCompleted && (!userData?.firstName || !userData?.lastName || !userData?.phone)) {
+    return <Redirect href="/(unauthenticated)/signup/completeProfile" />;
   }
 
   // Check if user is owner

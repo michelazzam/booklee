@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { TextInput, Keyboard, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { TextInput, TouchableOpacity } from 'react-native';
 
 import { useDebouncing } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
@@ -55,7 +55,6 @@ const SearchInput = forwardRef<SearchInputRef, SearchInputProps>(
     }, [value]);
     useEffect(() => {
       if (debouncedQuery.length > searchInputConfig.minQueryLength || debouncedQuery.length === 0) {
-        Keyboard.dismiss();
         onSearch?.(debouncedQuery);
       }
     }, [debouncedQuery, onSearch]);

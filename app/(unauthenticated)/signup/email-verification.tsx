@@ -35,6 +35,7 @@ const EmailVerificationPage = () => {
         { email, otp: code },
         {
           onSuccess: () => {
+            router.replace('/(authenticated)/(tabs)');
             if (fcmToken) {
               addDeviceToken({
                 token: fcmToken,

@@ -11,7 +11,7 @@ import { theme } from '~/src/constants/theme';
 import { useAppSafeAreaInsets } from '~/src/hooks';
 
 import { AwareScrollView, HeaderNavigation } from '~/src/components/base';
-import { Input } from '~/src/components/textInputs';
+import { Input, PhoneInput } from '~/src/components/textInputs';
 import { Button } from '~/src/components/buttons';
 
 export const SignupPage = () => {
@@ -20,6 +20,7 @@ export const SignupPage = () => {
 
   /***** Refs *****/
   const data = useRef<SignUpReqType & { confirmPassword: string }>({
+    phone: '',
     email: '',
     role: 'user',
     password: '',
@@ -101,6 +102,13 @@ export const SignupPage = () => {
           placeholder="Enter your email address"
           error={validationErrors.errors?.email}
           onChangeText={(value) => onTextChange(value, 'email')}
+        />
+
+        <PhoneInput
+          isRequired
+          placeholder="Enter phone number"
+          error={validationErrors.errors?.phone}
+          onChangeText={(value) => onTextChange(value, 'phone')}
         />
 
         <Input
