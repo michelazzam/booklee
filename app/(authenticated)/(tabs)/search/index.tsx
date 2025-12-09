@@ -3,6 +3,7 @@ import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
+import { useUserProvider } from '~/src/store/userProvider';
 import {
   type GetLocationsReqType,
   type CategoryType,
@@ -10,13 +11,13 @@ import {
   LocationServices,
 } from '~/src/services';
 
-import { useAppSafeAreaInsets } from '~/src/hooks';
 import { FilterIcon, MapIcon } from '~/src/assets/icons';
+import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
 
 import { LocationCard, LocationCardSkeleton } from '~/src/components/preview';
-import { FilterContainer, type FilterType } from '~/src/components/utils';
 import { type FilterModalRef, FilterModal } from '~/src/components/modals';
+import { FilterContainer, type FilterType } from '~/src/components/utils';
 import { SearchInput } from '~/src/components/textInputs';
 import { Icon, Text } from '~/src/components/base';
 
@@ -31,6 +32,7 @@ const LocationListing = () => {
 
   /*** Constants ***/
   const router = useRouter();
+  const { userLocation } = useUserProvider();
   const { top, bottom } = useAppSafeAreaInsets();
   const { filterSlug } = useLocalSearchParams<{ filterSlug: string }>();
   const { data: filtersData } = LocationServices.useGetLocationsCategories();
@@ -41,7 +43,11 @@ const LocationListing = () => {
     hasNextPage,
     fetchNextPage,
     data: locationsData,
-  } = LocationServices.useGetLocations(selectedFilter);
+  } = LocationServices.useGetLocations({
+    ...selectedFilter,
+    lat: userLocation?.lat,
+    lng: userLocation?.lng,
+  });
 
   /*** Memoization ***/
   const isFilterApplied = useMemo(() => {

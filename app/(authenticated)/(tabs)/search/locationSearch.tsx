@@ -25,12 +25,15 @@ const Search = () => {
   /*** Constants ***/
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { userIsGuest } = useUserProvider();
   const { top, bottom } = useAppSafeAreaInsets();
+  const { userIsGuest, userLocation } = useUserProvider();
   const { data: searchHistory } = LocationServices.useGetSearchHistory();
-  const { mutate: searchLocations, isPending: isSearching } = LocationServices.useSearchLocations();
   const { mutate: deleteSearchHistory, isPending: isDeletingSearchHistory } =
     LocationServices.useDeleteSearchHistory();
+  const { mutate: searchLocations, isPending: isSearching } = LocationServices.useSearchLocations({
+    lat: userLocation?.lat,
+    lng: userLocation?.lng,
+  });
 
   useEffect(() => {
     if (searchQuery.trim().length >= 2) {

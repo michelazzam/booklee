@@ -1,8 +1,8 @@
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useCallback, useState, useEffect, useRef } from 'react';
-import * as Location from 'expo-location';
 
 import { AppointmentServices, LocationServices, UserServices } from '~/src/services';
+import { useUserProvider } from '~/src/store';
 
 import { useAppSafeAreaInsets } from '~/src/hooks';
 import { theme } from '~/src/constants/theme';
@@ -18,12 +18,10 @@ const HomePage = () => {
 
   /*** States ***/
   const [isRefetching, setIsRefetching] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>(
-    undefined
-  );
 
   /*** Constants ***/
   const { bottom } = useAppSafeAreaInsets();
+  const { userLocation } = useUserProvider();
   const { data: userData } = UserServices.useGetMe();
   const { data: needsReviewAppointments } = AppointmentServices.useGetUserAppointmentsNeedsReview();
   const {
@@ -35,30 +33,6 @@ const HomePage = () => {
     lng: userLocation?.lng,
   });
 
-  useEffect(() => {
-    const getUserLocation = async () => {
-      try {
-        // Check if location permission is granted
-        const { status } = await Location.getForegroundPermissionsAsync();
-
-        if (status === 'granted') {
-          // Get the current location
-          const location = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced,
-          });
-
-          setUserLocation({
-            lat: location.coords.latitude,
-            lng: location.coords.longitude,
-          });
-        }
-      } catch (error) {
-        console.error('Error getting user location:', error);
-      }
-    };
-
-    getUserLocation();
-  }, []);
   useEffect(() => {
     if (!needsReviewAppointments) return;
 
@@ -75,7 +49,6 @@ const HomePage = () => {
       setIsRefetching(false);
     });
   }, [refetch]);
-
   const RenderRefreshControl = useCallback(() => {
     return (
       <RefreshControl

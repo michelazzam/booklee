@@ -24,7 +24,7 @@ type FilterModalProps = {
 };
 
 const defaultFilters: GetLocationsReqType = {
-  distance: 30,
+  distance: 50,
   price_min: 0,
   rating_min: 0,
   price_max: 1000,
@@ -200,7 +200,7 @@ const FilterModal = forwardRef<FilterModalRef, FilterModalProps>(
                 allowOverlap={false}
                 sliderLength={screenWidth - 48}
                 markerStyle={styles.markerStyle}
-                values={[filters.distance || 30]}
+                values={[filters.distance || 50]}
                 selectedStyle={styles.selectedTrack}
                 onValuesChangeFinish={handleSliderEnd}
                 onValuesChangeStart={handleSliderStart}

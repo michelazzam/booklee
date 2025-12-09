@@ -93,12 +93,12 @@ const useGetSearchHistory = () => {
   });
 };
 
-const useSearchLocations = () => {
+const useSearchLocations = ({ lat, lng }: { lat?: number; lng?: number }) => {
   /*** Constants ***/
   const queryClient = useQueryClient();
 
   return useMutation<SearchResType, ResErrorType, SearchReqType>({
-    mutationFn: (params) => searchLocationsApi(params),
+    mutationFn: (params) => searchLocationsApi(params, lat, lng),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
     },

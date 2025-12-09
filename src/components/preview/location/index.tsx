@@ -38,7 +38,7 @@ const LocationCard = ({
   animatedStyle = 'fadeIn',
 }: LocationCardProps) => {
   /***** Constants *****/
-  const { _id, city, tags, rating, photos, organization } = data;
+  const { _id, city, tags, rating, photos, organization, bookable } = data;
   const { isInFavorites, handleToggleFavorites } = useHandleFavorites(_id);
 
   /***** Memoization *****/
@@ -116,6 +116,14 @@ const LocationCard = ({
         ) : (
           <View style={[styles.imagePlaceholder, { backgroundColor: randomColor + '80' }]}>
             <AppLogo />
+          </View>
+        )}
+
+        {bookable && (
+          <View style={styles.inAppBookingTag}>
+            <Text size={10} color={theme.colors.white.DEFAULT}>
+              In-App Booking
+            </Text>
           </View>
         )}
 
@@ -200,6 +208,17 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  inAppBookingTag: {
+    height: 20,
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    position: 'absolute',
+    top: theme.spacing.lg,
+    left: theme.spacing.md,
+    justifyContent: 'center',
+    borderRadius: theme.radii.xs,
+    backgroundColor: theme.colors.green[100],
   },
   favoriteButton: {
     width: 42,

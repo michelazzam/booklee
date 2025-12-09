@@ -21,7 +21,7 @@ import type {
 } from './types';
 
 export const DEFAULT_LOCATION_FIELDS =
-  'rating,price,geo,_id,slug,name,logo,city,tags,photos,organization';
+  'rating,price,geo,_id,slug,name,logo,city,tags,photos,organization,bookable';
 
 /*** API for get locations categories ***/
 export const getLocationsCategoriesApi = async (filters?: GetLocationsReqType) => {
@@ -55,7 +55,9 @@ export const getLocationsCategoriesApi = async (filters?: GetLocationsReqType) =
 
 /*** API for get locations ***/
 export const getLocationsApi = async (page: number, filters?: GetLocationsReqType) => {
-  let url = `locations?page=${page}&fields=${DEFAULT_LOCATION_FIELDS}`;
+  const hasLocation = filters?.lat !== undefined && filters?.lng !== undefined;
+  const sortParam = hasLocation ? '&sort=distance' : '';
+  let url = `locations?page=${page}&fields=${DEFAULT_LOCATION_FIELDS}${sortParam}`;
 
   if (filters) {
     url += `&${Object.entries(filters)
@@ -114,10 +116,13 @@ export const getSearchHistoryApi = async () => {
 };
 
 /*** API to search for locations ***/
-export const searchLocationsApi = async (params: SearchReqType) => {
-  const [response, error] = await withErrorCatch(
-    apiClient.get<SearchResType>('locations/search', { params })
-  );
+export const searchLocationsApi = async (params: SearchReqType, lat?: number, lng?: number) => {
+  let url = 'locations/search';
+
+  if (lat && lng) {
+    url += `?sort=distance&lat=${lat}&lng=${lng}`;
+  }
+  const [response, error] = await withErrorCatch(apiClient.get<SearchResType>(url, { params }));
 
   if (error instanceof AxiosError) {
     throw {

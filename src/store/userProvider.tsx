@@ -2,15 +2,22 @@ import { createContext, useContext, ReactNode, useEffect, useState } from 'react
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authClient } from '../services/auth/auth-client';
 import { useQueryClient } from '@tanstack/react-query';
+import * as Location from 'expo-location';
 
 import { apiClient } from '../services/axios/interceptor';
 
 import { ENV, guestData } from '../constants';
 
+type UserLocation = {
+  lat: number;
+  lng: number;
+} | null;
+
 type UserProviderType = {
   userIsGuest: boolean;
   isInitialized: boolean;
   logoutGuest: () => void;
+  userLocation: UserLocation;
   handleGuestLogin: () => void;
   isOnboardingCompleted: boolean;
   handleOnboardingCompleted: (isOnboardingCompleted: boolean) => void;
@@ -21,6 +28,7 @@ const STORAGE_KEY = {
 
 const UserProviderContext = createContext<UserProviderType>({
   userIsGuest: false,
+  userLocation: null,
   isInitialized: true,
   logoutGuest: () => {},
   handleGuestLogin: () => {},
@@ -37,6 +45,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   /*** States ***/
   const [userIsGuest, setUserIsGuest] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [userLocation, setUserLocation] = useState<UserLocation>(null);
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState(false);
 
   useEffect(() => {
@@ -46,10 +55,32 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       'x-vercel-protection-bypass': ENV.VERCEL_PROTECTION_BYPASS,
     };
 
+    const getUserLocation = async (): Promise<UserLocation> => {
+      try {
+        const { status } = await Location.getForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          return null;
+        }
+
+        const location = await Location.getCurrentPositionAsync({});
+        return {
+          lat: location.coords.latitude,
+          lng: location.coords.longitude,
+        };
+      } catch (error) {
+        console.error('Error getting user location:', error);
+        return null;
+      }
+    };
     const getPersistentData = async () => {
       try {
-        const onboardingCompleted = await AsyncStorage.getItem(STORAGE_KEY.onboardingCompleted);
+        const [onboardingCompleted, location] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEY.onboardingCompleted),
+          getUserLocation(),
+        ]);
+
         setIsOnboardingCompleted(onboardingCompleted === 'true');
+        setUserLocation(location);
       } catch (error) {
         console.error('Error getting persistent data', error);
       } finally {
@@ -83,6 +114,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       value={{
         userIsGuest,
         logoutGuest,
+        userLocation,
         isInitialized,
         handleGuestLogin,
         isOnboardingCompleted,
