@@ -115,3 +115,14 @@ export type DeleteUserResType = {
   ok: boolean;
   message?: string;
 };
+
+/*** Send push notification type ***/
+export type SendPushNotificationReqType = {
+  body: string;
+  title: string;
+  userId: string;
+};
+export type SendPushNotificationResType = {
+  ok: boolean;
+  message?: string;
+};

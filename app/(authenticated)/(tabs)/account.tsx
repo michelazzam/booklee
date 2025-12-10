@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Toast } from 'toastify-react-native';
 import { useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
@@ -30,6 +30,8 @@ const AccountPage = () => {
   const { mutate: removeDeviceToken } = AuthServices.useRemoveDeviceToken();
   const { mutate: logout, isPending: isLogoutPending } = AuthServices.useLogout();
   const { mutate: deleteUser, isPending: isDeleteUserPending } = UserServices.useDeleteUser();
+  const { mutate: sendPushNotification, isPending: isSendingNotification } =
+    UserServices.useSendPushNotification();
 
   const handleDeleteAccount = useCallback(() => {
     deleteUser(undefined, {
@@ -47,6 +49,25 @@ const AccountPage = () => {
       },
     });
   }, [deleteUser, fcmToken, removeDeviceToken]);
+  const handleTestNotification = useCallback(() => {
+    if (!userData?.user?.id) {
+      Toast.error('User ID not found');
+      return;
+    }
+
+    sendPushNotification(
+      {
+        title: 'Testing',
+        userId: userData.user.id,
+        body: 'This is a test for notifications',
+      },
+      {
+        onError: (error) => {
+          Toast.error(error.message || 'Failed to send notification');
+        },
+      }
+    );
+  }, [sendPushNotification, userData?.user?.id]);
 
   /*** Memoization ***/
   const personalInformationData: CardRowDataType[] = useMemo(() => {
@@ -93,6 +114,15 @@ const AccountPage = () => {
     ];
 
     if (!userIsGuest) {
+      if (__DEV__ && Platform.OS === 'android') {
+        data.unshift({
+          label: 'TEST NOTIFICATION',
+          loading: isSendingNotification,
+          leadingIcon: <BellIcon />,
+          onPress: handleTestNotification,
+        });
+      }
+
       data.push({
         variant: 'danger',
         label: 'DELETE ACCOUNT',
@@ -107,7 +137,16 @@ const AccountPage = () => {
     }
 
     return data;
-  }, [logout, logoutGuest, isLogoutPending, isDeleteUserPending, handleDeleteAccount, userIsGuest]);
+  }, [
+    logout,
+    logoutGuest,
+    userIsGuest,
+    isLogoutPending,
+    isDeleteUserPending,
+    handleDeleteAccount,
+    isSendingNotification,
+    handleTestNotification,
+  ]);
 
   return (
     <View style={styles.container}>

@@ -5,6 +5,8 @@ import { withErrorCatch } from '../axios/error';
 
 import type { ImageType } from '~/src/components/utils';
 import {
+  SendPushNotificationReqType,
+  SendPushNotificationResType,
   RemoveFromFavoritesReqType,
   RemoveFromFavoritesResType,
   GetUserLocationsResType,
@@ -156,6 +158,24 @@ export const getUserLocationsApi = async () => {
 /*** API for delete user ***/
 export const deleteUserApi = async () => {
   const [response, error] = await withErrorCatch(apiClient.delete<DeleteUserResType>('/user/me'));
+
+  if (error instanceof AxiosError) {
+    throw {
+      ...error.response?.data,
+      status: error.response?.status,
+    };
+  } else if (error) {
+    throw error;
+  }
+
+  return response?.data;
+};
+
+/*** API for send push notification ***/
+export const sendPushNotificationApi = async (data: SendPushNotificationReqType) => {
+  const [response, error] = await withErrorCatch(
+    apiClient.post<SendPushNotificationResType>('/push/send-to-user', data)
+  );
 
   if (error instanceof AxiosError) {
     throw {

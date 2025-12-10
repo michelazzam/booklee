@@ -104,7 +104,6 @@ const Navigation = () => {
   ]);
 
   useEffect(() => {
-    // SecureStore.deleteItemAsync('onboardingCompleted');
     if (Platform.OS === 'android') {
       NavigationBar.setVisibilityAsync('hidden');
     }

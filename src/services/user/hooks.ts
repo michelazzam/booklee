@@ -4,14 +4,15 @@ import { authClient } from '../auth/auth-client';
 import { useUserProvider } from '~/src/store';
 
 import {
+  sendPushNotificationApi,
   removeFromFavoritesApi,
+  getUserLocationsApi,
+  updateUserImageApi,
   addToFavoritesApi,
   updateUserMeApi,
   getFavoritesApi,
   deleteUserApi,
   getUserMeApi,
-  getUserLocationsApi,
-  updateUserImageApi,
 } from './api';
 
 import type { LocationType } from '../locations/types';
@@ -19,13 +20,15 @@ import type { ResErrorType } from '../axios/types';
 import type {
   RemoveFromFavoritesReqType,
   RemoveFromFavoritesResType,
+  GetUserLocationsResType,
   AddToFavoritesResType,
   AddToFavoritesReqType,
+  UserLocationItemType,
   GetFavoritesResType,
   DeleteUserResType,
   GetUserMeResType,
-  GetUserLocationsResType,
-  UserLocationItemType,
+  SendPushNotificationReqType,
+  SendPushNotificationResType,
 } from './types';
 
 const useGetMe = () => {
@@ -132,14 +135,21 @@ const useDeleteUser = () => {
   });
 };
 
+const useSendPushNotification = () => {
+  return useMutation<SendPushNotificationResType, ResErrorType, SendPushNotificationReqType>({
+    mutationFn: sendPushNotificationApi,
+  });
+};
+
 export const UserServices = {
+  useGetUserLocationsWithData,
+  useSendPushNotification,
   useRemoveFromFavorites,
+  useGetUserLocations,
   useUpdateUserImage,
   useAddToFavorites,
   useGetFavorites,
   useUpdateUser,
   useDeleteUser,
   useGetMe,
-  useGetUserLocations,
-  useGetUserLocationsWithData,
 };

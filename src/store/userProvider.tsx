@@ -72,23 +72,34 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
     };
-    const getPersistentData = async () => {
+    const getOnboardingStatus = async (): Promise<boolean> => {
       try {
-        const [onboardingCompleted, location] = await Promise.all([
-          AsyncStorage.getItem(STORAGE_KEY.onboardingCompleted),
-          getUserLocation(),
-        ]);
-
-        setIsOnboardingCompleted(onboardingCompleted === 'true');
-        setUserLocation(location);
+        const onboardingCompleted = await AsyncStorage.getItem(STORAGE_KEY.onboardingCompleted);
+        return onboardingCompleted === 'true';
       } catch (error) {
-        console.error('Error getting persistent data', error);
-      } finally {
-        setIsInitialized(true);
+        console.error('Error getting onboarding status:', error);
+        return false;
       }
     };
 
-    getPersistentData();
+    const initialize = async () => {
+      const [onboardingResult, locationResult] = await Promise.allSettled([
+        getOnboardingStatus(),
+        getUserLocation(),
+      ]);
+
+      if (onboardingResult.status === 'fulfilled') {
+        setIsOnboardingCompleted(onboardingResult.value);
+      }
+
+      if (locationResult.status === 'fulfilled') {
+        setUserLocation(locationResult.value);
+      }
+
+      setIsInitialized(true);
+    };
+
+    initialize();
     apiClient.defaults.headers.common = headers;
   }, []);
 
